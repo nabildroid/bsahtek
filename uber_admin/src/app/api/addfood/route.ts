@@ -9,8 +9,8 @@ export async function POST(request: Request) {
   await db
     .insert(Schema.foodTable)
     .values({
-      latitude: 155,
-      longitude: 155,
+      latitude: res.latitude,
+      longitude: res.longitude,
       zoomScale: 155,
       rating: 155,
       category: "test",
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     })
     .execute();
 
-  await firestore.collection("foods").add   ({
+  await firestore.collection("foods").add({
     latitude: 155,
     longitude: 155,
     zoomScale: 155,
