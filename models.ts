@@ -132,3 +132,26 @@ interface DeliveryTask {
   estimatedEndAt: Date;
   deliveryPrice: number;
 }
+
+// Admin
+
+interface DeliveryDemand {
+  id: string;
+  date: Date;
+  name: string;
+  phone: string;
+}
+
+interface SellerDemand {
+  id: string;
+  date: Date;
+  name: string;
+  phone: string;
+}
+
+interface Stats {
+  lastupdate: Date;
+  totalSeller: number;
+  totalClient: number;
+  totalDelivery: number;
+}
