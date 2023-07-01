@@ -83,7 +83,7 @@ const NewFoodForm: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block mb-1">Latitude:</label>
+          <label className="block mb-1">Latitude (y):</label>
           <input
             type="text"
             name="latitude"
@@ -93,7 +93,7 @@ const NewFoodForm: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block mb-1">Longitude:</label>
+          <label className="block mb-1">Longitude (x smallest):</label>
           <input
             type="text"
             name="longitude"

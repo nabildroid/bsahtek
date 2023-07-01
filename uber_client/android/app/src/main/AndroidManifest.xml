@@ -1,9 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.uber_client">
+    package="me.laknabil.uber_client">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+        <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="uber_client"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+          <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDO4H7E1RqYRVVd8GwubFb6pbAd-SDldpg" />
+
+        
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
