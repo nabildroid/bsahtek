@@ -1,10 +1,28 @@
+import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../models/bag.dart';
 import '../models/mapSquare.dart';
+import '../utils/mapMark.dart';
 import '../utils/utils.dart';
+
+class MinimunMarker {
+  final String id;
+  final LatLng position;
+  final BitmapDescriptor icon;
+
+  MinimunMarker({
+    required this.id,
+    required this.position,
+    required this.icon,
+  });
+}
 
 class SquaresMap extends StatefulWidget {
   final void Function(MapSquare square) onSquareVisible;
@@ -36,6 +54,7 @@ class _SquaresMapState extends State<SquaresMap> {
 
   List<double>? centerZone;
   List<MapSquare> visibleSquares = [];
+  Set<MinimunMarker> markers = {};
 
   LatLng scaleRatio = const LatLng(1, 1);
 
@@ -43,7 +62,7 @@ class _SquaresMapState extends State<SquaresMap> {
     mapController = controller;
   }
 
-  void checkVisibleSpots(LatLngBounds bounds) {
+  checkVisibleSpots(LatLngBounds bounds) async {
     final visibleSpots = widget.spots.where((spot) {
       final spotPosition = LatLng(spot.latitude, spot.longitude);
 
@@ -53,7 +72,7 @@ class _SquaresMapState extends State<SquaresMap> {
     visibleSpots.forEach(widget.onSpotVisible);
   }
 
-  void checkVisibleSquares(LatLng center, LatLngBounds bounds) {
+  checkVisibleSquares(LatLng center, LatLngBounds bounds) {
     final lat = [bounds.northeast.latitude, bounds.southwest.latitude];
     final lon = [bounds.northeast.longitude, bounds.southwest.longitude];
     const visibility = 45; // 50km
@@ -71,9 +90,7 @@ class _SquaresMapState extends State<SquaresMap> {
     print(MapSquare.calculateDifferenceInKm(lat[0], lat[1]));
     print(MapSquare.calculateDifferenceInKm(lon[0], lon[1]));
 
-    setState(() {
-      centerZone = [lat[0], lat[1], lon[0], lon[1]];
-    });
+    centerZone = [lat[0], lat[1], lon[0], lon[1]];
 
     final List<MapSquare> visited = [];
 
@@ -87,31 +104,28 @@ class _SquaresMapState extends State<SquaresMap> {
       }
     }
 
-    setState(() {
-      visibleSquares = visited;
-    });
+    visibleSquares = visited;
   }
 
-  void updateMapScaleRatio(LatLngBounds bounds) {
-    setState(() {
-      scaleRatio = LatLng(
-        bounds.northeast.latitude - bounds.southwest.latitude,
-        bounds.northeast.longitude - bounds.southwest.longitude,
-      );
-    });
+  updateMapScaleRatio(LatLngBounds bounds) {
+    scaleRatio = LatLng(
+      bounds.northeast.latitude - bounds.southwest.latitude,
+      bounds.northeast.longitude - bounds.southwest.longitude,
+    );
   }
 
-  void onCameraStopMoving(CameraPosition position) async {
+  onCameraStopMoving(CameraPosition position) async {
     widget.onLocationChange(position.target);
 
     final bounds = await mapController.getVisibleRegion();
 
-    checkVisibleSpots(bounds);
-    checkVisibleSquares(position.target, bounds);
-    updateMapScaleRatio(bounds);
+    await checkVisibleSpots(bounds);
+    await checkVisibleSquares(position.target, bounds);
+    await updateMapScaleRatio(bounds);
+    await convertSpotsToMarks();
   }
 
-  Set<Circle> convertSpotsToCircles() {
+  convertSpotsToMarks() async {
     final visibleSpots = widget.spots.where((spot) {
       final spotPosition = LatLng(spot.latitude, spot.longitude);
 
@@ -129,19 +143,17 @@ class _SquaresMapState extends State<SquaresMap> {
       return false;
     });
 
-    print(citizens.length);
-    final circles = <Circle>{};
+    final Set<MinimunMarker> tempMarkers = {};
 
     for (var citizen in citizens) {
       if (citizen.length == 1) {
-        circles.add(Circle(
-          circleId: CircleId(citizen.first.id.toString()),
-          center: LatLng(citizen.first.latitude, citizen.first.longitude),
-          radius: 500,
-          strokeWidth: 0,
-          zIndex: 2555555555,
-          fillColor: Colors.green.shade800,
-        ));
+        tempMarkers.add(MinimunMarker(
+            id: citizen.first.name,
+            position: LatLng(
+              citizen.first.latitude,
+              citizen.first.longitude,
+            ), //position of marker
+            icon: BitmapDescriptor.defaultMarker));
       } else {
         // find center
         final lat = citizen.map((e) => e.latitude).reduce((a, b) => a + b) /
@@ -149,18 +161,18 @@ class _SquaresMapState extends State<SquaresMap> {
         final lon = citizen.map((e) => e.longitude).reduce((a, b) => a + b) /
             citizen.length;
 
-        circles.add(Circle(
-          circleId: CircleId(citizen.first.id.toString()),
-          center: LatLng(lat, lon),
-          radius: 1000,
-          strokeWidth: 0,
-          zIndex: 2555555555,
-          fillColor: Colors.blue.shade800,
-        ));
+        tempMarkers.add(
+          MinimunMarker(
+              //add start location marker
+              id: "Group",
+              position: LatLng(lat, lon),
+              icon: BitmapDescriptor.defaultMarker),
+        );
       }
     }
 
-    return circles;
+    markers.clear();
+    markers = tempMarkers;
   }
 
   @override
@@ -177,57 +189,30 @@ class _SquaresMapState extends State<SquaresMap> {
       zoomControlsEnabled: false,
       compassEnabled: false,
       rotateGesturesEnabled: false,
-      minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
       onCameraMove: (pos) {
         setState(() => lastCameraPosition = pos);
       },
-      polygons: !debug
-          ? Set()
-          : (Set()
-            ..addAll(
-              centerZone != null
-                  ? [
-                      Polygon(
-                        polygonId: PolygonId('center'),
-                        points: [
-                          LatLng(centerZone![0], centerZone![2]),
-                          LatLng(centerZone![0], centerZone![3]),
-                          LatLng(centerZone![1], centerZone![3]),
-                          LatLng(centerZone![1], centerZone![2]),
-                        ],
-                        zIndex: 2,
-                        strokeWidth: 0,
-                        fillColor: Colors.yellow.shade800.withOpacity(0.5),
-                      ),
-                    ]
-                  : [],
-            )
-            ..addAll(
-              visibleSquares.map(
-                (square) => Polygon(
-                  polygonId: PolygonId(square.id),
-                  fillColor: widget.location == null
-                      ? Colors.teal
-                      : square.isWithin(widget.location!)
-                          ? Colors.red.withOpacity(.5)
-                          : Colors.green.withOpacity(.5),
-                  strokeColor: Colors.green.shade800,
-                  zIndex: 1,
-                  strokeWidth: 2,
-                  points: square.toPoints(),
-                ),
-              ),
-            )),
-      onCameraIdle: () {
+      onCameraIdle: () async {
         if (lastCameraPosition != null) {
+          await onCameraStopMoving(lastCameraPosition!);
+          mapController.clearTileCache(TileOverlayId('mapbox-satellite'));
           setState(() {
-            onCameraStopMoving(lastCameraPosition!);
             lastCameraPosition = null;
           });
         }
       },
       onMapCreated: initMap,
-      circles: convertSpotsToCircles(),
+      markers: (<Marker>{}..addAll(
+          markers.map(
+            (e) => Marker(
+              markerId: MarkerId(e.id),
+              position: e.position,
+              icon: e.icon,
+              // visible: Random().nextBool(),
+              anchor: const Offset(0.5, 0.5),
+            ),
+          ),
+        )),
     );
   }
 }

@@ -34,6 +34,8 @@ class Bag {
     required this.rating,
   });
 
+  String get idd => '$longitude,$latitude,$zoomScale';
+
   factory Bag.fromJson(Map<String, dynamic> json) {
     return Bag(
       id: json['id'],

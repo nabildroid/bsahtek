@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       county: "test",
       description: "test",
       foodPhoto: "test",
-      name: "test",
+      name:  res.name,
       sellerAddress: "test",
       sellerName: "test",
       sellerPhoto: "test",

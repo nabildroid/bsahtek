@@ -44,8 +44,8 @@ class BagsState extends Equatable {
     );
   }
 
-  BagsState addBags(List<Bag> bags) {
-    for (var bag in bags) {
+  BagsState addBags(List<Bag> newBag) {
+    for (var bag in newBag) {
       if (bags.every((element) => element.id != bag.id)) {
         bags.add(bag);
       }
