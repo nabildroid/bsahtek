@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -72,6 +74,33 @@ class MapSquare extends Equatable {
     return points;
   }
 
+  static LatLng getCenter(List<LatLng> points) {
+    double x = 0;
+    double y = 0;
+    double z = 0;
+
+    for (LatLng point in points) {
+      double latitude = point.latitude * pi / 180;
+      double longitude = point.longitude * pi / 180;
+
+      x += cos(latitude) * cos(longitude);
+      y += cos(latitude) * sin(longitude);
+      z += sin(latitude);
+    }
+
+    int total = points.length;
+
+    x = x / total;
+    y = y / total;
+    z = z / total;
+
+    double centralLongitude = atan2(y, x);
+    double centralSquareRoot = sqrt(x * x + y * y);
+    double centralLatitude = atan2(z, centralSquareRoot);
+
+    return LatLng(centralLatitude * 180 / pi, centralLongitude * 180 / pi);
+  }
+
   static double addKlmToLongitude(double longitude, int kilometers) {
     const degreesPerKm = 1 / 111.32; // Approximate degrees per kilometer
     final distanceInDegrees = kilometers * degreesPerKm;
@@ -84,6 +113,27 @@ class MapSquare extends Equatable {
     double differenceInDegrees = value1 - value2;
     double differenceInKm = differenceInDegrees / degreesPerKm;
     return differenceInKm;
+  }
+
+  static double calculateDistance(LatLng point1, LatLng point2) {
+    double toRadians(double degrees) {
+      return degrees * pi / 180;
+    }
+
+    const double earthRadius = 6371; // in kilometers
+
+    double dLat = toRadians(point2.latitude - point1.latitude);
+    double dLon = toRadians(point2.longitude - point1.longitude);
+
+    double a = pow(sin(dLat / 2), 2) +
+        cos(toRadians(point1.latitude)) *
+            cos(toRadians(point2.latitude)) *
+            pow(sin(dLon / 2), 2);
+
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    double distance = earthRadius * c;
+    return distance;
   }
 
   static Offset roundToSquareCenter(double x, double y, int squareSpace) {
@@ -117,6 +167,23 @@ class MapSquare extends Equatable {
 
     return Offset(roundedX, roundedY);
     // todo this function does not work properly!!
+  }
+
+  static LatLngBounds createBounds(LatLng centre, int klmRaduis) {
+    // raduis is in in km
+    final double latRadian = centre.latitude * pi / 180;
+    const double degLatKlm = 1 / 111.32; // Approximate degrees per kilometer
+    final double degLonKlm = 1 / (111.32 * cos(latRadian));
+
+    final double latKlm = klmRaduis * degLatKlm;
+    final double lonKlm = klmRaduis * degLonKlm;
+
+    final LatLng southWest =
+        LatLng(centre.latitude - latKlm, centre.longitude - lonKlm);
+    final LatLng northEast =
+        LatLng(centre.latitude + latKlm, centre.longitude + lonKlm);
+
+    return LatLngBounds(southwest: southWest, northeast: northEast);
   }
 
   @override

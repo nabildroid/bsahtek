@@ -26,11 +26,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: BlocProvider(
-        create: (_) => BagsQubit(
-          gpsRepository,
-          bagRemote,
-        ),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => BagsQubit(gpsRepository, bagRemote)),
+        ],
         child: const Home(),
       ),
     );

@@ -31,10 +31,10 @@ class InlineFilters extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (ctx) {
-                        return Filters();
-                      }));
+                      // Navigator.of(context)
+                      //     .push(MaterialPageRoute(builder: (ctx) {
+                      //   return Filters();
+                      // }));
                     },
                     child: Text(
                       "try: Hide sold-out",

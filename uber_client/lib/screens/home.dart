@@ -24,7 +24,6 @@ class _HomeState extends State<Home> {
   late GoogleMapController mapController;
 
   bool isMap = true;
-  List<Bag> visibleSpotsInMap = [];
 
   bool showFilters = false;
 
@@ -33,10 +32,6 @@ class _HomeState extends State<Home> {
     context.read<BagsQubit>().init();
 
     super.initState();
-  }
-
-  void initMap(GoogleMapController controller) {
-    mapController = controller;
   }
 
   @override
@@ -55,18 +50,9 @@ class _HomeState extends State<Home> {
                   filterBags: (bag) {
                     return true;
                   },
-                  location: state.currentLocation,
                   mapLoader: (context) => const Center(
                     child: CircularProgressIndicator(),
                   ),
-                  onLocationChange: (location) {},
-                  onSpotsVisible: (spots) {
-                    setState(() => visibleSpotsInMap = spots);
-                  },
-                  onSquareVisible: (square) {
-                    context.read<BagsQubit>().visiteSquare(square);
-                  },
-                  spots: state.bags,
                 ),
               );
             }),
@@ -83,7 +69,7 @@ class _HomeState extends State<Home> {
                       heightFactor: .65,
                       child: ListView.builder(
                         itemBuilder: (ctx, index) {
-                          final spot = visibleSpotsInMap[index];
+                          final spot = state.visibleBags[index];
                           return SuggestionCard(
                             title: spot.name,
                             subtitle: "Bag 1",
@@ -99,7 +85,7 @@ class _HomeState extends State<Home> {
                             onTap: () {},
                           );
                         },
-                        itemCount: visibleSpotsInMap.length,
+                        itemCount: state.visibleBags.length,
                       )),
                 );
               },
@@ -134,9 +120,17 @@ class _HomeState extends State<Home> {
                 child: BlocBuilder<BagsQubit, BagsState>(
                   builder: (context, state) {
                     return InlineSuggestions(
-                      onView: (elm) {},
+                      onView: (index) {
+                        final spot = state.visibleBags[index];
+                        context
+                            .read<BagsQubit>()
+                            .moveCamera(CameraUpdate.newLatLng(LatLng(
+                              spot.latitude,
+                              spot.longitude,
+                            )));
+                      },
                       suggestions: [
-                        ...visibleSpotsInMap,
+                        ...state.visibleBags,
                       ]
                           .map(
                             (e) => InlineSuggestion(
