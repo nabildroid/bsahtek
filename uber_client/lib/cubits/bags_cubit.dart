@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:core';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,6 +12,43 @@ import 'package:uber_client/repositories/gps.dart';
 
 import '../models/bag.dart';
 
+class BagsFilter {
+  final String search;
+  final bool hideSoldout;
+  final String bagType;
+  final bool isVegan;
+  final bool isVegetarian;
+
+  BagsFilter({
+    this.search = "",
+    this.hideSoldout = false,
+    this.bagType = "",
+    this.isVegan = false,
+    this.isVegetarian = false,
+  });
+
+  BagsFilter copyWith({
+    String? search,
+    bool? hideSoldout,
+    String? bagType,
+    bool? isVegan,
+    bool? isVegetarian,
+  }) {
+    return BagsFilter(
+      search: search ?? this.search,
+      hideSoldout: hideSoldout ?? this.hideSoldout,
+      bagType: bagType ?? this.bagType,
+      isVegan: isVegan ?? this.isVegan,
+      isVegetarian: isVegetarian ?? this.isVegetarian,
+    );
+  }
+
+  @override
+  String toString() {
+    return "search: $search, hideSoldout: $hideSoldout, bagType: $bagType, isVegan: $isVegan, isVegetarian: $isVegetarian";
+  }
+}
+
 class BagsState extends Equatable {
   final List<Bag> bags;
   final List<Autosuggestion> autosuggestions = [];
@@ -18,10 +56,13 @@ class BagsState extends Equatable {
   final LatLng? currentLocation;
   final List<MapSquare> squares;
 
+  final BagsFilter filter;
+
   BagsState({
     required this.bags,
     this.currentLocation,
     required this.squares,
+    required this.filter,
   });
 
   @override
@@ -36,11 +77,13 @@ class BagsState extends Equatable {
     List<Autosuggestion>? autosuggestions,
     LatLng? currentLocation,
     List<MapSquare>? squares,
+    BagsFilter? filter,
   }) {
     return BagsState(
       bags: bags ?? this.bags,
       currentLocation: currentLocation ?? this.currentLocation,
       squares: squares ?? this.squares,
+      filter: filter ?? this.filter,
     );
   }
 
@@ -74,7 +117,11 @@ class BagsQubit extends Cubit<BagsState> {
   BagsQubit(
     this.gps,
     this.bagRemote,
-  ) : super(BagsState(bags: [], squares: []));
+  ) : super(BagsState(
+          bags: [],
+          squares: [],
+          filter: BagsFilter(),
+        ));
 
   Future<void> init() async {
     print("hello world");
@@ -139,5 +186,9 @@ class BagsQubit extends Cubit<BagsState> {
         LatLng(center.dy, center.dx),
       );
     }
+  }
+
+  void updateFilter(BagsFilter filter) {
+    emit(state.copyWith(filter: filter));
   }
 }

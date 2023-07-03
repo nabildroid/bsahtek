@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/repositories/bags_remote.dart';
 import 'package:uber_client/repositories/gps.dart';
-import 'package:uber_client/screens/home1.dart';
+import 'package:uber_client/screens/home.dart';
 
 import 'screens/home.dart';
 
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
           gpsRepository,
           bagRemote,
         ),
-        child: const Home1(),
+        child: const Home(),
       ),
     );
   }

@@ -7,10 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../models/bag.dart';
-import '../models/mapSquare.dart';
-import '../utils/mapMark.dart';
-import '../utils/utils.dart';
+import '../../models/bag.dart';
+import '../../models/mapSquare.dart';
+import '../../utils/mapMark.dart';
+import '../../utils/utils.dart';
 
 class MinimunMarker {
   final String id;
@@ -26,9 +26,10 @@ class MinimunMarker {
 
 class SquaresMap extends StatefulWidget {
   final void Function(MapSquare square) onSquareVisible;
-  final void Function(Bag spot) onSpotVisible;
+  final void Function(List<Bag> spots) onSpotsVisible;
   final void Function(LatLng location) onLocationChange;
   final Widget Function(BuildContext context) mapLoader;
+  final bool Function(Bag) filterBags;
 
   final List<Bag> spots;
   final LatLng? location;
@@ -36,11 +37,12 @@ class SquaresMap extends StatefulWidget {
   const SquaresMap({
     Key? key,
     required this.onSquareVisible,
-    required this.onSpotVisible,
+    required this.onSpotsVisible,
     required this.onLocationChange,
     required this.spots,
     this.location,
     required this.mapLoader,
+    required this.filterBags,
   }) : super(key: key);
 
   @override
@@ -62,14 +64,27 @@ class _SquaresMapState extends State<SquaresMap> {
     mapController = controller;
   }
 
+  @override
+  // void didUpdateWidget(SquaresMap oldWidget) {
+  //   if (oldWidget.location.toString() != widget.location.toString()) {
+  //     mapController.animateCamera(
+  //       CameraUpdate.newLatLng(widget.location!),
+  //     );
+  //   }
+  //   super.didUpdateWidget(oldWidget);
+  // }
+
   checkVisibleSpots(LatLngBounds bounds) async {
     final visibleSpots = widget.spots.where((spot) {
       final spotPosition = LatLng(spot.latitude, spot.longitude);
 
-      return bounds.contains(spotPosition);
+      final isWithinScreen = bounds.contains(spotPosition);
+      final isFiltred = widget.filterBags(spot);
+
+      return isWithinScreen && isFiltred;
     }).toList();
 
-    visibleSpots.forEach(widget.onSpotVisible);
+    widget.onSpotsVisible(visibleSpots);
   }
 
   checkVisibleSquares(LatLng center, LatLngBounds bounds) {
@@ -200,6 +215,21 @@ class _SquaresMapState extends State<SquaresMap> {
             lastCameraPosition = null;
           });
         }
+      },
+      polygons: {
+        if (centerZone != null)
+          Polygon(
+            polygonId: PolygonId('test'),
+            points: [
+              LatLng(centerZone![0], centerZone![2]),
+              LatLng(centerZone![0], centerZone![3]),
+              LatLng(centerZone![1], centerZone![3]),
+              LatLng(centerZone![1], centerZone![2]),
+            ],
+            strokeWidth: 2,
+            strokeColor: Colors.red,
+            fillColor: Colors.red.withOpacity(0.5),
+          )
       },
       onMapCreated: initMap,
       markers: (<Marker>{}..addAll(
