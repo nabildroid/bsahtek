@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/models/bag.dart';
+import 'package:uber_client/screens/bag_screen.dart';
 import 'package:uber_client/screens/location_selector.dart';
 
 import '../widgets/home/inline_filters.dart';
@@ -143,7 +144,9 @@ class _HomeState extends State<Home> {
                               image: "https://arib.shop/logo1.png",
                               thirdtitle: "Nothin gt sace tovade",
                               quantity: 2,
-                              onTap: () {},
+                              onTap: () {
+                                BagScreen.go(context);
+                              },
                             ),
                           )
                           .toList(),
