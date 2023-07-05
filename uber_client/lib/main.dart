@@ -20,17 +20,17 @@ class MyApp extends StatelessWidget {
     final gpsRepository = GpsRepository();
     final bagRemote = BagRemote();
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Uber Clone',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => BagsQubit(gpsRepository, bagRemote)),
-        ],
-        child: const Home(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => BagsQubit(gpsRepository, bagRemote)),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Uber Clone',
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+        ),
+        home: const Home(),
       ),
     );
   }

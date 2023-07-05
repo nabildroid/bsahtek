@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -9,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/models/autosuggestion.dart';
 import 'package:uber_client/models/mapSquare.dart';
 import 'package:uber_client/repositories/bags_remote.dart';
+import 'package:uber_client/repositories/geocoding.dart';
 import 'package:uber_client/repositories/gps.dart';
 
 import '../models/bag.dart';
@@ -50,12 +52,31 @@ class BagsFilter {
   }
 }
 
+class Area {
+  final LatLng center;
+  final String name;
+  final int radius;
+
+  Area({
+    required this.center,
+    required this.name,
+    required this.radius,
+  });
+
+  @override
+  String toString() {
+    return "center: $center, name: $name, radius: $radius";
+  }
+}
+
 class BagsState extends Equatable {
   final List<Bag> bags;
   final List<Bag> visibleBags;
   final List<Autosuggestion> autosuggestions = [];
 
   final LatLng? currentLocation;
+  final Area? currentArea;
+
   final List<MapSquare> squares;
   List<MapSquare> visibleSquares;
 
@@ -71,6 +92,7 @@ class BagsState extends Equatable {
     required this.visibleSquares,
     required this.filter,
     required this.attachedCameras,
+    this.currentArea,
   });
 
   @override
@@ -82,6 +104,7 @@ class BagsState extends Equatable {
         filter.toString(),
         visibleBags.map((e) => e.id).toList(),
         visibleSquares.map((e) => e.id).toList(),
+        currentArea.toString(),
       ];
 
   BagsState copyWith({
@@ -93,6 +116,7 @@ class BagsState extends Equatable {
     List<Bag>? visibleBags,
     List<MapSquare>? visibleSquares,
     BagsFilter? filter,
+    Area? currentArea,
   }) {
     return BagsState(
       bags: bags ?? this.bags,
@@ -102,6 +126,7 @@ class BagsState extends Equatable {
       attachedCameras: attachedCameras ?? this.attachedCameras,
       filter: filter ?? this.filter,
       visibleBags: visibleBags ?? this.visibleBags,
+      currentArea: currentArea ?? this.currentArea,
     );
   }
 
@@ -165,6 +190,16 @@ class BagsQubit extends Cubit<BagsState> {
       gpsLocation,
       MapSquare.createBounds(gpsLocation, 10),
     );
+
+    final city = (await Geocoding.getCityName(gpsLocation)).split(",")[0];
+    emit(state.copyWith(
+      currentLocation: gpsLocation,
+      currentArea: Area(
+        center: gpsLocation,
+        name: city,
+        radius: 10,
+      ),
+    ));
   }
 
   Future<LatLng?> _getLocation() async {
@@ -229,9 +264,23 @@ class BagsQubit extends Cubit<BagsState> {
     emit(state.copyWith(filter: filter));
   }
 
+  void setArea(Area area) {
+    emit(state.copyWith(currentArea: area));
+    // this is a hack to make sure the camera is moved after the state is updated
+    Future.delayed(Duration(milliseconds: 500)).then((value) {
+      updateMapVisibilty(
+        area.center,
+        MapSquare.createBounds(area.center, area.radius),
+      );
+    });
+  }
+
   Future<List<MapSquare>> updateMapVisibilty(
       LatLng cameraPosition, LatLngBounds bounds) async {
-    final visibleSquares = _checkVisibleSquares(cameraPosition, bounds);
+    final visibleSquares = _checkVisibleSquares(
+      cameraPosition,
+      bounds,
+    );
 
     emit(state.copyWith(visibleSquares: visibleSquares));
 
@@ -242,10 +291,13 @@ class BagsQubit extends Cubit<BagsState> {
       spots: [...state.bags, ...freshSpots],
       visibleSquares: visibleSquares,
       cameraPostion: cameraPosition,
+      closeDistance: state.currentArea?.radius ?? 5,
+      maxDistance: min(state.currentArea?.radius ?? 1 * 45, 45),
     );
 
     emit(state.addBags(freshSpots).addSquares(visibleSquares).copyWith(
           visibleBags: visibleSpots,
+          currentLocation: cameraPosition,
         ));
 
     return visibleSquares;

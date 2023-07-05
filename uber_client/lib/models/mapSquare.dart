@@ -186,6 +186,21 @@ class MapSquare extends Equatable {
     return LatLngBounds(southwest: southWest, northeast: northEast);
   }
 
+  static double calculateZoomLevel(double radius, double screenWidth) {
+    double equatorLength = 40030000; // in meters, a more accurate average
+
+    double desiredWidthKm = radius * 2; // Convert radius to diameter
+    double desiredWidthMeters = desiredWidthKm * 1000; // Convert km to m
+    double metersPerPixel = equatorLength /
+        256; // At zoom level 1, the earth's equator is 256 pixels long
+    double zoomLevel = 1.0;
+    while ((metersPerPixel * screenWidth) > desiredWidthMeters) {
+      metersPerPixel /= 2;
+      zoomLevel += 1.0;
+    }
+    return zoomLevel;
+  }
+
   @override
   List<Object?> get props => [id, ...children.map((e) => e.id).toList()];
 }

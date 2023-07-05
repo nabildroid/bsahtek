@@ -128,7 +128,7 @@ class _SquaresMapState extends State<SquaresMap> {
         listener: (context, state) async {
           convertSpotsToMarks(context);
         },
-        buildWhen: (old, n) => true,
+        buildWhen: (old, n) => true, // todo refactor this
         builder: (context, state) {
           if (state.currentLocation == null) return widget.mapLoader(context);
 

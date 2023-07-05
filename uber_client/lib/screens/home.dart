@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/models/bag.dart';
+import 'package:uber_client/screens/location_selector.dart';
 
 import '../widgets/home/inline_filters.dart';
 import '../widgets/home/inline_suggestion.dart';
@@ -98,7 +99,9 @@ class _HomeState extends State<Home> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   LocationPicker(
-                    onTap: () {},
+                    onTap: () {
+                      LocationSelector.go(context);
+                    },
                     subtitle: "within 20 km",
                     title: "Alger",
                   ),

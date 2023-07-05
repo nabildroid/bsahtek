@@ -7,7 +7,7 @@ import 'package:uber_client/models/bag.dart';
 import 'package:http/http.dart' as Http;
 
 endpoint(String path) {
-  return Uri.parse("http://192.168.0.105:3000/api/$path");
+  return Uri.parse("https://wastnothin.vercel.app/api/$path");
 }
 
 class BagRemote {
