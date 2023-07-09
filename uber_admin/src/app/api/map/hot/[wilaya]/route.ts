@@ -16,7 +16,7 @@ export async function GET(
     params: { wilaya: string };
   }
 ) {
-  const rows = await db.select().from(Schema.foodTable).execute();
+  const rows = await db.select().from(Schema.bagsTable).execute();
 
   return NextResponse.json({
     wilaya: context.params.wilaya,

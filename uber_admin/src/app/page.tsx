@@ -1,29 +1,39 @@
 "use client";
 
+import { M } from 'drizzle-orm/query-promise.d-2e42fbc9';
 import * as FoodRepository from '../local_repository/food';
 import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { TypeOf, z } from 'zod';
+import { NewFood } from '@/utils/types';
 
-export interface Food {
-  photo: string;
-  name: string;
-  companyName: string;
-  price: string;
-  latitude: string;
-  longitude: string;
-}
 
 const NewFoodForm: React.FC = () => {
-  const [food, setFood] = useState<Food>({
+  const [food, setFood] = useState<z.infer<typeof NewFood>>({
     photo: '',
     name: '',
-    companyName: '',
-    price: '',
-    latitude: '',
-    longitude: '',
+    category: "hello",
+    county: "algeria",
+    description: "food for all good",
+    isPromoted: false,
+    sellerAddress: "cheraga",
+    sellerName: "Superat Zigadi",
+    sellerID: "HNcUoKLtz6tOs5U7X98E",
+    sellerPhoto: "https://arib.shop/logo1.png",
+    tags: ["food", "good"],
+    wilaya: "alger",
+    latitude: 5,
+    longitude: 12,
+    price: 12.23,
+    originalPrice: 52.1,
   });
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
+
+    if (typeof ((food as any)[name]) === "number") {
+      setFood((prevFood) => ({ ...prevFood, [name]: Number(value) }));
+      return;
+    }
     setFood((prevFood) => ({ ...prevFood, [name]: value }));
   };
 
@@ -35,7 +45,7 @@ const NewFoodForm: React.FC = () => {
 
     console.log(food);
     // Reset the form
-    
+
   };
 
   return (
@@ -49,6 +59,7 @@ const NewFoodForm: React.FC = () => {
             name="photo"
             value={food.photo}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>
@@ -59,6 +70,7 @@ const NewFoodForm: React.FC = () => {
             name="name"
             value={food.name}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>
@@ -66,12 +78,31 @@ const NewFoodForm: React.FC = () => {
           <label className="block mb-1">Company Name:</label>
           <input
             type="text"
-            name="companyName"
-            value={food.companyName}
+            name="Seller Name"
+            value={food.sellerName}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>
+
+        <div className="mb-4">
+          <label className="block mb-1">Company ID:</label>
+          <input
+            type="text"
+            name="seller ID"
+            value={food.sellerID}
+            onChange={handleInputChange}
+            required
+            className="w-full border border-gray-300 px-3 py-2 rounded-lg"
+          />
+        </div>
+
+
+
+
+
+
         <div className="mb-4">
           <label className="block mb-1">Price:</label>
           <input
@@ -79,6 +110,7 @@ const NewFoodForm: React.FC = () => {
             name="price"
             value={food.price}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>
@@ -89,6 +121,7 @@ const NewFoodForm: React.FC = () => {
             name="latitude"
             value={food.latitude}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>
@@ -99,6 +132,7 @@ const NewFoodForm: React.FC = () => {
             name="longitude"
             value={food.longitude}
             onChange={handleInputChange}
+            required
             className="w-full border border-gray-300 px-3 py-2 rounded-lg"
           />
         </div>

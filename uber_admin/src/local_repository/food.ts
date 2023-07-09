@@ -1,8 +1,7 @@
-import { Food } from "../app/page";
 
 const API = (x: string) => `/api/${x}`;
 
-export async function add(food: Food) {
+export async function add(food: any) {
   // post request with food object
   const response = await fetch(API("addfood"), {
     method: "POST",

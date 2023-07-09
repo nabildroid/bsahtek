@@ -35,11 +35,11 @@ export async function GET(
 
   const rows = await db
     .select()
-    .from(Schema.foodTable)
+    .from(Schema.bagsTable)
     .where(
       and(
-        between(Schema.foodTable.longitude, boundryX[0], boundryX[1]),
-        between(Schema.foodTable.latitude, boundryY[0], boundryY[1])
+        between(Schema.bagsTable.longitude, boundryX[0], boundryX[1]),
+        between(Schema.bagsTable.latitude, boundryY[0], boundryY[1])
       )
     )
     .execute();
