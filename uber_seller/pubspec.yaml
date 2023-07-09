@@ -32,6 +32,13 @@ dependencies:
     sdk: flutter
   shared_preferences: 
   http: ^0.13.4
+  bloc: 
+  flutter_bloc:
+  equatable:
+  go_router:
+  url_launcher:
+  receive_intent:
+  wakelock:
   
 
 
@@ -40,6 +47,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core: ^2.14.0
   firebase_messaging: ^14.6.4
+  cloud_firestore: ^4.8.2
+  android_intent_plus: ^4.0.1
 
 dev_dependencies:
   flutter_test:
