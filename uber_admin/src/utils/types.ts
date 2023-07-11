@@ -36,8 +36,7 @@ import * as Schema from "@/db/schema";
 
 export const Order = z.object({
   id: z.string(),
-  quantity: z.number(),
-
+  quantity: z.number().min(1).max(10),
   lastUpdate: z.string().transform((a) => new Date(a)),
   createdAt: z.string().transform((a) => new Date(a)),
 
