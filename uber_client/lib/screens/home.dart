@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/models/bag.dart';
+import 'package:uber_client/models/mapSquare.dart';
 import 'package:uber_client/screens/bag_screen.dart';
 import 'package:uber_client/screens/location_selector.dart';
 
@@ -31,6 +33,7 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
+    context.read<AppCubit>().init();
     context.read<BagsQubit>().init();
 
     super.initState();
@@ -76,14 +79,16 @@ class _HomeState extends State<Home> {
                             title: spot.name,
                             subtitle: "Bag 1",
                             chip: "Bag 1",
-                            discountPrice: "12.00",
-                            distance: "15",
-                            picture:
-                                "https://images.unsplash.com/photo-1687220297381-f8fddaa09163?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
-                            price: "15.00",
+                            discountPrice: spot.originalPrice.toString(),
+                            distance: MapSquare.calculateDistance(
+                              LatLng(spot.latitude, spot.longitude),
+                              state.currentLocation!,
+                            ).toStringAsFixed(2),
+                            picture: spot.photo,
+                            price: spot.price.toString(),
                             rating: "4.5",
                             storeName: spot.sellerName,
-                            storePicture: "https://arib.shop/logo1.png",
+                            storePicture: spot.sellerPhoto,
                             onTap: () {},
                           );
                         },
@@ -138,14 +143,14 @@ class _HomeState extends State<Home> {
                       ]
                           .map(
                             (e) => InlineSuggestion(
-                              id: e.idd,
+                              id: e.id.toString(),
                               title: e.sellerName,
                               subtitle: e.name,
-                              image: "https://arib.shop/logo1.png",
-                              thirdtitle: "Nothin gt sace tovade",
+                              image: e.sellerPhoto,
+                              thirdtitle: e.description,
                               quantity: 2,
                               onTap: () {
-                                BagScreen.go(context);
+                                BagScreen.go(context, e);
                               },
                             ),
                           )

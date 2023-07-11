@@ -181,7 +181,7 @@ class BagsQubit extends Cubit<BagsState> {
     print("hello world");
 
     // get cached location and set it right away without fetching any data!
-    final gpsLocation = await _getLocation();
+    final gpsLocation = await getLocation();
     if (gpsLocation == null) return _fetchHot("alger");
 
     emit(state.copyWith(currentLocation: gpsLocation));
@@ -202,7 +202,7 @@ class BagsQubit extends Cubit<BagsState> {
     ));
   }
 
-  Future<LatLng?> _getLocation() async {
+  Future<LatLng?> getLocation() async {
     final refusedToUseLocation =
         !await gps.isPermitted() && !await gps.requestPermission();
 

@@ -95,8 +95,11 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                 ),
                 ListTile(
                   onTap: suggestion.onTap,
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(suggestion.image),
+                  leading: Hero(
+                    tag: "Bag-Seller-Photo${suggestion.id}",
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(suggestion.image),
+                    ),
                   ),
                   title: Text(
                     suggestion.title,
