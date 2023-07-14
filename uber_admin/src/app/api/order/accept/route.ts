@@ -45,25 +45,30 @@ export async function POST(request: Request) {
   // notify sellers Topic;
   if (!order.isPickup) {
     const center = calculateSquareCenter(
-      order.clientAddress.latitude,
       order.clientAddress.longitude,
-      10
+      order.clientAddress.latitude,
+      30
     );
-    const topic = `zone-${center.x}${center.y}`;
-
+    const topic = `zone-${center.y}-${center.x}`;
+    console.log(topic);
     await firebase.messaging().sendToTopic(
       topic,
       {
         notification: {
-          body: `${order.clientName} need a delivery to ${order.clientTown} for ${order.bagName}`,
+          tag: order.id,
+          body: `${order.clientName} need a delivery to  for ${order.bagName}`,
           title: "Delivery to ${order.clientTown}",
         },
 
         data: {
+          type: "orderAccepted",
           order: JSON.stringify(order),
         },
       },
-      {}
+      {
+        contentAvailable: true,
+        priority: "high",
+      }
     );
   }
 
