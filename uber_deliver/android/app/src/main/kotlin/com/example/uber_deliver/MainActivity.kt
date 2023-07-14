@@ -1,4 +1,4 @@
-package com.example.uber_deliver
+package me.laknabil.uber_deliver
 
 import io.flutter.embedding.android.FlutterActivity
 
