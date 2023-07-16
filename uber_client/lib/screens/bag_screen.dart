@@ -104,8 +104,8 @@ class _BagScreenState extends State<BagScreen> {
                                     tag: "Bag-Seller-Photo${widget.bag.id}",
                                     child: CircleAvatar(
                                       radius: 26,
-                                      backgroundImage:
-                                          NetworkImage(widget.bag.sellerPhoto),
+                                      backgroundImage: NetworkImage(
+                                          "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png"),
                                     ),
                                   ),
                                   title: Text(widget.bag.sellerName,

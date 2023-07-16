@@ -19,46 +19,53 @@ import '../repository/direction.dart';
 import '../utils/utils.dart';
 
 class ServiceState extends Equatable {
-  final bool isAvailable;
-  final bool isDelivering;
+  bool isAvailable;
 
-  final List<DeliveryRequest> deliveryRequest;
-  final String? selectedRequest;
+  bool loadingAvailability;
+  DeliveryRequest? runningRequest;
+  bool focusOnRunning;
+
+  DeliveryRequest? selectedRequest;
 
   ServiceState({
     required this.isAvailable,
-    required this.isDelivering,
-    required this.deliveryRequest,
     this.selectedRequest,
+    this.runningRequest,
+    this.loadingAvailability = false,
+    this.focusOnRunning = false,
   });
 
   ServiceState copyWith({
     bool? isAvailable,
-    bool? isDelivering,
-    List<DeliveryRequest>? deliveryRequest,
-    String? selectedRequest,
+    DeliveryRequest? selectedRequest,
+    bool? loadingAvailability,
+    DeliveryRequest? runningRequest,
+    bool? focusOnRunning,
   }) {
     return ServiceState(
       isAvailable: isAvailable ?? this.isAvailable,
-      isDelivering: isDelivering ?? this.isDelivering,
-      deliveryRequest: deliveryRequest ?? this.deliveryRequest,
-      selectedRequest:
-          Utils.nullIsEmpty(selectedRequest ?? this.selectedRequest),
+      runningRequest: runningRequest ?? this.runningRequest,
+      selectedRequest: selectedRequest ?? this.selectedRequest,
+      loadingAvailability: loadingAvailability ?? this.loadingAvailability,
+      focusOnRunning: focusOnRunning ?? this.focusOnRunning,
     );
   }
 
-  ServiceState addDeliveryRequest(DeliveryRequest deliveryRequest) {
-    return copyWith(
-      deliveryRequest: [...this.deliveryRequest, deliveryRequest],
-    );
+  ServiceState unselectRequest() {
+    return copyWith()..selectedRequest = null;
+  }
+
+  ServiceState killRunningRequst() {
+    return copyWith()..runningRequest = null;
   }
 
   @override
   List<Object?> get props => [
         isAvailable,
-        isDelivering,
-        deliveryRequest.map((e) => e.order.id + e.order.clientID).toList(),
-        selectedRequest,
+        runningRequest?.order.id ?? "OrderID",
+        selectedRequest?.order.id ?? "selectedOrderID",
+        loadingAvailability,
+        focusOnRunning,
       ];
 }
 
@@ -66,8 +73,6 @@ class ServiceCubit extends Cubit<ServiceState> {
   ServiceCubit()
       : super(ServiceState(
           isAvailable: false,
-          isDelivering: false,
-          deliveryRequest: [],
         ));
 
   void toggleAvailability(BuildContext context) async {
@@ -78,6 +83,7 @@ class ServiceCubit extends Cubit<ServiceState> {
       await Notifications.notAvailable();
       await Backgrounds.stopAvailability();
     } else {
+      emit(state.copyWith(loadingAvailability: true));
       RemoteMessages().setUpBackgroundMessageHandler();
 
       final location = await getLocation();
@@ -98,45 +104,95 @@ class ServiceCubit extends Cubit<ServiceState> {
       // await Backgrounds.schedulerAvailability();
     }
 
-    emit(state.copyWith(isAvailable: !state.isAvailable));
+    emit(state.copyWith(
+      isAvailable: !state.isAvailable,
+      loadingAvailability: false,
+    ));
   }
 
   static Future<LatLng?> getLocation() async {
-    final refusedToUseLocation = !await GpsRepository().isPermitted() &&
-        !await GpsRepository().requestPermission();
+    final refusedToUseLocation = !await GpsRepository.isPermitted() &&
+        !await GpsRepository.requestPermission();
 
     if (refusedToUseLocation) {
       return null;
     } else {
-      final coords = await GpsRepository().getCurrentPosition();
+      final coords = await GpsRepository.getCurrentPosition();
       if (coords == null) return null;
       return LatLng(coords.dy, coords.dx);
     }
   }
 
-  void startDelivery(DeliveryRequest request) {}
+  void killDelivery() async {
+    await Notifications.notAvailable();
+    emit(state.killRunningRequst());
+    Cache.runningRequest = null;
+    await Backgrounds.stopRunning();
+  }
+
+  void startDelivery(DeliveryRequest request) async {
+    await Notifications.notAvailable();
+    await Backgrounds.stopAvailability();
+
+    await Notifications.onMission(
+      city: request.order.clientTown,
+      clientName: request.order.clientName,
+      distance: request.toClient.distance,
+      duration: request.toClient.duration,
+    );
+
+    await Backgrounds.schedulerRunning();
+
+    await RemoteMessages().unattachFromCells(Cache.attachedCells);
+    Cache.runningRequest = request;
+
+    emit(state.copyWith(
+      isAvailable: false,
+      runningRequest: request,
+      selectedRequest: null,
+    ));
+  }
 
   void unselectRequest() {
-    emit(state.copyWith(selectedRequest: ""));
+    emit(state.unselectRequest());
+  }
+
+  void unfocusFromRunning() {
+    emit(state.copyWith(focusOnRunning: false));
+  }
+
+  void focusOnRunning() {
+    emit(state.copyWith(focusOnRunning: true));
   }
 
   void init(BuildContext context) {
-    emit(state.copyWith(
-      deliveryRequest: Cache.deliveryRequests,
-    ));
+    print("Initigng the service CUbit");
+
+    bool keepWorking = true;
+    // for this hack to work, it init must be the last one in the loading Init phase!
+    Future.delayed(Duration(milliseconds: 500)).then((_) {
+      if (keepWorking == false) return;
+      emit(state.copyWith(
+        runningRequest: Cache.runningRequest,
+        focusOnRunning: true,
+      ));
+    });
 
     RemoteMessages().listenToMessages((message, fromForground) async {
       if (!message.data.containsKey("type") ||
           message.data["type"] != "orderAccepted") return;
 
       if (Cache.availabilityLocation == null) return;
+      keepWorking = false;
 
       if (fromForground) {
         final request =
             await handleAcceptedOrderNoti(message, Cache.availabilityLocation!);
-        emit(state.addDeliveryRequest(request).copyWith(
-              selectedRequest: request.order.id,
-            ));
+
+        emit(state.copyWith(
+          selectedRequest: request,
+        ));
+
         return;
       } else {
         final order = Order.fromJson(jsonDecode(message.data["order"]));
@@ -145,12 +201,22 @@ class ServiceCubit extends Cubit<ServiceState> {
         while (true) {
           final request = Cache.getDeliveryRequestData(order.id);
           if (request != null) {
-            emit(state.addDeliveryRequest(request).copyWith(
-                  selectedRequest: request.order.id,
-                ));
+            emit(state.copyWith(
+              selectedRequest: request,
+            ));
             return;
           }
           await Future.delayed(Duration(seconds: 1));
+        }
+      }
+    });
+
+    Notifications.onClick((type) {
+      if (type == "onMission") {
+        if (state.focusOnRunning == false) {
+          emit(state.copyWith(
+            focusOnRunning: true,
+          ));
         }
       }
     });

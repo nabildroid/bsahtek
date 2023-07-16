@@ -30,18 +30,15 @@ export async function POST(request: Request) {
     tracking.sellerLocation
   );
 
-  console.log({ distanceToClient, distanceToSeller });
-
-  if (distanceToClient > -1 && distanceToClient < 1) {
+  if (distanceToClient > 0.1 && distanceToClient < 1) {
     update.toClient = true;
 
-    console.log("notify client");
     await EndDelivery(tracking.clientID);
 
     // get client token
   }
 
-  if (distanceToSeller > -1 && distanceToSeller < 1) {
+  if (distanceToSeller > 0.1 && distanceToSeller < 1) {
     update.toSeller = true;
     console.log("notify Seller");
   }
@@ -64,7 +61,6 @@ export async function EndDelivery(clientID: string) {
 
   const data = query.data();
 
-  console.log({ data });
   if (data) {
     const clientToken = data.notiID;
 
@@ -82,7 +78,6 @@ export async function EndDelivery(clientID: string) {
         },
       },
       data: {
-        click_action: "FLUTTER_NOTIFICATION_CLICK",
         type: "delivery_end",
       },
     });

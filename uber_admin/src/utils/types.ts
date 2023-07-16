@@ -85,6 +85,21 @@ export const Order = z.object({
 
 export type IOrder = z.infer<typeof Order>;
 
+export const StartDeliveryOrder = Order.extend({
+  deliveryManID: z.string(),
+  deliveryPhone: z.string(),
+  deliveryName: z.string(),
+  isPickup: z.literal(false),
+  deliveryAddress: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+}).omit({
+  isDelivered: true,
+  deliveryPath: true,
+  reportId: true,
+});
+
 export const AcceptOrder = Order.extend({
   acceptedAt: z.string().transform((a) => new Date(a)),
 }).omit({
@@ -128,3 +143,48 @@ export const NewFood = z.object({
   originalPrice: z.number(),
   price: z.number(),
 } satisfies Partial<{ [key in keyof typeof Schema.bagsTable]: any }>);
+
+export const Track = z.object({
+  id: z.string(),
+  orderID: z.string(),
+  deliveryManID: z.string(),
+  clientID: z.string(),
+  deliverLocation: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+  sellerLocation: z.object({
+    // being used to calculate distance and then notify the seller!
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+  clientLocation: z.object({
+    // being used to calculate distance and then notify the seller!
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+  toClient: z.boolean(), // delivery need to confirm
+  toSeller: z.boolean(), // seller need to confirm
+
+  path: z
+    .array(
+      z.object({
+        latitude: z.number(),
+        longitude: z.number(),
+      })
+    )
+    .default([]),
+
+  updatedAt: z.string().transform((a) => new Date(a)),
+  createdAt: z.string().transform((a) => new Date(a)),
+});
+
+export type ITrack = z.infer<typeof Track>;
+
+export const Tracking = Track.omit({
+  createdAt: true,
+  path: true,
+  toClient: true,
+  toSeller: true,
+  updatedAt: true,
+});

@@ -23,6 +23,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts","src/db/**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts","src/db/**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/api/order/delivery/track"],
   "exclude": ["node_modules"]
 }

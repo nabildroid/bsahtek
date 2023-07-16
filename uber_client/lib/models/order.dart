@@ -12,9 +12,11 @@ class Order {
   final String clientPhone;
   final LatLng clientAddress;
   final String clientTown;
+  final bool isPickup;
 
   final String sellerID;
   final LatLng sellerAddress;
+  final DateTime? acceptedAt;
 
   final String bagID;
   final String bagName;
@@ -29,8 +31,6 @@ class Order {
   final String? deliveryManID;
   final String? deliveryPhone;
   final String? deliveryName;
-  final DateTime? acceptedAt;
-  final bool isPickup;
 
   const Order({
     required this.id,

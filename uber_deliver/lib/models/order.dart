@@ -1,5 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
+import 'delivery_man.dart';
+
 class Order {
   final String id;
   final int quantity;
@@ -12,9 +14,11 @@ class Order {
   final String clientPhone;
   final LatLng clientAddress;
   final String clientTown;
+  final bool isPickup;
 
   final String sellerID;
   final LatLng sellerAddress;
+  final DateTime? acceptedAt;
 
   final String bagID;
   final String bagName;
@@ -25,12 +29,11 @@ class Order {
   final String? reportId;
 
   final bool? isDelivered;
-  final Map<String, LatLng>? deliveryPath;
+  final Map<String, LatLng>? deliveryPath; // todo deleted!!
   final String? deliveryManID;
   final String? deliveryPhone;
   final String? deliveryName;
-  final DateTime? acceptedAt;
-  final bool isPickup;
+  final LatLng? deliveryAddress;
 
   const Order({
     required this.id,
@@ -54,6 +57,7 @@ class Order {
     required this.sellerAddress,
     this.deliveryManID,
     this.deliveryPhone,
+    this.deliveryAddress,
     this.deliveryName,
     this.acceptedAt,
     required this.isPickup,
@@ -117,7 +121,7 @@ class Order {
       quantity: json['quantity'],
       lastUpdate: DateTime.parse(json['lastUpdate']),
       reportId: json['reportId'],
-      clientTown: json['clientTown'],
+      clientTown: json['clientTown'] ?? "todo!!",
       isDelivered: json['isDelivered'],
       deliveryPath: json['deliveryPath']?.map<String, LatLng>(
         (key, value) => MapEntry(
@@ -140,5 +144,18 @@ class Order {
           : null,
       isPickup: json['isPickup'] ?? false,
     );
+  }
+
+  Order setDeliver(DeliveryMan delivery, LatLng address) {
+    final data = toJson();
+    data['deliveryManID'] = delivery.id;
+    data['deliveryPhone'] = delivery.phone;
+    data['deliveryName'] = delivery.name;
+    data['deliveryAddress'] = {
+      'latitude': address.latitude,
+      'longitude': address.longitude,
+    };
+
+    return Order.fromJson(data);
   }
 }

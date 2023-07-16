@@ -9,6 +9,37 @@ abstract class Notifications {
     await _instance.cancelNotificationsByChannelKey("availablity");
   }
 
+  static Future<void> onMission({
+    required String city,
+    required String clientName,
+    required double distance,
+    required Duration duration,
+  }) async {
+    await notAvailable();
+
+    await _instance.createNotification(
+      content: NotificationContent(
+        id: 10,
+        channelKey: "running",
+        title: "On Mission",
+        fullScreenIntent: true,
+        body: "You are delivering to $clientName",
+        notificationLayout: NotificationLayout.Default,
+        wakeUpScreen: true,
+        displayOnForeground: true,
+        displayOnBackground: true,
+        showWhen: true,
+        autoDismissible: false,
+        criticalAlert: true,
+        locked: true,
+        ticker: "$city",
+        payload: {
+          "type": "onMission",
+        },
+      ),
+    );
+  }
+
   static Future<void> available({
     required String city,
   }) async {
@@ -107,5 +138,13 @@ abstract class Notifications {
       channelName: 'Running Delivery',
       channelDescription: 'Notifications for when you are running a delivery',
     ));
+  }
+
+  static onClick(Function(String type) callback) {
+    _instance.actionStream.listen((event) {
+      if (event.payload?.containsKey("type") ?? false) {
+        callback(event.payload!["type"].toString());
+      }
+    });
   }
 }

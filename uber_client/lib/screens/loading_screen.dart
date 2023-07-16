@@ -22,7 +22,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void bingBang() async {
     await context.read<AppCubit>().init();
     if (context.mounted) {
-      await context.read<BagsQubit>().init();
+      context.read<BagsQubit>().init();
     }
 
     Navigator.of(context).pushReplacement(

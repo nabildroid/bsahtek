@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_client/cubits/app_cubit.dart';
+import 'package:uber_client/repositories/direction.dart';
 
-import '../models/delivery_request.dart';
-import '../repository/direction.dart';
+import '../models/order.dart';
+import '../models/tracking.dart';
+import '../repositories/server.dart';
 
 class RunningScreen extends StatefulWidget {
-  final DeliveryRequest deliveryRequest;
+  final Order order;
 
   RunningScreen({
     Key? key,
-    required this.deliveryRequest,
+    required this.order,
   }) : super(key: key);
 
   @override
@@ -22,33 +24,64 @@ class RunningScreen extends StatefulWidget {
 class _RunningScreenState extends State<RunningScreen> {
   final MapController _mapController = MapController();
 
-  List<LatLng> get directionPoints => [
-        ...widget.deliveryRequest.toSeller.points,
-        ...widget.deliveryRequest.toClient.points
-      ];
+  Tracking? tracking;
+
+  VoidCallback? tobeDisposed;
+
+  List<LatLng> toClient = [];
+  List<LatLng> toSeller = [];
+
+  @override
+  void dispose() {
+    tobeDisposed?.call();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+
+    tobeDisposed = Server().listenToTrack(widget.order, (tracking) {
+      if (tracking.toClient) {
+        exit();
+      } else {
+        updateTracking(tracking);
+      }
+    });
   }
 
-  void exit() {
-    context.read<ServiceCubit>().unfocusFromRunning();
-    Navigator.of(context).pop();
-  }
+  void updateTracking(Tracking tracking) async {
+    final directions = await Future.wait([
+      DirectionRepository.direction(
+        LatLng(tracking.deliverLocation.latitude,
+            tracking.deliverLocation.longitude),
+        LatLng(tracking.sellerLocation.latitude,
+            tracking.sellerLocation.longitude),
+      ),
+      DirectionRepository.direction(
+        LatLng(tracking.sellerLocation.latitude,
+            tracking.sellerLocation.longitude),
+        LatLng(tracking.clientLocation.latitude,
+            tracking.clientLocation.longitude),
+      )
+    ]);
+    if (!mounted) return;
 
-  void stop() {
-    context.read<ServiceCubit>().killDelivery();
-    Navigator.of(context).pop();
+    setState(() {
+      this.tracking = tracking;
+      toSeller = directions[0].points;
+      toClient = directions[1].points;
+      initMap();
+    });
   }
 
   void initMap() {
+    final points = [...toClient, ...toSeller];
+    if (points.isEmpty) return;
     final zoom = _mapController.centerZoomFitBounds(
-      LatLngBounds.fromPoints(directionPoints),
+      LatLngBounds.fromPoints(points),
       options: FitBoundsOptions(
-        padding: EdgeInsets.symmetric(
-          horizontal: 20,
-        ).copyWith(
+        padding: EdgeInsets.symmetric(horizontal: 20).copyWith(
           top: 100,
           bottom: MediaQuery.of(context).size.height * .5,
         ),
@@ -63,12 +96,21 @@ class _RunningScreenState extends State<RunningScreen> {
         zoom.zoom);
   }
 
+  void exit() {
+    context.read<AppCubit>().unFocusOnRunning();
+    Navigator.of(context).pop();
+  }
+
+  void stop() {
+    exit();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {
-        context.read<ServiceCubit>().unfocusFromRunning();
-        return Future.value(true);
+      onWillPop: () async {
+        context.read<AppCubit>().unFocusOnRunning();
+        return true;
       },
       child: Scaffold(
         body: Stack(
@@ -91,7 +133,7 @@ class _RunningScreenState extends State<RunningScreen> {
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: directionPoints,
+                      points: [...toSeller, ...toClient],
                       strokeWidth: 4,
                       color: Colors.blueGrey.shade900,
                     ),
@@ -99,27 +141,30 @@ class _RunningScreenState extends State<RunningScreen> {
                 ),
                 CircleLayer(
                   circles: [
-                    CircleMarker(
-                      point: directionPoints.first,
-                      color: Colors.green.shade400,
-                      borderColor: Colors.blueGrey.shade900,
-                      borderStrokeWidth: 4,
-                      radius: 8,
-                    ),
-                    CircleMarker(
-                      point: widget.deliveryRequest.toSeller.points.last,
-                      color: Colors.green.shade200,
-                      borderColor: Colors.blueGrey.shade900,
-                      borderStrokeWidth: 2,
-                      radius: 6,
-                    ),
-                    CircleMarker(
-                      point: directionPoints.last,
-                      color: Colors.green.shade400,
-                      borderColor: Colors.blueGrey.shade900,
-                      borderStrokeWidth: 4,
-                      radius: 8,
-                    ),
+                    if (toClient.isNotEmpty)
+                      CircleMarker(
+                        point: toClient.last,
+                        color: Colors.green.shade400,
+                        borderColor: Colors.blueGrey.shade900,
+                        borderStrokeWidth: 4,
+                        radius: 8,
+                      ),
+                    if (toSeller.isNotEmpty)
+                      CircleMarker(
+                        point: toSeller.first,
+                        color: Colors.green.shade400,
+                        borderColor: Colors.blueGrey.shade900,
+                        borderStrokeWidth: 4,
+                        radius: 8,
+                      ),
+                    if (toSeller.isNotEmpty)
+                      CircleMarker(
+                        point: toSeller.last,
+                        color: Colors.green.shade200,
+                        borderColor: Colors.blueGrey.shade900,
+                        borderStrokeWidth: 2,
+                        radius: 6,
+                      ),
                   ],
                 ),
               ],
@@ -131,7 +176,9 @@ class _RunningScreenState extends State<RunningScreen> {
                   backgroundColor: Colors.blueGrey.shade900,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: exit,
+                onPressed: () {
+                  exit();
+                },
                 icon: Icon(Icons.arrow_back),
                 label: Text("Back"),
               ),
@@ -143,7 +190,9 @@ class _RunningScreenState extends State<RunningScreen> {
                   backgroundColor: Colors.blueGrey.shade900,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: stop,
+                onPressed: () {
+                  exit();
+                },
                 icon: Icon(Icons.stop),
                 label: Text("Stop (test)"),
               ),
@@ -154,8 +203,8 @@ class _RunningScreenState extends State<RunningScreen> {
                 tag: "running",
                 child: AcceptedOrderPanel(
                   deliveryAt: TimeOfDay.now(),
-                  clientName: widget.deliveryRequest.order.clientName,
-                  clientPhone: "+213 555 555 555",
+                  deliverName: widget.order.deliveryName!,
+                  deliverPhone: widget.order.deliveryPhone!,
                   clientPhoto:
                       "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
                   sellerName: "seller Name",
@@ -176,10 +225,10 @@ class AcceptedOrderPanel extends StatelessWidget {
   final TimeOfDay deliveryAt;
   final int stage = 0;
 
-  final String clientName;
+  final String deliverName;
   final String? sellerName;
 
-  final String clientPhone;
+  final String deliverPhone;
   final String? sellerPhone;
 
   final String clientPhoto;
@@ -188,11 +237,11 @@ class AcceptedOrderPanel extends StatelessWidget {
   const AcceptedOrderPanel({
     super.key,
     required this.deliveryAt,
-    required this.clientName,
+    required this.deliverName,
     this.sellerName,
     this.sellerPhone,
     this.sellerPhoto,
-    required this.clientPhone,
+    required this.deliverPhone,
     required this.clientPhoto,
   });
 
@@ -222,9 +271,7 @@ class AcceptedOrderPanel extends StatelessWidget {
           height: 8,
         ),
         Text(
-          sellerName != null
-              ? "Seller and the Client are waiting for you"
-              : "Your order is already on its way to you!",
+          "Your order is already on its way to you!",
           style: TextStyle(
             color: Colors.white70,
           ),
@@ -252,15 +299,13 @@ class AcceptedOrderPanel extends StatelessWidget {
           textColor: Colors.white,
           leading: CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage(
-              clientPhoto,
-            ),
+            child: Icon(Icons.delivery_dining),
           ),
           title: Text(
-            clientName,
+            deliverName,
           ),
           subtitle: Text(
-            "Client",
+            "Deliver",
             style: TextStyle(
               color: Colors.white70,
             ),
@@ -268,20 +313,6 @@ class AcceptedOrderPanel extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.white70,
-                child: IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.gps_fixed_outlined,
-                    color: Colors.blueGrey.shade900,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 8,
-              ),
               CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.white,
@@ -302,7 +333,7 @@ class AcceptedOrderPanel extends StatelessWidget {
             leading: CircleAvatar(
               radius: 20,
               backgroundImage: NetworkImage(
-                sellerPhoto!,
+                "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
               ),
             ),
             title: Text(
@@ -318,20 +349,6 @@ class AcceptedOrderPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white70,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.gps_fixed_outlined,
-                      color: Colors.blueGrey.shade900,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.white,
                     child: IconButton(
@@ -346,100 +363,6 @@ class AcceptedOrderPanel extends StatelessWidget {
             style: ListTileStyle.drawer,
           ),
       ]),
-    );
-  }
-}
-
-class DeliveryRequestPanel extends StatelessWidget {
-  final int deliveryFromDuration;
-  final int deliveryFromDistance;
-
-  final int deliveryToDuration;
-  final int deliveryToDistance;
-
-  final int pricePerKM;
-
-  final int totalPrice;
-
-  const DeliveryRequestPanel({
-    super.key,
-    required this.deliveryFromDuration,
-    required this.deliveryFromDistance,
-    required this.deliveryToDuration,
-    required this.deliveryToDistance,
-    required this.pricePerKM,
-    required this.totalPrice,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(20).copyWith(
-        bottom: 0,
-      ),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.shade900,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver from"),
-            trailing:
-                Text("${deliveryFromDistance} km ${deliveryFromDuration} min"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver to"),
-            trailing:
-                Text("${deliveryToDistance} km ${deliveryToDistance} min"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver Pricing"),
-            trailing: Text("\$${pricePerKM} / km"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          Divider(
-            color: Colors.white54,
-          ),
-          ListTile(
-            textColor: Colors.white,
-            style: ListTileStyle.drawer,
-            title: Text("Total"),
-            trailing: Text("\$${totalPrice}",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Accept",
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    shape: StadiumBorder(),
-                  ),
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
     );
   }
 }

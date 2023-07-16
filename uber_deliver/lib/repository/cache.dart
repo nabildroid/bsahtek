@@ -22,6 +22,22 @@ abstract class Cache {
     return isIt;
   }
 
+  static DeliveryRequest? get runningRequest {
+    final data = _instance.getString("deliveryRequest");
+    if (data == null) return null;
+
+    final info = jsonDecode(data);
+    return DeliveryRequest.fromJson(info);
+  }
+
+  static set runningRequest(DeliveryRequest? request) {
+    if (request != null) {
+      _instance.setString("deliveryRequest", jsonEncode(request.toJson()));
+    } else {
+      _instance.remove("deliveryRequest");
+    }
+  }
+
   static DeliveryMan? get getDeliveryMan {
     final data = _instance.getString("deliveryManID");
     if (data == null) return null;
@@ -41,22 +57,6 @@ abstract class Cache {
 
   static set attachedCells(List<String> cells) {
     _instance.setStringList("cellAttachments", cells);
-  }
-
-  static Track? get lastTrack {
-    final data = _instance.getString("lastTrack");
-    if (data == null) return null;
-
-    final info = jsonDecode(data);
-    return Track.fromJson(info);
-  }
-
-  static set lastTrack(Track? track) {
-    if (track != null) {
-      _instance.setString("lastTrack", jsonEncode(track.toJson()));
-    } else {
-      _instance.remove("lastTrack");
-    }
   }
 
   static LatLng? get availabilityLocation {
@@ -87,16 +87,6 @@ abstract class Cache {
     if (info[orderID] == null) return null;
 
     return DeliveryRequest.fromJson(info[orderID]);
-  }
-
-  static List<DeliveryRequest> get deliveryRequests {
-    final data = _instance.getString("deliveryRequestData");
-    if (data == null) return [];
-
-    final info = jsonDecode(data);
-    return info.values
-        .map<DeliveryRequest>((e) => DeliveryRequest.fromJson(e))
-        .toList();
   }
 
   static Future<void> saveDeliveryRequestData(DeliveryRequest request) async {

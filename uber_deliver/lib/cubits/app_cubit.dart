@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:uber_deliver/repository/cache.dart';
 import 'package:uber_deliver/repository/messages_remote.dart';
 
 import '../models/delivery_man.dart';
@@ -22,8 +23,10 @@ class AppCubit extends Cubit<AppState> {
   AppCubit() : super(AppState());
 
   Future<void> init() async {
+    await RemoteMessages().initMessages();
+    if (!Cache.isFirstRun) return;
     const userID = "YUVjVIca2XHcryIT5KAF";
-    final fcmToken = await RemoteMessages().initMessages();
+    final fcmToken = await RemoteMessages().getToken();
 
     await Server().assignNotiIDtoDeliveryMan(userID, fcmToken);
   }

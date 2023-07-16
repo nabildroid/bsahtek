@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/screens/running.dart';
 import 'package:uber_deliver/screens/runningNoti.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,22 +24,31 @@ class _HomeScreenState extends State<HomeScreen> {
     final service = context.read<ServiceCubit>();
 
     return BlocListener<ServiceCubit, ServiceState>(
-      listenWhen: (o, n) => o.selectedRequest != n.selectedRequest,
+      listenWhen: (o, n) =>
+          (o.selectedRequest != n.selectedRequest) ||
+          o.focusOnRunning != n.focusOnRunning ||
+          o.runningRequest != n.runningRequest,
       listener: (ctx, state) {
-        if (state.selectedRequest == null) return;
-
-        final selected = state.deliveryRequest
-            .firstWhere((element) => element.order.id == state.selectedRequest);
-        Navigator.of(ctx).push(
-          MaterialPageRoute(
-            builder: (ctx) => BlocProvider.value(
-              value: service,
-              child: RunningNotiScreen(
-                deliveryRequest: selected,
+        if (state.focusOnRunning && state.runningRequest != null) {
+          Navigator.of(ctx).push(
+            MaterialPageRoute(
+              builder: (ctx) => RunningScreen(
+                deliveryRequest: state.runningRequest!,
               ),
             ),
-          ),
-        );
+          );
+          return;
+        } else if (state.selectedRequest != null) {
+          Navigator.of(ctx).push(
+            MaterialPageRoute(
+              builder: (ctx) => RunningNotiScreen(
+                deliveryRequest: state.selectedRequest!,
+              ),
+            ),
+          );
+
+          return;
+        }
       },
       child: SafeArea(
         child: Scaffold(
@@ -68,6 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     BlocBuilder<ServiceCubit, ServiceState>(
                         builder: (context, state) {
                       return Card(
+                        isLoading: state.loadingAvailability ||
+                            state.runningRequest != null,
                         id: "defzefze",
                         isAvailable: state.isAvailable,
                         onSwitch: () => service.toggleAvailability(context),
@@ -133,6 +145,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+          floatingActionButton: BlocBuilder<ServiceCubit, ServiceState>(
+            builder: (ctx, state) {
+              if (state.runningRequest != null) {
+                return FloatingActionButton(
+                  heroTag: "running",
+                  onPressed: () => ctx.read<ServiceCubit>().focusOnRunning(),
+                  child: Icon(Icons.delivery_dining),
+                );
+              }
+
+              return SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -143,11 +168,13 @@ class Card extends StatelessWidget {
   final String id;
   final bool isAvailable;
   final VoidCallback onSwitch;
+  final bool isLoading;
   const Card({
     required this.id,
     required this.isAvailable,
     required this.onSwitch,
     super.key,
+    required this.isLoading,
   });
 
   @override
@@ -156,83 +183,96 @@ class Card extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: AspectRatio(
         aspectRatio: 16 / 10,
-        child: Material(
-          color: Colors.transparent,
-          child: Hero(
-            tag: "availability",
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                // use gradient instead
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.blueGrey.shade900,
-                    Colors.blueGrey.shade500,
-                  ],
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomCenter,
-                ),
-                // color: Colors.blueGrey.shade900,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: "FOODGOOD",
-                      children: [
-                        TextSpan(
-                          text: "#$id",
-                          style: TextStyle(
-                            color: Colors.blueGrey.shade300,
-                          ),
-                        )
+        child: Hero(
+          tag: "availability",
+          child: Material(
+            color: Colors.transparent,
+            child: AnimatedScale(
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeInOutExpo,
+              scale: isLoading ? 0.9 : 1,
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 500),
+                opacity: isLoading ? 0.8 : 1,
+                curve: Curves.easeInOutExpo,
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    // use gradient instead
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blueGrey.shade900,
+                        Colors.blueGrey.shade500,
                       ],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: "monospace",
-                      ),
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomCenter,
                     ),
+                    // color: Colors.blueGrey.shade900,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: Duration(seconds: 1),
-                          child: isAvailable
-                              ? Text(
-                                  "Available for Delivery orders from Stores/Shops to Customers",
-                                  softWrap: true,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ))
-                              : Text(
-                                  "You are not available for delivery orders, so you won't receive any orders",
-                                  softWrap: true,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                      RichText(
+                        text: TextSpan(
+                          text: "FOODGOOD",
+                          children: [
+                            TextSpan(
+                              text: "#$id",
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade300,
+                              ),
+                            )
+                          ],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: "monospace",
+                          ),
                         ),
                       ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Switch(
-                          value: isAvailable,
-                          onChanged: (_) {
-                            onSwitch();
-                          }),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: AnimatedSwitcher(
+                              duration: Duration(seconds: 1),
+                              child: isAvailable
+                                  ? Text(
+                                      "Available for Delivery orders from Stores/Shops to Customers",
+                                      softWrap: true,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ))
+                                  : Text(
+                                      "You are not available for delivery orders, so you won't receive any orders",
+                                      softWrap: true,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          IgnorePointer(
+                            ignoring: isLoading,
+                            child: Switch(
+                                value: isAvailable,
+                                onChanged: (_) {
+                                  onSwitch();
+                                }),
+                          ),
+                        ],
+                      )
                     ],
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
           ),

@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/repository/server.dart';
 
+import '../models/delivery_man.dart';
 import '../models/delivery_request.dart';
+import '../repository/cache.dart';
 import '../repository/direction.dart';
 
 class RunningNotiScreen extends StatefulWidget {
@@ -22,6 +25,8 @@ class RunningNotiScreen extends StatefulWidget {
 class _RunningNotiScreenState extends State<RunningNotiScreen> {
   final MapController _mapController = MapController();
 
+  Function()? tobeDisposed;
+
   List<LatLng> get directionPoints => [
         ...widget.deliveryRequest.toSeller.points,
         ...widget.deliveryRequest.toClient.points
@@ -30,6 +35,43 @@ class _RunningNotiScreenState extends State<RunningNotiScreen> {
   @override
   void initState() {
     super.initState();
+
+    Server().listenToOrder(widget.deliveryRequest.order.id, (updates) {
+      if (updates.deliveryManID != null) {
+        // exit();
+      }
+    }).then((stop) => tobeDisposed = stop);
+  }
+
+  void accept() async {
+    tobeDisposed?.call();
+
+    // todo consider moving this to the cubit!
+    await Server().setDeliver(
+      DeliveryMan(
+        id: "zfefzefz",
+        name: "Nabil",
+        phone: "+21356565656",
+        photo: "https://arib.shop/logo1.png",
+      ),
+      widget.deliveryRequest.order,
+      Cache.availabilityLocation!, // dangerous
+    );
+
+    context.read<ServiceCubit>().startDelivery(widget.deliveryRequest);
+
+    exit();
+  }
+
+  void exit() {
+    context.read<ServiceCubit>().unselectRequest();
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void dispose() {
+    tobeDisposed?.call();
+    super.dispose();
   }
 
   void initMap() {
@@ -55,106 +97,116 @@ class _RunningNotiScreenState extends State<RunningNotiScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              onMapReady: initMap,
-              rotation: 0,
-              enableMultiFingerGestureRace: false,
-              interactiveFlags: InteractiveFlag.none,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+    return WillPopScope(
+      onWillPop: () {
+        context.read<ServiceCubit>().unselectRequest();
+        return Future.value(true);
+      },
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                onMapReady: initMap,
+                rotation: 0,
+                enableMultiFingerGestureRace: false,
+                interactiveFlags: InteractiveFlag.none,
               ),
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: directionPoints,
-                    strokeWidth: 4,
-                    color: Colors.blueGrey.shade900,
-                  ),
-                ],
-              ),
-              CircleLayer(
-                circles: [
-                  CircleMarker(
-                    point: directionPoints.first,
-                    color: Colors.green.shade400,
-                    borderColor: Colors.blueGrey.shade900,
-                    borderStrokeWidth: 4,
-                    radius: 8,
-                  ),
-                  CircleMarker(
-                    point: widget.deliveryRequest.toSeller.points.last,
-                    color: Colors.green.shade200,
-                    borderColor: Colors.blueGrey.shade900,
-                    borderStrokeWidth: 2,
-                    radius: 6,
-                  ),
-                  CircleMarker(
-                    point: directionPoints.last,
-                    color: Colors.green.shade400,
-                    borderColor: Colors.blueGrey.shade900,
-                    borderStrokeWidth: 4,
-                    radius: 8,
-                  ),
-                ],
-              )
-            ],
-          ),
-          Align(
-            alignment: Alignment(-.9, -.9),
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.blueGrey.shade900,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {},
-              icon: Icon(Icons.arrow_back),
-              label: Text("Back"),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 600),
-              switchInCurve: Curves.easeInOutExpo,
-              switchOutCurve: Curves.easeInOutExpo,
-              child: true
-                  ? DeliveryRequestPanel(
-                      deliveryFromDistance:
-                          (widget.deliveryRequest.toSeller.distance / 1000)
-                              .round(),
-                      deliveryFromDuration:
-                          widget.deliveryRequest.toSeller.duration.inMinutes,
-                      deliveryToDistance:
-                          (widget.deliveryRequest.toClient.distance / 1000)
-                              .round(),
-                      deliveryToDuration:
-                          widget.deliveryRequest.toClient.duration.inMinutes,
-                      pricePerKM: 15,
-                      totalPrice: 25,
-                    )
-                  : AcceptedOrderPanel(
-                      deliveryAt: TimeOfDay.now(),
-                      clientName: "John Doe",
-                      clientPhone: "+213 555 555 555",
-                      clientPhoto:
-                          "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
-                      sellerName: "John Doe",
-                      sellerPhone: "+213 555 555 555",
-                      sellerPhoto:
-                          "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.app',
+                ),
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: directionPoints,
+                      strokeWidth: 4,
+                      color: Colors.blueGrey.shade900,
                     ),
+                  ],
+                ),
+                CircleLayer(
+                  circles: [
+                    CircleMarker(
+                      point: directionPoints.first,
+                      color: Colors.green.shade400,
+                      borderColor: Colors.blueGrey.shade900,
+                      borderStrokeWidth: 4,
+                      radius: 8,
+                    ),
+                    CircleMarker(
+                      point: widget.deliveryRequest.toSeller.points.last,
+                      color: Colors.green.shade200,
+                      borderColor: Colors.blueGrey.shade900,
+                      borderStrokeWidth: 2,
+                      radius: 6,
+                    ),
+                    CircleMarker(
+                      point: directionPoints.last,
+                      color: Colors.green.shade400,
+                      borderColor: Colors.blueGrey.shade900,
+                      borderStrokeWidth: 4,
+                      radius: 8,
+                    ),
+                  ],
+                )
+              ],
             ),
-          )
-        ],
+            Align(
+              alignment: Alignment(-.9, -.9),
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.blueGrey.shade900,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  exit();
+                },
+                icon: Icon(Icons.arrow_back),
+                label: Text("Back"),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: AnimatedSwitcher(
+                duration: Duration(milliseconds: 600),
+                switchInCurve: Curves.easeInOutExpo,
+                switchOutCurve: Curves.easeInOutExpo,
+                child: true
+                    ? DeliveryRequestPanel(
+                        accept: accept,
+                        deliveryFromDistance:
+                            (widget.deliveryRequest.toSeller.distance / 1000)
+                                .round(),
+                        deliveryFromDuration:
+                            widget.deliveryRequest.toSeller.duration.inMinutes,
+                        deliveryToDistance:
+                            (widget.deliveryRequest.toClient.distance / 1000)
+                                .round(),
+                        deliveryToDuration:
+                            widget.deliveryRequest.toClient.duration.inMinutes,
+                        pricePerKM: 15,
+                        totalPrice: 25,
+                      )
+                    : AcceptedOrderPanel(
+                        deliveryAt: TimeOfDay.now(),
+                        clientName: "John Doe",
+                        clientPhone: "+213 555 555 555",
+                        clientPhoto:
+                            "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
+                        sellerName: "John Doe",
+                        sellerPhone: "+213 555 555 555",
+                        sellerPhoto:
+                            "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
+                      ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -349,6 +401,8 @@ class DeliveryRequestPanel extends StatelessWidget {
 
   final int totalPrice;
 
+  final VoidCallback accept;
+
   const DeliveryRequestPanel({
     super.key,
     required this.deliveryFromDuration,
@@ -357,86 +411,81 @@ class DeliveryRequestPanel extends StatelessWidget {
     required this.deliveryToDistance,
     required this.pricePerKM,
     required this.totalPrice,
+    required this.accept,
   });
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () {
-        context.read<ServiceCubit>().unselectRequest();
-        return Future.value(true);
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: Hero(
-          tag: "availability",
-          child: Container(
-            margin: const EdgeInsets.all(20).copyWith(
-              bottom: 0,
+    return Material(
+      color: Colors.transparent,
+      child: Hero(
+        tag: "availability",
+        child: Container(
+          margin: const EdgeInsets.all(20).copyWith(
+            bottom: 0,
+          ),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey.shade900,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
             ),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey.shade900,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                textColor: Colors.white70,
+                title: Text("Deliver from"),
+                trailing: Text(
+                    "${deliveryFromDistance} km ${deliveryFromDuration} min"),
+                style: ListTileStyle.drawer,
+                visualDensity: VisualDensity.compact,
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  textColor: Colors.white70,
-                  title: Text("Deliver from"),
-                  trailing: Text(
-                      "${deliveryFromDistance} km ${deliveryFromDuration} min"),
-                  style: ListTileStyle.drawer,
-                  visualDensity: VisualDensity.compact,
-                ),
-                ListTile(
-                  textColor: Colors.white70,
-                  title: Text("Deliver to"),
-                  trailing: Text(
-                      "${deliveryToDistance} km ${deliveryToDuration} min"),
-                  style: ListTileStyle.drawer,
-                  visualDensity: VisualDensity.compact,
-                ),
-                ListTile(
-                  textColor: Colors.white70,
-                  title: Text("Deliver Pricing"),
-                  trailing: Text("\$${pricePerKM} / km"),
-                  style: ListTileStyle.drawer,
-                  visualDensity: VisualDensity.compact,
-                ),
-                Divider(
-                  color: Colors.white54,
-                ),
-                ListTile(
-                  textColor: Colors.white,
-                  style: ListTileStyle.drawer,
-                  title: Text("Total"),
-                  trailing: Text("\$${totalPrice}",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      )),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Text(
-                          "Accept",
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          shape: StadiumBorder(),
-                        ),
+              ListTile(
+                textColor: Colors.white70,
+                title: Text("Deliver to"),
+                trailing:
+                    Text("${deliveryToDistance} km ${deliveryToDuration} min"),
+                style: ListTileStyle.drawer,
+                visualDensity: VisualDensity.compact,
+              ),
+              ListTile(
+                textColor: Colors.white70,
+                title: Text("Deliver Pricing"),
+                trailing: Text("\$${pricePerKM} / km"),
+                style: ListTileStyle.drawer,
+                visualDensity: VisualDensity.compact,
+              ),
+              Divider(
+                color: Colors.white54,
+              ),
+              ListTile(
+                textColor: Colors.white,
+                style: ListTileStyle.drawer,
+                title: Text("Total"),
+                trailing: Text("\$${totalPrice}",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: accept,
+                      child: Text(
+                        "Accept",
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        shape: StadiumBorder(),
                       ),
                     ),
-                  ],
-                )
-              ],
-            ),
+                  ),
+                ],
+              )
+            ],
           ),
         ),
       ),

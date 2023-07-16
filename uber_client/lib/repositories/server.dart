@@ -10,6 +10,7 @@ import "package:http/http.dart" as Http;
 import '../models/bag.dart';
 import '../models/client.dart';
 import '../models/order.dart';
+import '../models/tracking.dart';
 import '../utils/firebase.dart';
 
 final endpoint =
@@ -102,5 +103,24 @@ class Server {
     if (response.statusCode != 200) {
       throw Exception("Failed to order bag");
     }
+  }
+
+  void Function() listenToTrack(
+      Order order, Function(Tracking track) callback) {
+    final sub = firestore
+        .collection("tracks")
+        .doc(order.id)
+        .snapshots()
+        .listen((event) {
+      if (event.exists) {
+        final track = Tracking.fromMap(FirestoreUtils.goodJson({
+          "id": event.id,
+          ...event.data()!,
+        }));
+        callback(track);
+      }
+    });
+
+    return sub.cancel;
   }
 }

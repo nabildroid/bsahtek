@@ -12,14 +12,17 @@ import 'package:uber_client/screens/loading_screen.dart';
 import 'package:uber_client/screens/login.dart';
 import 'package:uber_client/screens/splash.dart';
 
+import 'repositories/notifications.dart';
 import 'screens/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Cache.init();
-  Cache.clear();
   await Server.init();
+  await Notifications.createChannels();
+  await RemoteMessages().initMessages();
+
   runApp(const MyApp());
 }
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/client.dart';
+import '../models/order.dart';
 
 class Cache {
   static late SharedPreferences _instance;
@@ -12,7 +13,6 @@ class Cache {
   }
 
   static bool get isFirstRun {
-    return true;
     final isit = _instance.getBool("isFirstRun") ?? true;
     _instance.setBool("isFirstRun", false);
 
@@ -53,5 +53,21 @@ class Cache {
 
   static void clear() async {
     await _instance.clear();
+  }
+
+  static Order? get runningOrder {
+    final data = _instance.getString("runningOrder");
+    if (data == null) {
+      return null;
+    }
+    return Order.fromJson(jsonDecode(data));
+  }
+
+  static set runningOrder(Order? order) {
+    if (order == null) {
+      _instance.remove("runningOrder");
+    } else {
+      _instance.setString("runningOrder", jsonEncode(order.toJson()));
+    }
   }
 }

@@ -1,9 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:uber_client/repositories/backgrounds.dart';
 
 class RemoteMessages {
   final _firebaseMessages = FirebaseMessaging.instance;
 
-  Future<String> initMessages() async {
+  Future<void> initMessages() async {
     await _firebaseMessages.requestPermission(
       alert: true,
       announcement: true,
@@ -13,7 +14,9 @@ class RemoteMessages {
       provisional: true,
       sound: true,
     );
+  }
 
+  Future<String?> getToken() async {
     final fCMToken = await _firebaseMessages.getToken();
     if (fCMToken == null) {
       throw Exception('Permission not granted');
@@ -27,6 +30,17 @@ class RemoteMessages {
       onMessage(event);
       print('Message received: ${event.data}');
     });
+
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        onMessage(message);
+        print('Message received: ${message.data}');
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      onMessage(event);
+      print('Message received: ${event.data}');
+    });
   }
 
   void listenToNewToken(void Function(String) onNewToken) {
@@ -37,6 +51,8 @@ class RemoteMessages {
   }
 
   void setUpBackgroundMessageHandler() {
-    // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(
+      Backgrounds.firebaseMessagingBackgroundHandler,
+    );
   }
 }

@@ -44,6 +44,9 @@ dependencies:
   firebase_messaging: ^14.6.4
   cloud_firestore: ^4.8.2
   shared_preferences: 
+  awesome_notifications: 
+  google_polyline_algorithm:
+  workmanager:
 
 
 

@@ -8,7 +8,9 @@ import "package:http/http.dart" as Http;
 import 'package:latlong2/latlong.dart';
 import 'package:uber_deliver/models/delivery_man.dart';
 
+import '../models/order.dart';
 import '../models/track.dart';
+import '../utils/utils.dart';
 
 final endpoint =
     (String path) => Uri.parse("http://192.168.0.105:3000/api/$path");
@@ -46,7 +48,38 @@ class Server {
     }, SetOptions(merge: true));
   }
 
-  Future<void> updateAvailability(String userID) async {}
+  Future<void Function()> listenToOrder(
+      String orderID, void Function(Order) onOrder) async {
+    final stream = firestore.collection('orders').doc(orderID).snapshots();
+    final sub = stream.listen((event) {
+      if (event.exists == false) return;
 
-  Future<void> track(Track track) async {}
+      final items = Utils.goodFirestoreJson(event.data()!);
+      final order = Order.fromJson({...items, 'id': event.id});
+
+      onOrder(order);
+    });
+
+    return sub.cancel;
+  }
+
+  Future<void> setDeliver(
+      DeliveryMan deliver, Order order, LatLng address) async {
+    final updatedOrder = order.setDeliver(deliver, address);
+
+    await firestore
+        .collection('orders')
+        .doc(order.id)
+        .set(updatedOrder.toJson(), SetOptions(merge: true));
+
+    await Http.post(
+      endpoint("order/delivery/start"),
+      body: jsonEncode(updatedOrder.toJson()),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+  }
+
+  static Future<void> track(Tracking track) async {}
 }

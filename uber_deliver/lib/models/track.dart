@@ -2,66 +2,44 @@ import 'package:latlong2/latlong.dart';
 
 class Track {
   final String orderID;
+  final String id;
   final String clientID;
-  final LatLng currentLocation;
-  final LatLng startLocation;
-  final LatLng clientLocation;
-  final LatLng sellerLocation;
+  final LatLng delivertLocation;
   final bool toClient;
+  final bool toSeller;
 
   Track({
     required this.orderID,
     required this.clientID,
-    required this.currentLocation,
-    required this.startLocation,
-    required this.clientLocation,
-    required this.sellerLocation,
     required this.toClient,
+    required this.toSeller,
+    required this.delivertLocation,
+    required this.id,
   });
 
   toJson() => {
         "orderID": orderID,
         "clientID": clientID,
-        "currentLocation": {
-          "latitude": currentLocation.latitude,
-          "longitude": currentLocation.longitude,
-        },
-        "startLocation": {
-          "latitude": startLocation.latitude,
-          "longitude": startLocation.longitude,
-        },
-        "clientLocation": {
-          "latitude": clientLocation.latitude,
-          "longitude": clientLocation.longitude,
-        },
-        "sellerLocation": {
-          "latitude": sellerLocation.latitude,
-          "longitude": sellerLocation.longitude,
-        },
         "toClient": toClient,
+        "toSeller": toSeller,
+        "delivertLocation": {
+          "latitude": delivertLocation.latitude,
+          "longitude": delivertLocation.longitude,
+        },
+        "id": id,
       };
 
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
       orderID: json['orderID'],
       clientID: json['clientID'],
-      currentLocation: LatLng(
-        json['currentLocation']['latitude'],
-        json['currentLocation']['longitude'],
-      ),
-      startLocation: LatLng(
-        json['startLocation']['latitude'],
-        json['startLocation']['longitude'],
-      ),
-      clientLocation: LatLng(
-        json['clientLocation']['latitude'],
-        json['clientLocation']['longitude'],
-      ),
-      sellerLocation: LatLng(
-        json['sellerLocation']['latitude'],
-        json['sellerLocation']['longitude'],
-      ),
       toClient: json['toClient'],
+      toSeller: json['toSeller'],
+      delivertLocation: LatLng(
+        json['delivertLocation']['latitude'],
+        json['delivertLocation']['longitude'],
+      ),
+      id: json['id'],
     );
   }
 }

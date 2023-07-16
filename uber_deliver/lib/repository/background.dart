@@ -38,12 +38,31 @@ abstract class Backgrounds {
     );
   }
 
+  static Future<void> schedulerRunning() async {
+    await AndroidAlarmManager.initialize();
+
+    await AndroidAlarmManager.periodic(
+      Duration(seconds: 20),
+      exact: true,
+      startAt: DateTime.now().add(Duration(seconds: 20)),
+      BackgroundIDs.running,
+      running,
+    );
+  }
+
+  static Future<void> stopRunning() async {
+    await AndroidAlarmManager.cancel(BackgroundIDs.running);
+  }
+
   @pragma('vm:entry-point')
   static void running() async {
     await Cache.init();
     await Server.init();
 
     // get gps location
+    final location = await ServiceCubit.getLocation();
+
+    print("Hello Running");
     // send request to api
     // get location to seller + client
     // update the notification (action buttons, photo, qr code, etc..)
@@ -54,6 +73,7 @@ abstract class Backgrounds {
   @pragma('vm:entry-point')
   static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
+    await Cache.init();
     final myLocation = Cache.availabilityLocation;
     if (myLocation == null) {
       await AwesomeNotifications().cancelAll();
