@@ -2,12 +2,18 @@
 
 import { userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
+import { useEffect } from "react";
+import * as Server from "@/local_repository/server";
 import { ResponsiveContainer, Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 
 export default function Page() {
     console.log("need the user");
     const [user] = useAtom(userAtomAsync);
+
+    useEffect(() => {
+        Server.ping();
+    }, []);
 
     return <div className="max-w-2xl w-full mx-auto">
         <div className="grid sm:grid-cols-3 gap-8 grid-cols-1 px-2">

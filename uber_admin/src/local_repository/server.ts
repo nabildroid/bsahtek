@@ -8,7 +8,7 @@ import { getIdToken } from "firebase/auth";
 const ENDPOINT =
   process.env.NODE_ENV === "production"
     ? process.env.NEXT_PUBLIC_ARIB_API || process.env.ARIB_API
-    : "http://localhost:3001/api";
+    : "http://localhost:3000/api";
 
 const Http = Axios.create({
   baseURL: ENDPOINT,
@@ -23,11 +23,13 @@ Http.interceptors.request.use((config) => {
   return config;
 });
 
+
+
 const Auth = (customToken?: string) => ({
   Authorization: `Bearer ${customToken ?? Cookies.get("token") ?? ""}`,
 });
 
-export async function getLines(): Promise<any> {
-  const { data } = await Http.get("/chain/lines");
-  return data.lines;
+export async function ping(): Promise<any> {
+  const { data } = await Http.get("/admin/stats");
+  return data.success;
 }
