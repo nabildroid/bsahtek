@@ -12,7 +12,7 @@ const LayoutMiddleware = dynamic(() => import("./layoutMiddleware"), {
 
 export default function Layout(props: Props) {
 
-    return <div className="w-full min-h-screen bg-stone-300">
+    return <div className="w-full min-h-screen bg-stone-100">
         <div className="px-2 sm:px-16 flex justify-between items-center py-2">
             <img src="/vercel.svg" alt="logo" className="h-6" />
 
