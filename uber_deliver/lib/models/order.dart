@@ -1,4 +1,5 @@
 import 'package:latlong2/latlong.dart';
+import 'package:uber_deliver/models/track.dart';
 
 import 'delivery_man.dart';
 
@@ -157,5 +158,16 @@ class Order {
     };
 
     return Order.fromJson(data);
+  }
+
+  Track toTrack(LatLng location) {
+    return Track(
+      id: id,
+      orderID: id,
+      clientID: clientID,
+      deliveryLocation: location,
+      toClient: false,
+      toSeller: false,
+    );
   }
 }

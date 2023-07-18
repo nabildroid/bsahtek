@@ -11,6 +11,7 @@ import 'package:uber_deliver/repository/gps.dart';
 import 'package:uber_deliver/repository/messages_remote.dart';
 import 'package:uber_deliver/repository/notifications.dart';
 import 'package:uber_deliver/screens/running.dart';
+import 'package:uber_deliver/screens/runningNoti.dart';
 
 import '../models/delivery_request.dart';
 import '../models/order.dart';
@@ -74,6 +75,24 @@ class ServiceCubit extends Cubit<ServiceState> {
       : super(ServiceState(
           isAvailable: false,
         ));
+
+  BuildContext? freshContext;
+  List<void Function(BuildContext context)> waitingForContext = [];
+
+  void setContext(BuildContext context) {
+    freshContext = context;
+    for (var element in waitingForContext) {
+      element(context);
+    }
+    waitingForContext.clear();
+  }
+
+  void useContext(void Function(BuildContext context) callback) {
+    if (freshContext != null) {
+      return callback(freshContext!);
+    }
+    waitingForContext.add((context) => context);
+  }
 
   void toggleAvailability(BuildContext context) async {
     if (state.isAvailable) {
@@ -145,6 +164,7 @@ class ServiceCubit extends Cubit<ServiceState> {
 
     await RemoteMessages().unattachFromCells(Cache.attachedCells);
     Cache.runningRequest = request;
+    useContext((context) => RunningScreen.go(context, request));
 
     emit(state.copyWith(
       isAvailable: false,
@@ -163,6 +183,9 @@ class ServiceCubit extends Cubit<ServiceState> {
 
   void focusOnRunning() {
     emit(state.copyWith(focusOnRunning: true));
+    if (state.runningRequest != null) {
+      useContext((context) => RunningScreen.go(context, state.runningRequest!));
+    }
   }
 
   void init(BuildContext context) {
@@ -170,12 +193,31 @@ class ServiceCubit extends Cubit<ServiceState> {
 
     bool keepWorking = true;
     // for this hack to work, it init must be the last one in the loading Init phase!
-    Future.delayed(Duration(milliseconds: 500)).then((_) {
+    Future.delayed(Duration(milliseconds: 500)).then((_) async {
       if (keepWorking == false) return;
+
       emit(state.copyWith(
         runningRequest: Cache.runningRequest,
         focusOnRunning: true,
+        isAvailable: Cache.availabilityLocation != null,
       ));
+
+      if (Cache.runningRequest != null) {
+        useContext(
+            (context) => RunningScreen.go(context, Cache.runningRequest!));
+        await Backgrounds.stopRunning();
+        await Backgrounds.schedulerRunning();
+      } else {
+        if (Cache.availabilityLocation != null) {
+          final city = await DirectionRepository.getCityName(
+              Cache.availabilityLocation!);
+          await Notifications.available(city: city);
+          await Backgrounds.stopAvailability();
+          await Backgrounds.schedulerAvailability();
+        } else {
+          await Backgrounds.stopAvailability();
+        }
+      }
     });
 
     RemoteMessages().listenToMessages((message, fromForground) async {
@@ -192,7 +234,7 @@ class ServiceCubit extends Cubit<ServiceState> {
         emit(state.copyWith(
           selectedRequest: request,
         ));
-
+        useContext((context) => RunningNotiScreen.go(context, request));
         return;
       } else {
         final order = Order.fromJson(jsonDecode(message.data["order"]));
@@ -204,6 +246,8 @@ class ServiceCubit extends Cubit<ServiceState> {
             emit(state.copyWith(
               selectedRequest: request,
             ));
+
+            useContext((context) => RunningNotiScreen.go(context, request));
             return;
           }
           await Future.delayed(Duration(seconds: 1));
@@ -217,6 +261,10 @@ class ServiceCubit extends Cubit<ServiceState> {
           emit(state.copyWith(
             focusOnRunning: true,
           ));
+          useContext((context) => RunningScreen.go(
+                context,
+                state.runningRequest!,
+              ));
         }
       }
     });

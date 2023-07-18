@@ -38,6 +38,14 @@ class RemoteMessages {
       onMessage(event, false);
       print('Message opened app: ${event.data}');
     });
+
+    FirebaseMessaging.instance.getInitialMessage().then((event) {
+      if (event == null) return;
+
+      onMessage(event, false);
+      print('Initial message: ${event.data}');
+    });
+
     FirebaseMessaging.onMessage.listen((event) {
       onMessage(event, true);
       print('Message received: ${event.data}');

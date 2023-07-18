@@ -43,7 +43,7 @@ class Server {
 
   Future<void> assignNotiIDtoDeliveryMan(
       String deliveryManID, String notiID) async {
-    return firestore.collection('delivertMan').doc(deliveryManID).set({
+    return firestore.collection('deliveryman').doc(deliveryManID).set({
       'notiID': notiID,
     }, SetOptions(merge: true));
   }
@@ -81,5 +81,13 @@ class Server {
     );
   }
 
-  static Future<void> track(Tracking track) async {}
+  Future<void> pushTrack(Track track) async {
+    await Http.post(
+      endpoint("order/delivery/track"),
+      body: jsonEncode(track.toJson()),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+  }
 }

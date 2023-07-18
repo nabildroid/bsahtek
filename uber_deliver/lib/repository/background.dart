@@ -42,9 +42,9 @@ abstract class Backgrounds {
     await AndroidAlarmManager.initialize();
 
     await AndroidAlarmManager.periodic(
-      Duration(seconds: 20),
+      Duration(seconds: 2),
       exact: true,
-      startAt: DateTime.now().add(Duration(seconds: 20)),
+      startAt: DateTime.now().add(Duration(seconds: 2)),
       BackgroundIDs.running,
       running,
     );
@@ -60,7 +60,15 @@ abstract class Backgrounds {
     await Server.init();
 
     // get gps location
-    final location = await ServiceCubit.getLocation();
+    final location = LatLng(52.2, 3);
+    final order = Cache.runningRequest;
+    if (order == null) {
+      await AwesomeNotifications().cancelAll();
+      Backgrounds.stopRunning();
+      return;
+    }
+
+    Server().pushTrack(order.order.toTrack(location!));
 
     print("Hello Running");
     // send request to api

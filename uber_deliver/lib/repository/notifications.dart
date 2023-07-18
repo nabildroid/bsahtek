@@ -117,27 +117,29 @@ abstract class Notifications {
   }
 
   static Future<void> createChannels() async {
-    // _instance.initialize(defaultIcon, channels)
-
-    await _instance.setChannel(NotificationChannel(
-      channelKey: "requests",
-      channelName: 'Delivery Requests',
-      channelDescription:
-          'Notifications for when clients requests to have a delivery for thier orders',
-    ));
-
-    await _instance.setChannel(NotificationChannel(
-      channelKey: "availablity",
-      channelName: 'Availablity For Delivery',
-      channelDescription:
-          'Notifications for when you are available to deliver orders',
-    ));
-
-    await _instance.setChannel(NotificationChannel(
-      channelKey: "running",
-      channelName: 'Running Delivery',
-      channelDescription: 'Notifications for when you are running a delivery',
-    ));
+    _instance.initialize(
+        'https://avatars.githubusercontent.com/u/19208222?v=4',
+        [
+          NotificationChannel(
+            channelKey: "requests",
+            channelName: 'Delivery Requests',
+            channelDescription:
+                'Notifications for when clients requests to have a delivery for thier orders',
+          ),
+          NotificationChannel(
+            channelKey: "availablity",
+            channelName: 'Availablity For Delivery',
+            channelDescription:
+                'Notifications for when you are available to deliver orders',
+          ),
+          NotificationChannel(
+            channelKey: "running",
+            channelName: 'Running Delivery',
+            channelDescription:
+                'Notifications for when you are running a delivery',
+          )
+        ],
+        debug: true);
   }
 
   static onClick(Function(String type) callback) {

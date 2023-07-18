@@ -13,6 +13,16 @@ import '../repository/direction.dart';
 class RunningNotiScreen extends StatefulWidget {
   final DeliveryRequest deliveryRequest;
 
+  static go(BuildContext ctx, DeliveryRequest deliveryRequest) {
+    return Navigator.of(ctx).push(
+      MaterialPageRoute(
+        builder: (ctx) => RunningNotiScreen(
+          deliveryRequest: deliveryRequest,
+        ),
+      ),
+    );
+  }
+
   RunningNotiScreen({
     Key? key,
     required this.deliveryRequest,

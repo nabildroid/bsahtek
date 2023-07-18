@@ -10,6 +10,16 @@ import '../repository/direction.dart';
 class RunningScreen extends StatefulWidget {
   final DeliveryRequest deliveryRequest;
 
+  static go(BuildContext ctx, DeliveryRequest deliveryRequest) {
+    return Navigator.of(ctx).push(
+      MaterialPageRoute(
+        builder: (ctx) => RunningScreen(
+          deliveryRequest: deliveryRequest,
+        ),
+      ),
+    );
+  }
+
   RunningScreen({
     Key? key,
     required this.deliveryRequest,

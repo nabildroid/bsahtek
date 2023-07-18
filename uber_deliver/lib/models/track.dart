@@ -4,7 +4,7 @@ class Track {
   final String orderID;
   final String id;
   final String clientID;
-  final LatLng delivertLocation;
+  final LatLng deliveryLocation;
   final bool toClient;
   final bool toSeller;
 
@@ -13,18 +13,16 @@ class Track {
     required this.clientID,
     required this.toClient,
     required this.toSeller,
-    required this.delivertLocation,
+    required this.deliveryLocation,
     required this.id,
   });
 
   toJson() => {
         "orderID": orderID,
         "clientID": clientID,
-        "toClient": toClient,
-        "toSeller": toSeller,
-        "delivertLocation": {
-          "latitude": delivertLocation.latitude,
-          "longitude": delivertLocation.longitude,
+        "deliveryLocation": {
+          "latitude": deliveryLocation.latitude,
+          "longitude": deliveryLocation.longitude,
         },
         "id": id,
       };
@@ -35,7 +33,7 @@ class Track {
       clientID: json['clientID'],
       toClient: json['toClient'],
       toSeller: json['toSeller'],
-      delivertLocation: LatLng(
+      deliveryLocation: LatLng(
         json['delivertLocation']['latitude'],
         json['delivertLocation']['longitude'],
       ),

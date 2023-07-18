@@ -15,16 +15,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    context.read<AppCubit>().init();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final service = context.read<ServiceCubit>();
-
-    return BlocListener<ServiceCubit, ServiceState>(
-      listenWhen: (o, n) =>
+    context.read<ServiceCubit>().setContext(context);
+    /**
+     * listenWhen: (o, n) =>
           (o.selectedRequest != n.selectedRequest) ||
           o.focusOnRunning != n.focusOnRunning ||
           o.runningRequest != n.runningRequest,
@@ -50,114 +48,117 @@ class _HomeScreenState extends State<HomeScreen> {
           return;
         }
       },
-      child: SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            title: Text("Hello, Nabil",
+     */
+
+    final service = context.read<ServiceCubit>();
+
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          title: Text("Hello, Nabil",
+              style: TextStyle(
+                color: Colors.black,
+              )),
+          actions: [
+            CircleAvatar(
+              backgroundImage: NetworkImage(
+                  "https://avatars.githubusercontent.com/u/19208222?v=4"),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              BlocBuilder<ServiceCubit, ServiceState>(
+                  buildWhen: (_, __) => true,
+                  builder: (context, state) {
+                    return Card(
+                      isLoading: state.loadingAvailability ||
+                          state.runningRequest != null,
+                      id: "defzefze",
+                      isAvailable: state.isAvailable,
+                      onSwitch: () => service.toggleAvailability(context),
+                    );
+                  }),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                "Past Deliveries",
                 style: TextStyle(
                   color: Colors.black,
-                )),
-            actions: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://avatars.githubusercontent.com/u/19208222?v=4"),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              SizedBox(
-                width: 10,
-              ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BlocBuilder<ServiceCubit, ServiceState>(
-                        builder: (context, state) {
-                      return Card(
-                        isLoading: state.loadingAvailability ||
-                            state.runningRequest != null,
-                        id: "defzefze",
-                        isAvailable: state.isAvailable,
-                        onSwitch: () => service.toggleAvailability(context),
-                      );
-                    }),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      "Past Deliveries",
+              ...List.generate(
+                10,
+                (index) => ListTile(
+                  leading: Icon(
+                    Icons.delivery_dining,
+                    color: Colors.green,
+                  ),
+                  title: Text("Carfour"),
+                  subtitle: Text("#565685"),
+                  trailing: RichText(
+                    text: TextSpan(
+                      text: "2.5km ",
                       style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
                       ),
-                    ),
-                    ...List.generate(
-                      10,
-                      (index) => ListTile(
-                        leading: Icon(
-                          Icons.delivery_dining,
-                          color: Colors.green,
-                        ),
-                        title: Text("Carfour"),
-                        subtitle: Text("#565685"),
-                        trailing: RichText(
-                          text: TextSpan(
-                            text: "2.5km ",
-                            style: TextStyle(
-                              color: Colors.black54,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: " + \$15",
-                                style: TextStyle(
-                                  color: Colors.green.shade800,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                      children: [
+                        TextSpan(
+                          text: " + \$15",
+                          style: TextStyle(
+                            color: Colors.green.shade800,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ]),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 0,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: "Home",
             ),
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: 0,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: "Home",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.delivery_dining),
-                label: "Deliveries",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "Profile",
-              ),
-            ],
-          ),
-          floatingActionButton: BlocBuilder<ServiceCubit, ServiceState>(
-            builder: (ctx, state) {
-              if (state.runningRequest != null) {
-                return FloatingActionButton(
-                  heroTag: "running",
-                  onPressed: () => ctx.read<ServiceCubit>().focusOnRunning(),
-                  child: Icon(Icons.delivery_dining),
-                );
-              }
+            BottomNavigationBarItem(
+              icon: Icon(Icons.delivery_dining),
+              label: "Deliveries",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: "Profile",
+            ),
+          ],
+        ),
+        floatingActionButton: BlocBuilder<ServiceCubit, ServiceState>(
+          builder: (ctx, state) {
+            if (state.runningRequest != null) {
+              return FloatingActionButton(
+                heroTag: "running",
+                onPressed: () => ctx.read<ServiceCubit>().focusOnRunning(),
+                child: Icon(Icons.delivery_dining),
+              );
+            }
 
-              return SizedBox.shrink();
-            },
-          ),
+            return SizedBox.shrink();
+          },
         ),
       ),
     );
