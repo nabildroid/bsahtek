@@ -12,15 +12,32 @@ class RunningOrder extends StatefulWidget {
   final Order order;
   final int index;
 
-  final void Function()? onAccept;
-  final void Function()? onReport;
+  final bool isPickup;
+
+  static go(
+    BuildContext context, {
+    required Order order,
+    required int index,
+    bool isPickup = false,
+  }) =>
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<AppQubit>(),
+            child: RunningOrder(
+              order: order,
+              index: index,
+              isPickup: isPickup,
+            ),
+          ),
+        ),
+      );
 
   RunningOrder({
     Key? key,
     required this.order,
     required this.index,
-    this.onAccept,
-    this.onReport,
+    this.isPickup = false,
   }) : super(key: key);
 
   @override
@@ -48,29 +65,22 @@ class _RunningOrderState extends State<RunningOrder> {
   }
 
   void handleAccept() async {
-    if (widget.onAccept != null) {
-      widget.onAccept!();
+    if (widget.isPickup == false) {
+      context.read<AppQubit>().acceptOrder(widget.order);
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
         Navigator.of(context).pop();
       });
     } else {
-      AndroidIntent intent = AndroidIntent(
-        componentName: "me.laknabil.uber_seller.MainActivity",
-        package: 'me.laknabil.uber_seller',
-        // data: jsonEncode(widget.order.toJson()),
-      );
-
-      await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-      await intent.launch();
+      context.read<AppQubit>().handOver(widget.order);
+      setState(() => goingToExit = true);
+      Future.delayed(Duration(milliseconds: 500)).then((value) {
+        Navigator.of(context).pop();
+      });
     }
   }
 
-  void handleReport() {
-    if (widget.onReport != null) {
-      widget.onReport!();
-    } else {}
-  }
+  void handleReport() {}
 
   @override
   Widget build(BuildContext context) {
@@ -179,8 +189,8 @@ class _RunningOrderState extends State<RunningOrder> {
                         icon: const Icon(
                           Icons.move_down_outlined,
                         ),
-                        label: const Text(
-                          'Accept Order',
+                        label: Text(
+                          widget.isPickup ? 'Hand Over' : 'Accept Order',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 28,

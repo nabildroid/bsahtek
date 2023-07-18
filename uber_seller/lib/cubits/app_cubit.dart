@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -10,6 +11,7 @@ import '../model/order.dart';
 import '../model/seller.dart';
 import '../repository/cache.dart';
 import '../repository/messages_remote.dart';
+import '../screens/running_order.dart';
 
 class AppState extends Equatable {
   final String? fCMToken;
@@ -18,14 +20,17 @@ class AppState extends Equatable {
   final List<Order> runningOrders;
   final List<Order> prevOrders;
 
+  Order? orderToBePickedUp;
+
   final int quantity;
 
-  const AppState({
+  AppState({
     this.fCMToken,
     this.user,
     this.runningOrders = const [],
     this.prevOrders = const [],
     this.quantity = 0,
+    this.orderToBePickedUp,
   });
 
   AppState copyWith({
@@ -54,10 +59,11 @@ class AppState extends Equatable {
   @override
   List<Object?> get props => [
         fCMToken,
-        user?.id,
+        user?.id ?? "dssdsd",
         ...runningOrders.map((e) => e.id),
         ...prevOrders.map((e) => e.id + e.lastUpdate.toString()),
         quantity,
+        orderToBePickedUp?.id ?? "orderToBePickedUp",
       ];
 }
 
@@ -66,6 +72,24 @@ class AppQubit extends Cubit<AppState> {
   final RemoteMessages remoteMessages;
 
   VoidCallback? _stopListeningToOrders;
+
+  BuildContext? freshContext;
+  List<void Function(BuildContext context)> waitingForContext = [];
+
+  void setContext(BuildContext context) {
+    freshContext = context;
+    for (var element in waitingForContext) {
+      element(context);
+    }
+    waitingForContext.clear();
+  }
+
+  void useContext(void Function(BuildContext context) callback) {
+    if (freshContext != null) {
+      return callback(freshContext!);
+    }
+    waitingForContext.add((context) => context);
+  }
 
   AppQubit({
     required this.cache,
@@ -77,7 +101,7 @@ class AppQubit extends Cubit<AppState> {
     final isNewStart = cache.isFirstRun;
     Seller? currentUser = cache.user;
 
-    cache.user = currentUser;
+    cache.user = null;
     emit(state.copyWith(
       user: currentUser,
       quantity: cache.quantities[currentUser?.bags.first.id] ?? 0,
@@ -133,8 +157,36 @@ class AppQubit extends Cubit<AppState> {
 
   void _subscribeToOnAppNotification() {
     remoteMessages.listenToMessages((event) {
-      final order = Order.fromJson(jsonDecode(event.data["order"]));
-      emit(state.pushRunningOrder(order));
+      if (!event.data.containsKey("type")) return;
+
+      if (event.data["type"] == "delivery_need_to_pickup") {
+        return _deliveryNeedToPickup(event.data["orderID"]);
+      } else if (event.data["type"] == "new_order") {
+        final order = Order.fromJson(jsonDecode(event.data["order"]));
+        emit(state.pushRunningOrder(order));
+        useContext((ctx) => RunningOrder.go(ctx, order: order, index: 1));
+      }
+    });
+  }
+
+  void _deliveryNeedToPickup(String orderID) {
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      final allOrders = [...state.prevOrders, ...state.runningOrders];
+      if (allOrders.isEmpty) return;
+      try {
+        final order = allOrders.firstWhere((element) => element.id == orderID);
+
+        emit(state.copyWith()..orderToBePickedUp = order);
+        useContext((ctx) => RunningOrder.go(
+              ctx,
+              order: order,
+              index: 1,
+              isPickup: true,
+            ));
+        timer.cancel();
+      } catch (e) {
+        return;
+      }
     });
   }
 
@@ -155,6 +207,15 @@ class AppQubit extends Cubit<AppState> {
     }).toList();
 
     emit(state.copyWith(runningOrders: filteredOrders));
+    for (var i = 0; i < filteredOrders.length; i++) {
+      final order = filteredOrders[i];
+
+      useContext((ctx) => RunningOrder.go(ctx, order: order, index: i));
+    }
+  }
+
+  void handOver(Order order) async {
+    await Server().handOver(order);
   }
 
   void acceptOrder(Order order) async {

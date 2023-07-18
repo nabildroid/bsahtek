@@ -129,8 +129,8 @@ class Order {
         ),
       ),
       sellerAddress: LatLng(
-        latitude: json['sellerAddress']['latitude'],
-        longitude: json['sellerAddress']['longitude'],
+        latitude: json['sellerAddress']['latitude'] + .0,
+        longitude: json['sellerAddress']['longitude'] + .0,
       ),
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],

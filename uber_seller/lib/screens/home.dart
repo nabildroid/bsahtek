@@ -23,8 +23,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    context.read<AppQubit>().init();
-
     WidgetsBinding.instance.addObserver(this);
 
     _scrollController.addListener(() => setState(
@@ -44,163 +42,138 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AppQubit, AppState>(
-        listenWhen: (previous, current) {
-          return previous.runningOrders.length != current.runningOrders.length;
-        },
-        listener: (context, state) {
-          if (state.runningOrders.isNotEmpty) {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                barrierDismissible: true,
-                barrierColor: Colors.black.withOpacity(.3),
-                opaque: false,
-                pageBuilder: (context, anim, anim2) => RunningOrder(
-                  order: state.runningOrders.last,
-                  index: state.runningOrders.length,
-                  onAccept: () {
-                    context
-                        .read<AppQubit>()
-                        .acceptOrder(state.runningOrders.last);
-                  },
-                ),
-              ),
-            );
-          }
-        },
-        child: SafeArea(
-            child: Scaffold(
-          body: Skelaton(
-              isExpanded: isExpanded,
-              top: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  BlocBuilder<AppQubit, AppState>(builder: (context, state) {
-                    return Row(
+    context.read<AppQubit>().setContext(context);
+
+    return SafeArea(
+        child: Scaffold(
+      body: Skelaton(
+          isExpanded: isExpanded,
+          top: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BlocBuilder<AppQubit, AppState>(builder: (context, state) {
+                return Row(
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedSwitcher(
-                              duration: Duration(seconds: 1),
-                              key: ValueKey(state.quantity),
-                              child: RichText(
-                                text: TextSpan(
-                                  text: state.quantity.toString(),
+                        AnimatedSwitcher(
+                          duration: Duration(seconds: 1),
+                          key: ValueKey(state.quantity),
+                          child: RichText(
+                            text: TextSpan(
+                              text: state.quantity.toString(),
+                              style: TextStyle(
+                                fontSize: 45,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: ' bags',
                                   style: TextStyle(
-                                    fontSize: 45,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white.withOpacity(.8),
                                   ),
-                                  children: [
-                                    TextSpan(
-                                      text: ' bags',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: Colors.white.withOpacity(.8),
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Text(
-                                "Available Bags for Clients",
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(.7),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                            image: DecorationImage(
-                              image: NetworkImage(state.user!.photo),
-                              fit: BoxFit.cover,
+                              ],
                             ),
                           ),
-                        )
+                        ),
+                        SizedBox(height: 5),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            "Available Bags for Clients",
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(.7),
+                            ),
+                          ),
+                        ),
                       ],
-                    );
-                  }),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ActionButton(
-                        label: "Add",
-                        icon: Icons.add_shopping_cart_rounded,
-                      ),
-                      ActionButton(
-                          label: "Subtract",
-                          icon: Icons.remove_circle_outline_sharp),
-                      SizedBox(width: 5),
-                      ActionButton(
-                          label: "Pause",
-                          icon: Icons.remove_shopping_cart_outlined),
-                    ],
-                  )
-                ],
-              ),
-              bottom:
-                  BlocBuilder<AppQubit, AppState>(builder: (context, state) {
-                return SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Your Basket",
-                        style: TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
+                    ),
+                    Spacer(),
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                        image: DecorationImage(
+                          image: NetworkImage(state.user!.photo),
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      SizedBox(height: 12),
-                      BagPreview(),
-                      SizedBox(height: 16),
-                      Text(
-                        "Orders",
-                        style: TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      ...state.prevOrders
-                          .map((e) => OrderTile(order: e))
-                          .toList(),
-                      SizedBox(height: 100),
-                    ],
-                  ),
+                    )
+                  ],
                 );
-              })),
-          bottomNavigationBar: BottomNavigationBar(
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Settings',
-              ),
+              }),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ActionButton(
+                    label: "Add",
+                    icon: Icons.add_shopping_cart_rounded,
+                  ),
+                  ActionButton(
+                      label: "Subtract",
+                      icon: Icons.remove_circle_outline_sharp),
+                  SizedBox(width: 5),
+                  ActionButton(
+                      label: "Pause",
+                      icon: Icons.remove_shopping_cart_outlined),
+                ],
+              )
             ],
           ),
-        )));
+          bottom: BlocBuilder<AppQubit, AppState>(builder: (context, state) {
+            return SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Your Basket",
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  BagPreview(),
+                  SizedBox(height: 16),
+                  Text(
+                    "Orders",
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  ...state.prevOrders.map((e) => OrderTile(order: e)).toList(),
+                  SizedBox(height: 100),
+                ],
+              ),
+            );
+          })),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+      ),
+    ));
   }
 
   @override
@@ -273,8 +246,8 @@ class BagPreview extends StatelessWidget {
                                 ),
                                 Row(children: [
                                   CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(bag.sellerPhoto),
+                                    backgroundImage: NetworkImage(
+                                        "https://picsum.photos/200/300"),
                                   ),
                                   SizedBox(width: 8),
                                   Expanded(
@@ -407,13 +380,10 @@ class OrderTile extends StatelessWidget {
         if (order.acceptedAt == null) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => RunningOrder(
-                  order: order,
-                  index: 1,
-                  onAccept: () {
-                    context.read<AppQubit>().acceptOrder(order);
-                  }),
-            ),
+                builder: (context) => RunningOrder(
+                      order: order,
+                      index: 1,
+                    )),
           );
         }
       },

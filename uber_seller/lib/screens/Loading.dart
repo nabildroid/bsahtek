@@ -7,25 +7,25 @@ import 'package:uber_seller/cubits/app_cubit.dart';
 import 'package:uber_seller/screens/home.dart';
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
+  const LoadingScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AppQubit, AppState>(
-      listener: (ctx, s) {
-        if (s.user != null) {
-          Navigator.of(ctx).pushReplacement(MaterialPageRoute(builder: (_) {
-            return HomeScreen();
-          }));
-        }
-      },
-      listenWhen: (o, n) {
-        return o.user == null && n.user != null;
-      },
-      child: const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+    final appCubit = context.watch<AppQubit>();
+    final clientDataLoaded = appCubit.state.user != null;
+
+    if (clientDataLoaded) {
+      // Client data is already available, push HomeScreen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
+          return HomeScreen();
+        }));
+      });
+    }
+
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }

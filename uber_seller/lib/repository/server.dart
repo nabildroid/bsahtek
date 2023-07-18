@@ -79,6 +79,16 @@ class Server {
     );
   }
 
+  Future<void> handOver(Model.Order order) async {
+    await Http.post(
+      endpoint("order/handover"),
+      body: jsonEncode(order.toJson()),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+  }
+
   Future<VoidCallback> listenToOrders({
     required String sellerID,
     required DateTime lastUpdated,

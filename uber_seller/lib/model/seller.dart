@@ -45,7 +45,7 @@ class Seller {
     return Seller(
       id: bags.first.id.toString(),
       name: bags.first.sellerName,
-      photo: bags.first.sellerPhoto,
+      photo: "https://picsum.photos/200/300",
       location: LatLng(
         latitude: bags.first.latitude,
         longitude: bags.first.longitude,

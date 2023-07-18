@@ -25,7 +25,25 @@ class RemoteMessages {
   }
 
   void listenToMessages(void Function(RemoteMessage) onMessage) {
+    String lastID = "";
     FirebaseMessaging.onMessage.listen((event) {
+      if (event.messageId == lastID) return;
+      lastID = event.messageId!;
+      onMessage(event);
+      print('Message received: ${event.data}');
+    });
+
+    FirebaseMessaging.instance
+      ..getInitialMessage().then((event) {
+        if (event == null) return;
+        onMessage(event);
+        print('Message received: ${event.data}');
+      });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      if (event.messageId == lastID) return;
+      lastID = event.messageId!;
+
       onMessage(event);
       print('Message received: ${event.data}');
     });
