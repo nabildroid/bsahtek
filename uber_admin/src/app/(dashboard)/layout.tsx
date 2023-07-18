@@ -16,14 +16,14 @@ export default function Layout(props: Props) {
         <div className="px-2 sm:px-16 flex justify-between items-center py-2">
             <img src="/vercel.svg" alt="logo" className="h-6" />
 
-            <div className="hidden sm:flex px-2  sm:px-3 w-full overflow-x-auto  md:justify-center items-center space-x-6">
+            <div className="hidden snap-x sm:flex px-2  sm:px-3 w-full overflow-x-auto  md:justify-center items-center space-x-6">
                 <NavButtons />
             </div>
 
             <Profile />
         </div>
 
-        <div className="sm:hidden px-2 sm:px-3 w-full overflow-x-auto flex md:justify-center items-center space-x-6">
+        <div className="sm:hidden snap-x px-2 sm:px-3 w-full overflow-x-auto flex md:justify-center items-center space-x-6">
             <NavButtons />
         </div>
 
