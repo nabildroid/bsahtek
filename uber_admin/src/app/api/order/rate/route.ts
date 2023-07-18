@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   return new Response(JSON.stringify({}));
 }
 
-export async function EndDelivery(clientID: string) {
+async function EndDelivery(clientID: string) {
   const query = await firebase
     .firestore()
     .collection("clients")

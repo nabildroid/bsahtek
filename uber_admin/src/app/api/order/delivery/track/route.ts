@@ -32,18 +32,16 @@ export async function POST(request: Request) {
 
   console.log({ distanceToClient, distanceToSeller });
 
-  if (distanceToClient > -1 && distanceToClient < 1) {
+  if (distanceToClient > -1 && distanceToClient < 1 && false) {
     update.toClient = true;
 
     console.log("notify client");
     await EndDelivery(tracking.clientID);
-
-    // get client token
   }
 
-  if (distanceToSeller > -1 && distanceToSeller < 1) {
-    update.toSeller = true;
+  if ((distanceToSeller > -1 && distanceToSeller < 1) || true) {
     console.log("notify Seller");
+    await InformSeller(tracking.sellerID, tracking.orderID);
   }
 
   await firebase
@@ -55,7 +53,7 @@ export async function POST(request: Request) {
   return new Response(JSON.stringify({}));
 }
 
-export async function EndDelivery(clientID: string) {
+async function EndDelivery(clientID: string) {
   const query = await firebase
     .firestore()
     .collection("clients")
@@ -84,6 +82,41 @@ export async function EndDelivery(clientID: string) {
       data: {
         click_action: "FLUTTER_NOTIFICATION_CLICK",
         type: "delivery_end",
+      },
+    });
+  }
+}
+
+async function InformSeller(sellerID: string, orderID: string) {
+  const query = await firebase
+    .firestore()
+    .collection("sellers")
+    .doc(sellerID)
+    .get();
+
+  const data = query.data();
+
+  console.log({ data });
+  if (data) {
+    const clientToken = data.notiID;
+
+    await firebase.messaging().send({
+      token: clientToken,
+      fcmOptions: {
+        analyticsLabel: "OrderArrived",
+      },
+      android: {
+        priority: "high",
+        ttl: 1000 * 60 * 10,
+        notification: {
+          body: `your order is almost there`,
+          title: "Ready to pick up",
+        },
+      },
+      data: {
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+        type: "delivery_need_to_pickup",
+        orderID,
       },
     });
   }

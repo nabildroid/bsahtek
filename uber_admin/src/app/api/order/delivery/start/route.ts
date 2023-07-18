@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     toSeller: true,
     path: [],
     deliveryManID: order.deliveryManID,
+    sellerID: order.sellerID,
   };
 
   await admin.firestore().collection("tracks").doc(order.id).set(newTrack);

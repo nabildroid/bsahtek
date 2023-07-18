@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     data: {
       order: JSON.stringify(order),
       click_action: "FLUTTER_NOTIFICATION_CLICK",
+      type:"new_order"
     },
   });
 

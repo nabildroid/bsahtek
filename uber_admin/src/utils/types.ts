@@ -112,6 +112,14 @@ export const AcceptOrder = Order.extend({
   reportId: true,
 });
 
+export const HandOver = Order.extend({
+  acceptedAt: z.string().transform((a) => new Date(a)),
+}).omit({
+  isDelivered: true,
+  reportId: true,
+  deliveryPath: true,
+});
+
 export const NewOrder = Order.extend({}).omit({
   id: true,
   acceptedAt: true,
@@ -122,6 +130,7 @@ export const NewOrder = Order.extend({}).omit({
   deliveryManID: true,
   deliveryPhone: true,
   deliveryName: true,
+
 });
 
 export const NewFood = z.object({
@@ -149,6 +158,7 @@ export const Track = z.object({
   orderID: z.string(),
   deliveryManID: z.string(),
   clientID: z.string(),
+  sellerID: z.string(),
   deliverLocation: z.object({
     latitude: z.number(),
     longitude: z.number(),
