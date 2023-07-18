@@ -4,6 +4,7 @@ import firebase from "@/local_repository/firebase";
 import { useRef } from "react";
 import { setLoginToken } from "@/utils";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function LoginButton() {
     const router = useRouter();
@@ -30,7 +31,11 @@ export default function LoginButton() {
 
             if (credential) {
 
-                setLoginToken(credential.accessToken!);
+                Cookies.remove("token");
+                Cookies.set("token", credential.accessToken!, {
+                    path: "/",
+                    expires: 10000000, // todo change this
+                });
                 router.replace("/");
 
 

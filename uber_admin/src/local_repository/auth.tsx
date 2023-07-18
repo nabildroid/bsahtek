@@ -23,6 +23,7 @@ export function ListenToAuth(onUser: (user: User) => void) {
       Cookies.remove("token");
       Cookies.set("token", token, {
         path: "/",
+        expires: 10000000, // todo change this
       });
 
       console.timeEnd("Fetching Token");
