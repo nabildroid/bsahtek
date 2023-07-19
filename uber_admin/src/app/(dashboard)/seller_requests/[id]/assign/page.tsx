@@ -28,6 +28,7 @@ export default function Page(props: Props) {
     });
 
 
+
     const bag = data?.bags[0];
 
 
@@ -38,9 +39,17 @@ export default function Page(props: Props) {
 
     const [bagInfo, setBagInfo] = useState<IBag>({
         ...(bag as any)
-
     });
 
+    const [latlng, setLatlng] = useState({
+        lat: bag?.latitude ?? 0,
+        lng: bag?.longitude ?? 0,
+    })
+
+
+    function update() {
+       
+    }
 
     return <div className="w-full max-w-3xl mx-auto -mt-4">
         <h2 className="font-bold text-black text-2xl  w-full max-w-3xl ">Assing Seller to Bag</h2>
@@ -83,6 +92,14 @@ export default function Page(props: Props) {
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
                 </div>
 
+
+                <div className="p-2 rounded-lg focus-within:bg-stone-200">
+                    <label className="text-sm font-bold px-2">Seller Location <sub>(use google map)</sub></label>
+                    <input
+                        value={sellerInfo.address}
+                        onChange={(e) => setSellerInfo({ ...sellerInfo, address: e.target.value })}
+                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+                </div>
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
                     <label className="text-sm font-bold px-2">Seller Address</label>
@@ -183,7 +200,7 @@ export default function Page(props: Props) {
                 </div>
 
                 <button className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
-                    Assign
+                    {sellerInfo.active ? "Update" : "Assign"}
                 </button>
 
             </div>

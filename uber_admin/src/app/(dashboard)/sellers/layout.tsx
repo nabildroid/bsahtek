@@ -5,6 +5,7 @@ import Icons from "@/svgs";
 import { useAtom } from "jotai";
 import * as Server from "@/local_repository/server";
 import { useQuery } from "react-query"
+import Link from "next/link";
 
 type Props = {
     children: React.ReactNode;
@@ -42,9 +43,9 @@ export default function Layout(props: Props) {
                     </div>
 
                 </div>
-                <button className="text-black font-bold group-hover:text-white  group-hover:bg-black py-2 w-full">
+                <Link href={`/seller_requests/${bag.sellerID}/assign`} className="block text-center text-black font-bold group-hover:text-white  group-hover:bg-black py-2 w-full">
                     Edit
-                </button>
+                </Link>
 
             </div>
             )}

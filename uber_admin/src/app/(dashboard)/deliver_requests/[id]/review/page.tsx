@@ -45,14 +45,15 @@ export default function Page(props: Props) {
                     <label className="text-sm font-bold px-2">Deliver Name</label>
                     <input
                         value={deliverInfo.name}
-                        onChange={(e) => setDeliverInfo({ ...deliverInfo, name: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Deliver Name" />
                 </div>
 
                 <div className="p-2 rounded-lg hover:bg-stone-200">
                     <label className="text-sm font-bold px-2">Deliver Photo</label>
                     <label className="relative w-full flex items-center justify-center overflow-hidden">
-                        <input type="file" className="absolute inset-0 opacity-0" />
+                        <input
+                            disabled
+                            type="file" className="absolute inset-0 opacity-0" />
                         {deliverInfo.photo ? <img src={deliverInfo.photo} className="absolute object-cover inset-0 " /> : null}
                         <div className="ring-2 z-50 ring-black/50 aspect-square p-2 rounded-full">
                             <Lucide.Image size={20} className="text-black" />
@@ -73,7 +74,6 @@ export default function Page(props: Props) {
                     <label className="text-sm font-bold px-2">Deliver Address</label>
                     <input
                         value={deliverInfo.address}
-                        onChange={(e) => setDeliverInfo({ ...deliverInfo, address: e.target.value })}
                         className="w-full  px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Deliver Name" />
                 </div>
 
@@ -81,7 +81,6 @@ export default function Page(props: Props) {
                     <label className="text-sm font-bold px-2">Deliver Wilaya</label>
                     <input
                         value={deliverInfo.wilaya}
-                        onChange={(e) => setDeliverInfo({ ...deliverInfo, wilaya: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Deliver Name" />
                 </div>
 
@@ -89,7 +88,6 @@ export default function Page(props: Props) {
                     <label className="text-sm font-bold px-2">Deliver Country</label>
                     <input
                         value={deliverInfo.country}
-                        onChange={(e) => setDeliverInfo({ ...deliverInfo, country: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Deliver Name" />
                 </div>
 
@@ -98,10 +96,14 @@ export default function Page(props: Props) {
 
 
         </div>
-
-        <button className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
+        {data?.active == false && <button className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
             Accept
-        </button>
+        </button>}
+
+        {data?.active == true && <button className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
+            Delete
+        </button>}
+
     </div>
 
 }
