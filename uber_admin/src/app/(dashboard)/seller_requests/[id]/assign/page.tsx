@@ -5,7 +5,7 @@ import { userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
 import { useQuery } from "react-query";
 import { useRouter } from "next/navigation";
-import { ISellerRequest } from "@/utils/types";
+import { ISeller } from "@/utils/types";
 import { useState } from "react";
 import { IBag } from "@/types";
 
@@ -31,7 +31,7 @@ export default function Page(props: Props) {
     const bag = data?.bags[0];
 
 
-    const [sellerInfo, setSellerInfo] = useState<ISellerRequest>({
+    const [sellerInfo, setSellerInfo] = useState<ISeller>({
         id: props.params.id,
         ...data!.seller
     });
