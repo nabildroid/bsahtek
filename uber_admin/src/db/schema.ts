@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   serial,
   mysqlTable,
@@ -7,6 +8,7 @@ import {
   double,
   int,
   boolean,
+  datetime,
 } from "drizzle-orm/mysql-core";
 
 export const bagsTable = mysqlTable("bags", {
@@ -28,4 +30,18 @@ export const bagsTable = mysqlTable("bags", {
   isPromoted: boolean("is_promoted").default(false),
   originalPrice: double("original_price").notNull(),
   price: double("price").notNull(),
+});
+
+export const statsTable = mysqlTable("stats", {
+  id: int("id").primaryKey().autoincrement(),
+  date: datetime("date")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+    
+  driversRequests: int("drivers_requests").notNull().default(0),
+  sellersRequests: int("sellers_requests").notNull().default(0),
+  delivered: int("delivered").notNull().default(0),
+  orders: int("orders").notNull().default(0),
+  earnings: double("earnings").notNull().default(0),
+  newClients: int("new_clients").notNull().default(0),
 });

@@ -1,4 +1,7 @@
-import { NotAllowed, VerificationError } from "../../repository/firebase";
+import firebase, {
+  NotAllowed,
+  VerificationError,
+} from "../../repository/firebase";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -6,6 +9,15 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   if (await NotAllowed(request)) return VerificationError();
 
-  console.log("working");
-  return NextResponse.json({ success: true });
+  const query = await firebase
+    .firestore()
+    .collection("uber")
+    .doc("stats")
+    .get();
+
+  if (!query.exists) return NextResponse.json({});
+
+  const stats = query.data();
+
+  return NextResponse.json({ stats });
 }

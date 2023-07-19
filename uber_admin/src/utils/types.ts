@@ -130,7 +130,6 @@ export const NewOrder = Order.extend({}).omit({
   deliveryManID: true,
   deliveryPhone: true,
   deliveryName: true,
-
 });
 
 export const NewFood = z.object({
@@ -198,3 +197,32 @@ export const Tracking = Track.omit({
   toSeller: true,
   updatedAt: true,
 });
+
+export const SellerRequest = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  phone: z.string(),
+  address: z.string(),
+  wilaya: z.string(),
+  country: z.string(),
+  storeType: z.string(),
+  storeName: z.string(),
+  storeAddress: z.string(),
+  photo: z.string(),
+  active: z.boolean().default(false),
+});
+
+export const DeliverRequest = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  phone: z.string(),
+  address: z.string(),
+  wilaya: z.string(),
+  country: z.string(),
+  photo: z.string(),
+
+  active: z.boolean().default(false),
+});
+
+export type ISellerRequest = z.infer<typeof SellerRequest>; // todo change the name of this Type of be SellerProfile ..
+export type IDeliverRequest = z.infer<typeof DeliverRequest>; // todo change the name of this Type of be SellerProfile ..

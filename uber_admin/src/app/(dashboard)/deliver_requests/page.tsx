@@ -20,8 +20,8 @@ export default function Page() {
             </div>
 
             <div className="space-x-1 text-sm">
-                <Link href="/seller_requests/ezfzefzefz/assign" className="px-2 py-1 rounded-md bg-black text-white">
-                    Accept
+                <Link href="/deliver_requests/ezfzefzefz/assign" className="px-2 py-1 rounded-md bg-black text-white">
+                    Review
                 </Link>
                 <button className="px-2 py-1 rounded-md border bg-stone-500/30 border-stone-600/40  text-black">
                     Delete
