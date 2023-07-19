@@ -2,7 +2,7 @@ import firebase, {
   NotAllowed,
   VerificationError,
 } from "@/app/api/repository/firebase";
-import { ISeller } from "@/utils/types";
+import { IDeliver } from "@/utils/types";
 import { NextResponse } from "next/server";
 
 // get list of all  (pending-tobe) drivers
@@ -11,16 +11,16 @@ export async function GET(request: Request) {
 
   const query = await firebase
     .firestore()
-    .collection("sellers")
-    .where("active", "==", false)
+    .collection("delivers")
+    .where("active", "==", true)
     .get();
 
-  const requests = query.docs.map((doc) => {
+  const delivers = query.docs.map((doc) => {
     return {
       id: doc.id,
       ...doc.data(),
-    } as ISeller;
+    } as IDeliver;
   });
 
-  return NextResponse.json({ requests });
+  return NextResponse.json({ delivers });
 }

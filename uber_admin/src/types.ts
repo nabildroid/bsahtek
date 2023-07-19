@@ -4,7 +4,7 @@ import { InferModel } from "drizzle-orm";
 export const Stats = z.object({
   lastUpdated: z.string().transform((val) => new Date(val)),
   today: z.object({
-    driversRequests: z.number(),
+    deliversRequests: z.number(),
     sellersRequests: z.number(),
     delivered: z.number(),
     orders: z.number(),
@@ -12,7 +12,7 @@ export const Stats = z.object({
     newClients: z.number(),
   }),
   thisMonth: z.object({
-    driversRequests: z.number(),
+    deliversRequests: z.number(),
     sellersRequests: z.number(),
     delivered: z.number(),
     orders: z.number(),
@@ -26,7 +26,7 @@ export const Stats = z.object({
     ),
   }),
   thisYear: z.object({
-    driversRequests: z.number(),
+    deliversRequests: z.number(),
     sellersRequests: z.number(),
     delivered: z.number(),
     orders: z.number(),

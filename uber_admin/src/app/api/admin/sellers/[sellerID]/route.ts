@@ -4,7 +4,7 @@ import firebase, {
   NotAllowed,
   VerificationError,
 } from "@/app/api/repository/firebase";
-import { ISellerRequest } from "@/utils/types";
+import { ISeller } from "@/utils/types";
 import { NextResponse } from "next/server";
 import * as Schema from "@/db/schema";
 
@@ -24,7 +24,7 @@ export async function GET(
 
   const query = await firebase
     .firestore()
-    .collection("seller_requests")
+    .collection("sellers")
     .doc(sellerID)
     .get();
   if (!query.exists) return new Response("Not Found", { status: 404 });
@@ -32,7 +32,7 @@ export async function GET(
   const data = {
     id: query.id,
     ...query.data(),
-  } as ISellerRequest;
+  } as ISeller;
 
   let bags = [] as any[];
   if (data.active) {

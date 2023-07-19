@@ -198,7 +198,7 @@ export const Tracking = Track.omit({
   updatedAt: true,
 });
 
-export const SellerRequest = z.object({
+export const Seller = z.object({
   id: z.string().optional(),
   name: z.string(),
   phone: z.string(),
@@ -212,7 +212,7 @@ export const SellerRequest = z.object({
   active: z.boolean().default(false),
 });
 
-export const DeliverRequest = z.object({
+export const Deliver = z.object({
   id: z.string().optional(),
   name: z.string(),
   phone: z.string(),
@@ -224,5 +224,5 @@ export const DeliverRequest = z.object({
   active: z.boolean().default(false),
 });
 
-export type ISellerRequest = z.infer<typeof SellerRequest>; // todo change the name of this Type of be SellerProfile ..
-export type IDeliverRequest = z.infer<typeof DeliverRequest>; // todo change the name of this Type of be SellerProfile ..
+export type ISeller = z.infer<typeof Seller>; // todo change the name of this Type of be SellerProfile ..
+export type IDeliver = z.infer<typeof Deliver>; // todo change the name of this Type of be SellerProfile ..
