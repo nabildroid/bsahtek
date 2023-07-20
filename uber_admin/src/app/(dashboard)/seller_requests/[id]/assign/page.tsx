@@ -5,7 +5,7 @@ import { userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
 import { useQuery } from "react-query";
 import { useRouter } from "next/navigation";
-import { ISeller } from "@/utils/types";
+import { AcceptSeller, ISeller, IAcceptSeller } from "@/utils/types";
 import { useState } from "react";
 import { IBag } from "@/types";
 
@@ -47,9 +47,39 @@ export default function Page(props: Props) {
     })
 
 
-    function update() {
-       
+    async function update() {
+
+        const updates = {
+            ...sellerInfo,
+            active: true,
+            latitude: latlng.lat,
+            longitude: latlng.lng,
+            bagCategory: sellerInfo.storeType,
+            bagName: bagInfo.name,
+            bagPrice: bagInfo.price,
+            bagDescription: bagInfo.description ?? "",
+            bagOriginalPrice: bagInfo.originalPrice,
+            bagPhoto: bagInfo.photo ?? "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3",
+            bagTags: (bagInfo.tags ?? "") as any,
+            bagID: bagInfo.id,
+            storeType: sellerInfo.storeType,
+        } as IAcceptSeller
+
+        const validation = AcceptSeller.safeParse(updates);
+
+        if (validation.success) {
+            await Server.updateSeller(props.params.id, updates);
+            router.push("/sellers");
+        }
     }
+
+    async function remove(){
+        await Server.removeSeller(props.params.id);
+        router.push("/sellers");
+    }
+
+
+
 
     return <div className="w-full max-w-3xl mx-auto -mt-4">
         <h2 className="font-bold text-black text-2xl  w-full max-w-3xl ">Assing Seller to Bag</h2>
@@ -57,7 +87,7 @@ export default function Page(props: Props) {
         <div className=" bg-white shadow-md  flex  flex-col items-start  sm:flex-row px-2   my-6">
 
 
-            <div className="p-2 pb-24 sm:border-r-2 border-dashed border-stone-500 space-y-2">
+            <div className="p-2 flex-1 pb-24 sm:border-r-2 border-dashed border-stone-500 space-y-2">
                 <h2 className="font-bold  text-black text-2xl mx-auto sm:text-center">Seller</h2>
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
@@ -147,12 +177,13 @@ export default function Page(props: Props) {
                 </div>
 
 
-                <button className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
+                {!(sellerInfo.active) && <button onClick={remove} className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
                     Delete
-                </button>
+                </button>}
+
             </div>
 
-            <div className="p-2 space-y-2 sticky top-20">
+            <div className="p-2 flex-1 space-y-2 sticky top-20">
                 <h2 className="font-bold text-black text-2xl mx-auto sm:text-center">Bag</h2>
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
@@ -163,25 +194,36 @@ export default function Page(props: Props) {
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
                 </div>
 
-                <div className="p-2 rounded-lg focus-within:bg-stone-200">
-                    <label className="text-sm font-bold px-2">Bag Price</label>
-                    <input
-                        value={bagInfo.price}
-                        onChange={(e) => setBagInfo({ ...bagInfo, price: Number(e.target.value) })}
-                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+                <div className="p-2 flex   rounded-lg focus-within:bg-stone-200">
+                    <div className="flex-1">
+                        <label className="text-sm font-bold px-2">Bag Price</label>
+                        <input
+                            value={bagInfo.price}
+                            onChange={(e) => setBagInfo({ ...bagInfo, price: Number(e.target.value) })}
+                            className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+
+                    </div>
+                    <div className="flex-1">
+                        <label className="text-sm font-bold px-2">Bag Original Price</label>
+                        <input
+                            value={bagInfo.originalPrice}
+                            onChange={(e) => setBagInfo({ ...bagInfo, originalPrice: Number(e.target.value) })}
+                            className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+                    </div>
                 </div>
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
-                    <label className="text-sm font-bold px-2">Bag Original Price</label>
-                    <input
-                        value={bagInfo.originalPrice}
-                        onChange={(e) => setBagInfo({ ...bagInfo, originalPrice: Number(e.target.value) })}
-                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+                    <label className="text-sm font-bold px-2">Bag Descripion</label>
+                    <textarea
+                        rows={2}
+                        value={(bagInfo.tags as any) ?? ""}
+                        onChange={(e) => setBagInfo({ ...bagInfo, tags: e.target.value })}
+                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name"></textarea>
                 </div>
 
                 <div className="p-2 rounded-lg hover:bg-stone-200">
                     <label className="text-sm font-bold px-2">Bag Photo</label>
-                    <label className="relative w-full flex items-center justify-center">
+                    <label className="relative overflow-hidden w-full flex items-center justify-center">
                         <input type="file" className="absolute inset-0 opacity-0" />
 
                         {bagInfo.photo ? <img src={bagInfo.photo} className="absolute object-cover inset-0 " /> : null}
@@ -199,7 +241,9 @@ export default function Page(props: Props) {
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
                 </div>
 
-                <button className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
+                <button
+                    onClick={update}
+                    className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
                     {sellerInfo.active ? "Update" : "Assign"}
                 </button>
 

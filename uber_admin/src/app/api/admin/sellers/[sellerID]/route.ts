@@ -4,21 +4,20 @@ import firebase, {
   NotAllowed,
   VerificationError,
 } from "@/app/api/repository/firebase";
-import { ISeller } from "@/utils/types";
+import { AcceptSeller, ISeller, Seller } from "@/utils/types";
 import { NextResponse } from "next/server";
 import * as Schema from "@/db/schema";
+import { IBag } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+type Context = {
+  params: {
+    sellerID: string;
+  };
+};
 // get details of a seller
-export async function GET(
-  request: Request,
-  context: {
-    params: {
-      sellerID: string;
-    };
-  }
-) {
+export async function GET(request: Request, context: Context) {
   if (await NotAllowed(request)) return VerificationError();
   const { sellerID } = context.params;
 
@@ -34,9 +33,11 @@ export async function GET(
     ...query.data(),
   } as ISeller;
 
+  console.log(data);
+
   let bags = [] as any[];
   if (data.active) {
-    const bags = await db
+    bags = await db
       .select()
       .from(Schema.bagsTable)
       .where(eq(Schema.bagsTable.sellerID, sellerID))
@@ -53,15 +54,69 @@ export async function GET(
 }
 
 // accept seller and assign them a bag
-export async function POST(request: Request) {
+export async function POST(request: Request, context: Context) {
   if (await NotAllowed(request)) return VerificationError();
+  const { sellerID } = context.params;
+  const demand = AcceptSeller.parse(await request.json());
+  if (sellerID !== demand.id)
+    return new Response("Bad Request", { status: 400 });
+
+  const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);
+  await sellerRef.update({
+    active: true,
+    address: demand.address,
+    country: demand.country,
+    name: demand.name,
+    phone: demand.phone,
+    photo: demand.photo,
+    storeAddress: demand.storeAddress,
+    storeName: demand.storeName,
+    storeType: demand.storeType,
+    wilaya: demand.wilaya,
+  } satisfies ISeller);
+
+  const bagData = {
+    sellerID: sellerID,
+    latitude: demand.latitude,
+    longitude: demand.longitude,
+    category: demand.bagCategory,
+    description: demand.bagDescription,
+    name: demand.bagName,
+    photo: demand.bagPhoto,
+    price: demand.bagPrice,
+    county: demand.country,
+    wilaya: demand.wilaya,
+    isPromoted: false,
+    originalPrice: demand.bagOriginalPrice,
+    rating: 0,
+    sellerAddress: demand.address,
+    sellerName: demand.name,
+    sellerPhone: demand.phone,
+    sellerPhoto: demand.photo,
+    tags: demand.bagTags,
+  } satisfies Partial<IBag>;
+
+  if (demand.bagID) {
+    await db
+      .update(Schema.bagsTable)
+      .set(bagData)
+      .where(eq(Schema.bagsTable.id, demand.bagID))
+      .execute();
+    // update
+  } else {
+    // insert
+    await db.insert(Schema.bagsTable).values(bagData).execute();
+  }
 
   return NextResponse.json({ success: true });
 }
 
-// update seller informations
-export async function PATCH(request: Request) {
+export async function DELETE(request: Request, context: Context) {
   if (await NotAllowed(request)) return VerificationError();
+  const { sellerID } = context.params;
+
+  const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);
+  await sellerRef.delete();
 
   return NextResponse.json({ success: true });
 }

@@ -7,7 +7,7 @@ import { useAtom } from "jotai";
 import { useQuery } from "react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IDeliver } from "@/utils/types";
+import { AcceptSeller, IAcceptSeller, IDeliver } from "@/utils/types";
 
 type Props = {
     params: {
@@ -31,6 +31,10 @@ export default function Page(props: Props) {
     const [deliverInfo, setDeliverInfo] = useState<IDeliver>({
         ...(data as any),
     })
+
+    function update(){
+    
+    }
 
 
     return <div className="w-full max-w-3xl mx-auto -mt-4">

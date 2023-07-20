@@ -224,5 +224,21 @@ export const Deliver = z.object({
   active: z.boolean().default(false),
 });
 
-export type ISeller = z.infer<typeof Seller>; // todo change the name of this Type of be SellerProfile ..
-export type IDeliver = z.infer<typeof Deliver>; // todo change the name of this Type of be SellerProfile ..
+export const AcceptSeller = Seller.extend({
+  active: z.literal(true),
+  bagName: z.string(),
+  bagDescription: z.string(),
+  bagPrice: z.number(),
+  bagOriginalPrice: z.number(),
+  bagPhoto: z.string(),
+  bagID: z.number().optional(),
+  latitude: z.number(),
+  longitude: z.number(),
+  bagCategory: z.string(),
+  bagTags: z.string(),
+});
+
+export type IAcceptSeller = z.infer<typeof AcceptSeller>;
+
+export type ISeller = z.infer<typeof Seller>;
+export type IDeliver = z.infer<typeof Deliver>;
