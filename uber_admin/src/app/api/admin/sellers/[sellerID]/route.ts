@@ -96,6 +96,8 @@ export async function POST(request: Request, context: Context) {
     tags: demand.bagTags,
   } satisfies Partial<IBag>;
 
+  // todo update userClaims
+
   if (demand.bagID) {
     await db
       .update(Schema.bagsTable)
@@ -108,6 +110,15 @@ export async function POST(request: Request, context: Context) {
     await db.insert(Schema.bagsTable).values(bagData).execute();
   }
 
+  try {
+    await firebase.auth().setCustomUserClaims(sellerID, {
+      role: "seller",
+    });
+    // todo update also the informations
+  } catch (e) {
+    console.log("how the seller user doesn't exists?", sellerID);
+  }
+
   return NextResponse.json({ success: true });
 }
 
@@ -117,6 +128,13 @@ export async function DELETE(request: Request, context: Context) {
 
   const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);
   await sellerRef.delete();
+
+  try {
+    await firebase.auth().deleteUser(sellerID);
+    // todo update also the informations
+  } catch (e) {
+    console.log("how the seller user doesn't exists?", sellerID);
+  }
 
   return NextResponse.json({ success: true });
 }

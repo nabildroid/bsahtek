@@ -2,7 +2,7 @@ import firebase, {
   NotAllowed,
   VerificationError,
 } from "@/app/api/repository/firebase";
-import { IDeliver } from "@/utils/types";
+import { Deliver, IDeliver } from "@/utils/types";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -37,15 +37,33 @@ export async function GET(request: Request, context: Context) {
 export async function POST(request: Request, context: Context) {
   if (await NotAllowed(request)) return VerificationError();
 
-  return NextResponse.json({ success: true });
-}
-
-export async function DELETE(request: Request, context: Context) {
-  if (await NotAllowed(request)) return VerificationError();
-
   const { deliverID } = context.params;
-  await firebase.firestore().collection("delivers").doc(deliverID).delete();
-  // todo see what to do with the information that is related to this deliver (orders ....)
+  const demand = Deliver.parse(await request.json());
+  if (demand.id != "" && deliverID !== demand.id)
+    return new Response("Bad Request", { status: 400 });
 
+  const sellerRef = firebase.firestore().collection("delivers").doc(deliverID);
+  if (demand.active) {
+    await sellerRef.update({
+      active: true,
+    });
+
+    try {
+      await firebase.auth().setCustomUserClaims(deliverID, {
+        role: "deliver",
+      });
+    } catch (e) {
+      console.log("how the delivery user doesn't exists?", deliverID);
+    }
+    
+  } else {
+    await sellerRef.update({
+      suspended: true,
+    });
+
+    await firebase.auth().updateUser(deliverID, {
+      disabled: true,
+    });
+  }
   return NextResponse.json({ success: true });
 }

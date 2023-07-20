@@ -16,6 +16,12 @@ export function ListenToAuth(onUser: (user: User) => void) {
   return AuthClient.onIdTokenChanged(async (user) => {
     if (user) {
       const data = await user.getIdTokenResult();
+      // if (data.claims.isAdmin != true) {
+      //   AuthClient.signOut();
+      //   Cookies.remove("token");
+      //   Cookies.remove("isLogged");
+      //   location.reload();
+      // }
 
       const { token } = data;
       console.log("sync token", token);
@@ -31,7 +37,7 @@ export function ListenToAuth(onUser: (user: User) => void) {
         ...user,
         ...data.claims,
       } as any);
-      
+
     } else {
       Cookies.remove("token");
       Cookies.remove("isLogged");

@@ -15,7 +15,7 @@ export default function Page() {
 
         <div className="text-center max-w-sm w-full">
             {/* logo */}
-            <img src="/vercel.svg" alt="logo" className="mx-auto " />
+            <img src="/static/logo.png" alt="logo" className="mx-auto " />
 
 
             <LoginButton />

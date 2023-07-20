@@ -24,7 +24,9 @@ export default function Page(props: Props) {
         suspense: true,
         onError: (error) => {
             router.replace("/seller_requests");
-        }
+        },
+        retry: 0
+
     });
 
 
@@ -73,7 +75,7 @@ export default function Page(props: Props) {
         }
     }
 
-    async function remove(){
+    async function remove() {
         await Server.removeSeller(props.params.id);
         router.push("/sellers");
     }

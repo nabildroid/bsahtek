@@ -32,8 +32,16 @@ export default function Page(props: Props) {
         ...(data as any),
     })
 
-    function update(){
-    
+    async function accept() {
+        await Server.acceptDeliver(props.params.id, {
+            ...deliverInfo,
+            active: true,
+        });
+        router.replace("/delivers");
+    }
+
+    function suspend() {
+
     }
 
 
@@ -43,7 +51,6 @@ export default function Page(props: Props) {
         <div className=" bg-white shadow-md  grid grid-cols-1 px-2   mt-6 py-2">
 
             <div className="p-2 border-b-2 border-dashed border-stone-500 space-y-2">
-                <h2 className="font-bold  text-black text-2xl mx-auto sm:text-center">Deliver Informations</h2>
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
                     <label className="text-sm font-bold px-2">Deliver Name</label>
@@ -100,12 +107,16 @@ export default function Page(props: Props) {
 
 
         </div>
-        {data?.active == false && <button className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
+        {data?.active == false && <button
+            onClick={accept}
+            className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
             Accept
         </button>}
 
-        {data?.active == true && <button className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
-            Delete
+        {data?.active == true && <button
+            onClick={suspend}
+            className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
+            suspend
         </button>}
 
     </div>

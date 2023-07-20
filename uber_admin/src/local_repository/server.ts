@@ -80,3 +80,8 @@ export async function removeSeller(sellerID: string) {
   const { data } = await Http.delete(`/admin/sellers/${sellerID}`);
   return data;
 }
+
+export async function acceptDeliver(deliverID: string, demand: IDeliver) {
+  const { data } = await Http.post(`/admin/delivers/${deliverID}`, demand);
+  return data;
+}
