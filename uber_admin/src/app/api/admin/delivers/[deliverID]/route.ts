@@ -42,6 +42,10 @@ export async function POST(request: Request, context: Context) {
   if (demand.id != "" && deliverID !== demand.id)
     return new Response("Bad Request", { status: 400 });
 
+  await firebase.auth().setCustomUserClaims(deliverID, {
+    role: "deliver",
+  });
+
   const sellerRef = firebase.firestore().collection("delivers").doc(deliverID);
   if (demand.active) {
     await sellerRef.update({
@@ -55,7 +59,6 @@ export async function POST(request: Request, context: Context) {
     } catch (e) {
       console.log("how the delivery user doesn't exists?", deliverID);
     }
-    
   } else {
     await sellerRef.update({
       suspended: true,

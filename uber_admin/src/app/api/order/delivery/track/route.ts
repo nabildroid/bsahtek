@@ -1,4 +1,7 @@
-import firebase from "@/app/api/repository/firebase";
+import firebase, {
+  NotAllowed,
+  VerificationError,
+} from "@/app/api/repository/firebase";
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
 import {
   AcceptOrder,
@@ -10,6 +13,8 @@ import {
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
+  if (await NotAllowed(request)) return VerificationError();
+
   const tracking = Tracking.parse(await request.json());
 
   const update = {
