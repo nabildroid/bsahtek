@@ -6,63 +6,62 @@ import '../model/order.dart';
 import '../model/seller.dart';
 
 class Cache {
-  final SharedPreferences _sharedPreferences;
-  Cache(this._sharedPreferences);
-
-  bool get isFirstRun {
-    return true;
-    final isit = _sharedPreferences.getBool('isFirstRun') ?? false;
-    if (!isit) {
-      _sharedPreferences.setBool('isFirstRun', true);
-    }
-    return isit;
+  static late SharedPreferences _instance;
+  static Future<void> init() async {
+    _instance = await SharedPreferences.getInstance();
+    _instance.clear();
   }
 
-  Seller? get user {
+  static bool get isFirstRun {
+    final isIt = _instance.getBool("isFirstRun") ?? true;
+    _instance.setBool("isFirstRun", false);
+
+    return isIt;
+  }
+
+  static Seller? get seller {
     // saved as json
-    final userJson = _sharedPreferences.getString('user');
+    final userJson = _instance.getString('user');
     if (userJson == null) {
       return null;
     }
     return Seller.fromJson(jsonDecode(userJson));
   }
 
-  set user(Seller? user) {
+  static set seller(Seller? user) {
     if (user == null) {
-      _sharedPreferences.remove('user');
+      _instance.remove('user');
     } else {
-      _sharedPreferences.setString('user', jsonEncode(user.toJson()));
+      _instance.setString('user', jsonEncode(user.toJson()));
     }
   }
 
-  Future<void> pushRunningOrder(Order order) async {
+  static Future<void> pushRunningOrder(Order order) async {
     // get running orders then add the new one and save it
-    final runningOrdersJson =
-        _sharedPreferences.getStringList('runningOrders') ?? [];
+    final runningOrdersJson = _instance.getStringList('runningOrders') ?? [];
     runningOrdersJson.add(jsonEncode(order.toJson()));
-    await _sharedPreferences.setStringList('runningOrders', runningOrdersJson);
+    await _instance.setStringList('runningOrders', runningOrdersJson);
   }
 
-  Future<void> recache() async {
-    await _sharedPreferences.reload();
+  static Future<void> recache() async {
+    await _instance.reload();
   }
 
-  Future<void> clear() async {
-    await _sharedPreferences.clear();
+  static Future<void> clear() async {
+    await _instance.clear();
   }
 
-  List<Order> get runningOrders {
-    final runningOrdersJson =
-        _sharedPreferences.getStringList('runningOrders') ?? [];
+  static List<Order> get runningOrders {
+    final runningOrdersJson = _instance.getStringList('runningOrders') ?? [];
     return runningOrdersJson.map((e) => Order.fromJson(jsonDecode(e))).toList();
   }
 
-  List<Order> get prevOrders {
-    final prevOrdersJson = _sharedPreferences.getStringList('prevOrders') ?? [];
+  static List<Order> get prevOrders {
+    final prevOrdersJson = _instance.getStringList('prevOrders') ?? [];
     return prevOrdersJson.map((e) => Order.fromJson(jsonDecode(e))).toList();
   }
 
-  DateTime get lastUpdatedPrevOrders {
+  static DateTime get lastUpdatedPrevOrders {
     final olders = prevOrders;
     if (olders.isEmpty) {
       return DateTime.now();
@@ -74,7 +73,7 @@ class Cache {
     return t;
   }
 
-  Future<void> updatePrevOrder(Order order) async {
+  static Future<void> updatePrevOrder(Order order) async {
     final olders = prevOrders;
     final index = olders.indexWhere((element) => element.id == order.id);
     if (index == -1) {
@@ -82,12 +81,12 @@ class Cache {
     } else {
       olders[index] = order;
     }
-    await _sharedPreferences.setStringList(
+    await _instance.setStringList(
         'prevOrders', olders.map((e) => jsonEncode(e.toJson())).toList());
   }
 
-  Map<String, int> get quantities {
-    final quantitiesJson = _sharedPreferences.getStringList('quantities') ?? [];
+  static Map<String, int> get quantities {
+    final quantitiesJson = _instance.getStringList('quantities') ?? [];
     return {};
     return quantitiesJson
         .map((e) => jsonDecode(e) as Map<String, int>)
@@ -97,8 +96,8 @@ class Cache {
     });
   }
 
-  set quantities(Map<String, int> quantities) {
-    _sharedPreferences.setStringList(
+  static set quantities(Map<String, int> quantities) {
+    _instance.setStringList(
         'quantities',
         quantities
             .map((key, value) => MapEntry(key, jsonEncode(value)))

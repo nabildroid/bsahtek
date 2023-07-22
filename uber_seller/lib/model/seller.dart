@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uber_seller/model/bag.dart';
 
 class LatLng {
@@ -15,16 +16,14 @@ class Seller {
   final String name;
   final String photo;
   final String phone;
-  final LatLng location;
-  final List<Bag> bags;
+  final bool isActive;
 
   Seller({
     required this.id,
     required this.name,
     required this.photo,
     required this.phone,
-    required this.location,
-    required this.bags,
+    this.isActive = false,
   });
 
   factory Seller.fromJson(Map<String, dynamic> json) {
@@ -33,25 +32,7 @@ class Seller {
       name: json['name'],
       photo: json['photo'],
       phone: json['phone'],
-      location: LatLng(
-        latitude: json['location']['latitude'],
-        longitude: json['location']['longitude'],
-      ),
-      bags: json['bags'].map<Bag>((e) => Bag.fromJson(e)).toList(),
-    );
-  }
-
-  factory Seller.fromBags(List<Bag> bags) {
-    return Seller(
-      id: bags.first.id.toString(),
-      name: bags.first.sellerName,
-      photo: "https://picsum.photos/200/300",
-      location: LatLng(
-        latitude: bags.first.latitude,
-        longitude: bags.first.longitude,
-      ),
-      phone: '+2133333333',
-      bags: bags,
+      isActive: json['isActive'] ?? false,
     );
   }
 
@@ -61,11 +42,17 @@ class Seller {
       'name': name,
       'photo': photo,
       'phone': phone,
-      'location': {
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-      },
-      'bags': bags.map((e) => e.toJson()).toList(),
+      'isActive': isActive,
     };
+  }
+
+  static Seller fromUser(User user, bool isActive) {
+    return Seller(
+      id: user.uid,
+      name: user.displayName ?? "Seller",
+      photo: user.photoURL ?? "",
+      phone: user.phoneNumber ?? "",
+      isActive: isActive,
+    );
   }
 }

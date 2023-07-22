@@ -4,7 +4,7 @@ class Bag {
   final String description;
   final String photo;
   final String category;
-  final List<String> tags;
+  final String tags;
   final String sellerName;
   final String sellerAddress;
   final String sellerID;
@@ -46,7 +46,7 @@ class Bag {
       description: json['description'],
       photo: json['photo'],
       category: json['category'],
-      tags: List<String>.from(json['tags']),
+      tags: json['tags'],
       sellerName: json['sellerName'],
       sellerAddress: json['sellerAddress'],
       sellerID: json['sellerID'],

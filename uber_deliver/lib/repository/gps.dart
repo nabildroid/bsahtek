@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 class GpsRepository {
   static Future<Offset?> getCurrentPosition() async {
@@ -26,5 +27,18 @@ class GpsRepository {
     final permssion = await Geolocator.requestPermission();
     return permssion == LocationPermission.always ||
         permssion == LocationPermission.whileInUse;
+  }
+
+  static Future<LatLng?> getLocation() async {
+    final refusedToUseLocation = !await GpsRepository.isPermitted() &&
+        !await GpsRepository.requestPermission();
+
+    if (refusedToUseLocation) {
+      return null;
+    } else {
+      final coords = await GpsRepository.getCurrentPosition();
+      if (coords == null) return null;
+      return LatLng(coords.dy, coords.dx);
+    }
   }
 }

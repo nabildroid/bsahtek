@@ -77,6 +77,7 @@ class ServiceCubit extends Cubit<ServiceState> {
         ));
 
   BuildContext? freshContext;
+
   List<void Function(BuildContext context)> waitingForContext = [];
 
   void setContext(BuildContext context) {
@@ -94,7 +95,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     waitingForContext.add((context) => context);
   }
 
-  void toggleAvailability(BuildContext context) async {
+  void toggleAvailability() async {
     if (state.isAvailable) {
       await RemoteMessages().unattachFromCells(Cache.attachedCells);
       Cache.attachedCells = [];
@@ -105,7 +106,7 @@ class ServiceCubit extends Cubit<ServiceState> {
       emit(state.copyWith(loadingAvailability: true));
       RemoteMessages().setUpBackgroundMessageHandler();
 
-      final location = await getLocation();
+      final location = await GpsRepository.getLocation();
       if (location == null) return;
 
       final city = await DirectionRepository.getCityName(location);
@@ -129,23 +130,11 @@ class ServiceCubit extends Cubit<ServiceState> {
     ));
   }
 
-  static Future<LatLng?> getLocation() async {
-    final refusedToUseLocation = !await GpsRepository.isPermitted() &&
-        !await GpsRepository.requestPermission();
-
-    if (refusedToUseLocation) {
-      return null;
-    } else {
-      final coords = await GpsRepository.getCurrentPosition();
-      if (coords == null) return null;
-      return LatLng(coords.dy, coords.dx);
-    }
-  }
-
   void killDelivery() async {
     await Notifications.notAvailable();
-    emit(state.killRunningRequst());
+    emit(state.killRunningRequst().copyWith(isAvailable: false));
     Cache.runningRequest = null;
+    Cache.setAvailabilityLocation(null);
     await Backgrounds.stopRunning();
   }
 
@@ -188,44 +177,46 @@ class ServiceCubit extends Cubit<ServiceState> {
     }
   }
 
-  void init(BuildContext context) {
-    print("Initigng the service CUbit");
+  // make sure this is going to be called only once
+  void init() async {
+    print("Initing the cubits");
 
-    bool keepWorking = true;
-    // for this hack to work, it init must be the last one in the loading Init phase!
-    Future.delayed(Duration(milliseconds: 500)).then((_) async {
-      if (keepWorking == false) return;
+    initListener();
 
-      emit(state.copyWith(
-        runningRequest: Cache.runningRequest,
-        focusOnRunning: true,
-        isAvailable: Cache.availabilityLocation != null,
-      ));
+    emit(state.copyWith(
+      runningRequest: Cache.runningRequest,
+      focusOnRunning: true,
+      isAvailable: Cache.availabilityLocation != null,
+    ));
 
-      if (Cache.runningRequest != null) {
-        useContext(
-            (context) => RunningScreen.go(context, Cache.runningRequest!));
-        await Backgrounds.stopRunning();
-        await Backgrounds.schedulerRunning();
+    final needToShowRunning = Cache.runningRequest != null;
+    if (needToShowRunning) {
+      useContext((context) => RunningScreen.go(context, Cache.runningRequest!));
+      await Backgrounds.stopRunning();
+      await Backgrounds.schedulerRunning();
+    } else {
+      final isAlreadyAvailable = Cache.availabilityLocation != null;
+      if (isAlreadyAvailable) {
+        final city =
+            await DirectionRepository.getCityName(Cache.availabilityLocation!);
+        await Notifications.available(city: city);
+        await Backgrounds.stopAvailability();
+        await Backgrounds.schedulerAvailability();
       } else {
-        if (Cache.availabilityLocation != null) {
-          final city = await DirectionRepository.getCityName(
-              Cache.availabilityLocation!);
-          await Notifications.available(city: city);
-          await Backgrounds.stopAvailability();
-          await Backgrounds.schedulerAvailability();
-        } else {
-          await Backgrounds.stopAvailability();
-        }
+        // stop everything just in case
+        await Backgrounds.stopAvailability();
+        await Notifications.notAvailable();
+        await RemoteMessages().unattachFromCells(Cache.attachedCells);
       }
-    });
+    }
+  }
 
+  void initListener() {
     RemoteMessages().listenToMessages((message, fromForground) async {
       if (!message.data.containsKey("type") ||
           message.data["type"] != "orderAccepted") return;
 
       if (Cache.availabilityLocation == null) return;
-      keepWorking = false;
 
       if (fromForground) {
         final request =
@@ -234,7 +225,8 @@ class ServiceCubit extends Cubit<ServiceState> {
         emit(state.copyWith(
           selectedRequest: request,
         ));
-        useContext((context) => RunningNotiScreen.go(context, request));
+        useContext(
+            (ctx) => Navigator.of(ctx).push(RunningNotiScreen.go(request)));
         return;
       } else {
         final order = Order.fromJson(jsonDecode(message.data["order"]));
@@ -247,7 +239,8 @@ class ServiceCubit extends Cubit<ServiceState> {
               selectedRequest: request,
             ));
 
-            useContext((context) => RunningNotiScreen.go(context, request));
+            useContext(
+                (ctx) => Navigator.of(ctx).push(RunningNotiScreen.go(request)));
             return;
           }
           await Future.delayed(Duration(seconds: 1));
@@ -258,13 +251,9 @@ class ServiceCubit extends Cubit<ServiceState> {
     Notifications.onClick((type) {
       if (type == "onMission") {
         if (state.focusOnRunning == false) {
-          emit(state.copyWith(
-            focusOnRunning: true,
-          ));
-          useContext((context) => RunningScreen.go(
-                context,
-                state.runningRequest!,
-              ));
+          emit(state.copyWith(focusOnRunning: true));
+          useContext(
+              (context) => RunningScreen.go(context, state.runningRequest!));
         }
       }
     });

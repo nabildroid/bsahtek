@@ -5,7 +5,7 @@ import '../main.dart';
 class RemoteMessages {
   final _firebaseMessages = FirebaseMessaging.instance;
 
-  Future<String> initMessages() async {
+  Future<void> initMessages() async {
     await _firebaseMessages.requestPermission(
       alert: true,
       announcement: true,
@@ -15,7 +15,9 @@ class RemoteMessages {
       provisional: true,
       sound: true,
     );
+  }
 
+  Future<String> getToken() async {
     final fCMToken = await _firebaseMessages.getToken();
     if (fCMToken == null) {
       throw Exception('Permission not granted');

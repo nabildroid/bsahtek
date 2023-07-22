@@ -4,7 +4,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_seller/cubits/app_cubit.dart';
+import 'package:uber_seller/cubits/home_cubit.dart';
 
 import '../model/order.dart';
 
@@ -23,7 +23,7 @@ class RunningOrder extends StatefulWidget {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
-            value: context.read<AppQubit>(),
+            value: context.read<HomeCubit>(),
             child: RunningOrder(
               order: order,
               index: index,
@@ -66,13 +66,13 @@ class _RunningOrderState extends State<RunningOrder> {
 
   void handleAccept() async {
     if (widget.isPickup == false) {
-      context.read<AppQubit>().acceptOrder(widget.order);
+      context.read<HomeCubit>().acceptOrder(widget.order);
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
         Navigator.of(context).pop();
       });
     } else {
-      context.read<AppQubit>().handOver(widget.order);
+      context.read<HomeCubit>().handOver(widget.order);
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
         Navigator.of(context).pop();

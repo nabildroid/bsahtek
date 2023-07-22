@@ -2,26 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
 import 'package:uber_deliver/repository/server.dart';
 
 import '../models/delivery_man.dart';
 import '../models/delivery_request.dart';
 import '../repository/cache.dart';
-import '../repository/direction.dart';
 
 class RunningNotiScreen extends StatefulWidget {
   final DeliveryRequest deliveryRequest;
 
-  static go(BuildContext ctx, DeliveryRequest deliveryRequest) {
-    return Navigator.of(ctx).push(
-      MaterialPageRoute(
-        builder: (ctx) => RunningNotiScreen(
-          deliveryRequest: deliveryRequest,
-        ),
-      ),
-    );
-  }
+  static go(DeliveryRequest deliveryRequest) => MaterialPageRoute(
+        builder: (ctx) => RunningNotiScreen(deliveryRequest: deliveryRequest),
+      );
 
   RunningNotiScreen({
     Key? key,
@@ -48,22 +42,18 @@ class _RunningNotiScreenState extends State<RunningNotiScreen> {
 
     Server().listenToOrder(widget.deliveryRequest.order.id, (updates) {
       if (updates.deliveryManID != null) {
-        // exit();
+        tobeDisposed?.call();
+        exit();
       }
     }).then((stop) => tobeDisposed = stop);
   }
 
   void accept() async {
     tobeDisposed?.call();
-
+    final deliveryMan = context.read<AppCubit>().state.deliveryMan!;
     // todo consider moving this to the cubit!
     await Server().setDeliver(
-      DeliveryMan(
-        id: "zfefzefz",
-        name: "Nabil",
-        phone: "+21356565656",
-        photo: "https://arib.shop/logo1.png",
-      ),
+      deliveryMan,
       widget.deliveryRequest.order,
       Cache.availabilityLocation!, // dangerous
     );

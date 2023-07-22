@@ -1,15 +1,18 @@
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uber_seller/cubits/app_cubit.dart';
 import 'package:uber_seller/screens/running_order.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../cubits/app_cubit.dart';
+import '../cubits/home_cubit.dart';
 import '../model/order.dart';
 import '../utils/life_cycle.dart';
 import '../widgets/skelaton.dart';
 
 class HomeScreen extends StatefulWidget {
+  static go() => MaterialPageRoute(builder: (context) => HomeScreen());
+
   HomeScreen({Key? key}) : super(key: key);
 
   @override
@@ -23,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    context.read<HomeCubit>().init();
     WidgetsBinding.instance.addObserver(this);
 
     _scrollController.addListener(() => setState(
@@ -35,14 +39,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
     if (appLifecycleState == AppLifecycleState.resumed) {
-      context.read<AppQubit>().handlePendingRunningOrders();
+      context.read<HomeCubit>().handlePendingRunningOrders();
     }
     super.didChangeAppLifecycleState(appLifecycleState);
   }
 
   @override
   Widget build(BuildContext context) {
-    context.read<AppQubit>().setContext(context);
+    context.read<HomeCubit>().setContext(context);
+    final app = context.read<AppCubit>();
 
     return SafeArea(
         child: Scaffold(
@@ -51,14 +56,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           top: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              BlocBuilder<AppQubit, AppState>(builder: (context, state) {
-                return Row(
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AnimatedSwitcher(
+              Row(
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BlocBuilder<HomeCubit, HomeState>(
+                        builder: (context, state) => AnimatedSwitcher(
                           duration: Duration(seconds: 1),
                           key: ValueKey(state.quantity),
                           child: RichText(
@@ -80,37 +85,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        SizedBox(height: 5),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            "Available Bags for Clients",
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(.7),
-                            ),
+                      ),
+                      SizedBox(height: 5),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          "Available Bags for Clients",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(.7),
                           ),
                         ),
-                      ],
-                    ),
-                    Spacer(),
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                        image: DecorationImage(
-                          image: NetworkImage(state.user!.photo),
-                          fit: BoxFit.cover,
-                        ),
                       ),
-                    )
-                  ],
-                );
-              }),
+                    ],
+                  ),
+                  Spacer(),
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      image: DecorationImage(
+                        image: NetworkImage(app.state.seller!.photo),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                ],
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -129,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               )
             ],
           ),
-          bottom: BlocBuilder<AppQubit, AppState>(builder: (context, state) {
+          bottom: BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
             return SingleChildScrollView(
               controller: _scrollController,
               child: Column(
@@ -207,8 +212,10 @@ class BagPreview extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: BlocBuilder<AppQubit, AppState>(builder: (context, state) {
-            final bag = state.user!.bags.first;
+          child: BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
+            final bag = state.bags.isEmpty ? null : state.bags.first;
+            if (bag == null) return Container();
+
             return Column(
               children: [
                 Expanded(

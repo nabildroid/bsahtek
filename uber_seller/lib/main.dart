@@ -13,12 +13,13 @@ import 'package:uber_seller/model/seller.dart';
 import 'package:uber_seller/repository/cache.dart';
 import 'package:uber_seller/repository/messages_remote.dart';
 import 'package:uber_seller/repository/server.dart';
-import 'package:uber_seller/screens/Loading.dart';
+import 'package:uber_seller/screens/Loading_to_home.dart';
 import 'package:uber_seller/screens/home.dart';
 import 'package:uber_seller/screens/running_order.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'cubits/app_cubit.dart';
+import 'cubits/home_cubit.dart';
 import 'model/order.dart';
 
 void main() async {
@@ -32,21 +33,19 @@ void main() async {
     return;
   }
 
-  final cache = Cache(await SharedPreferences.getInstance());
+  final cache = Cache.init();
 
   await Server.init();
 
-  runApp(MyApp(
-    cache: cache,
-  ));
+  runApp(MyApp());
 }
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final Cache cache = Cache(await SharedPreferences.getInstance());
+  Cache.init();
 
   final order = Order.fromJson(jsonDecode(message.data["order"]));
-  await cache.pushRunningOrder(order);
+  await Cache.pushRunningOrder(order);
 
   if (false) {
     AndroidIntent intent = AndroidIntent(
@@ -68,6 +67,7 @@ Future<String?> getIntentData() async {
   } on PlatformException {
     // Handle exception
   }
+  return null;
 }
 
 class QuickRunningOrderApp extends StatelessWidget {
@@ -92,23 +92,21 @@ class QuickRunningOrderApp extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
-  final Cache cache;
-  const MyApp({super.key, required this.cache});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (ctx) => AppQubit(
-        cache: cache,
-        remoteMessages: RemoteMessages(),
-      )..init(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (ctx) => AppCubit()),
+        BlocProvider(create: (ctx) => HomeCubit()),
+      ],
       child: MaterialApp(
-        title: 'Uber Seller',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
-        home: const LoadingScreen(),
+        home: LoadingToHomeScreen(),
       ),
     );
   }

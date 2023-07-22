@@ -1,39 +1,40 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import "package:http/http.dart" as Http;
 import 'package:uber_seller/model/bag.dart';
 
 import '../model/seller.dart';
 import '../model/order.dart' as Model;
+import '../model/sellerSubmit.dart';
 import '../utils/firestore.dart';
-
-final endpoint =
-    (String path) => Uri.parse("http://192.168.0.105:3000/api/$path");
 
 class Server {
   static late FirebaseFirestore firestore;
 
+  static late FirebaseAuth auth;
+  static Dio http = Dio(BaseOptions(
+    baseUrl: "http://192.168.0.105:3000/api/",
+  ));
+
   static Future<void> init() async {
-    final firebase = await Firebase.initializeApp();
+    await Firebase.initializeApp();
     firestore = FirebaseFirestore.instance;
+    auth = FirebaseAuth.instance;
+    // auth.signOut();
   }
 
   Server();
 
-  Future<List<Bag>> _getBags(String sellerID) async {
-    final response = await Http.get(endpoint("seller/$sellerID/bags"));
-    final json = jsonDecode(response.body)["bags"];
+  Future<List<Bag>> getBags() async {
+    final sellerID = auth.currentUser!.uid;
+    final response = await http.get("seller/$sellerID/bags");
+    final json = response.data["bags"];
 
     return json.map<Bag>((e) => Bag.fromJson(e)).toList();
-  }
-
-  Future<Seller> getSeller(String sellerID) async {
-    final bags = await _getBags(sellerID);
-
-    return Seller.fromBags(bags);
   }
 
   Future<Map<String, int>> getQuantities(List<String> bagsIds) async {
@@ -61,39 +62,79 @@ class Server {
   }
 
   Future<void> assignNotiIDtoSeller({
-    String? sellerID,
-    String? notiID,
+    required String sellerID,
+    required String notiID,
   }) {
     return firestore.collection('sellers').doc(sellerID).update({
       'notiID': notiID,
     });
   }
 
-  Future<void> acceptOrder(Model.Order order) async {
-    await Http.post(
-      endpoint("order/accept"),
-      body: jsonEncode(order.toJson()),
-      headers: {
-        "Content-Type": "application/json",
+  void injectToken(String token) {
+    http.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        options.headers["authorization"] = "Bearer ${token}";
+        return handler.next(options);
       },
-    );
+    ));
+  }
+
+  Future<void> setupTokenization({bool alreadyInited = false}) async {
+    // todo it should break when the user is disabled, not exists ...etc
+    if (!alreadyInited) {
+      final token = await auth.currentUser!.getIdToken();
+      injectToken(token);
+    }
+
+    auth.idTokenChanges().listen((event) async {
+      if (event == null) {
+        http.interceptors.clear();
+      } else {
+        final token = await event.getIdToken();
+        injectToken(token);
+      }
+    });
+  }
+
+  VoidCallback onUserChange(Function(Seller?) listen,
+      {bool forceFirst = false}) {
+    bool forced = false;
+    final sub = auth.authStateChanges().listen((event) async {
+      if (event == null) {
+        listen(null);
+      } else {
+        // calling getIdTokenResult will force authStateChanges to be called again
+        final idToken = await event.getIdTokenResult(
+          forced == false && forceFirst,
+        );
+
+        injectToken(idToken.token!);
+        final role = idToken.claims?["role"] ?? "";
+        forced = true;
+
+        listen(Seller.fromUser(
+          event,
+          role == "seller",
+        ));
+      }
+    });
+
+    return sub.cancel;
+  }
+
+  Future<void> acceptOrder(Model.Order order) async {
+    await http.post("order/accept", data: jsonEncode(order.toJson()));
   }
 
   Future<void> handOver(Model.Order order) async {
-    await Http.post(
-      endpoint("order/handover"),
-      body: jsonEncode(order.toJson()),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
+    await http.post("order/handover", data: jsonEncode(order.toJson()));
   }
 
   Future<VoidCallback> listenToOrders({
-    required String sellerID,
     required DateTime lastUpdated,
     required void Function(List<Model.Order>) onChange,
   }) async {
+    final sellerID = auth.currentUser!.uid;
     final query = firestore.collection("orders");
     // .where("sellerID", isEqualTo: sellerID)
     // .where("updatedAt", isGreaterThan: lastUpdated);
@@ -112,5 +153,21 @@ class Server {
     });
 
     return stream.cancel;
+  }
+
+  Future<void> submitSeller(
+      String sellerID, String phone, SellerSubmit seller) async {
+    await Future.wait([
+      firestore.collection('sellers').doc(sellerID).set({
+        ...seller.toJson(),
+        'active': false,
+        'phone': phone,
+      }),
+      auth.currentUser!.updateDisplayName(seller.name),
+      auth.currentUser!.updatePhotoURL(seller.photo),
+    ]);
+
+    auth.currentUser!.reload();
+    // update the user account!
   }
 }

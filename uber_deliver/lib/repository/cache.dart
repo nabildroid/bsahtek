@@ -38,8 +38,8 @@ abstract class Cache {
     }
   }
 
-  static DeliveryMan? get getDeliveryMan {
-    final data = _instance.getString("deliveryManID");
+  static DeliveryMan? get deliveryMan {
+    final data = _instance.getString("deliveryMan");
     if (data == null) return null;
 
     final info = jsonDecode(data);
@@ -48,7 +48,20 @@ abstract class Cache {
       name: info['name'],
       phone: info['phone'],
       photo: info['photo'],
+      isActive: true,
     );
+  }
+
+  // setter for the deliverMan
+  static set deliveryMan(DeliveryMan? deliveryMan) {
+    if (deliveryMan != null) {
+      _instance.setString(
+        "deliveryMan",
+        jsonEncode(deliveryMan.toJson()),
+      );
+    } else {
+      _instance.remove("deliveryMan");
+    }
   }
 
   static List<String> get attachedCells {

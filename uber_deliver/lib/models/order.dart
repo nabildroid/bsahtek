@@ -97,6 +97,12 @@ class Order {
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
+      'deliveryAddress': deliveryAddress != null
+          ? {
+              'latitude': deliveryAddress!.latitude,
+              'longitude': deliveryAddress!.longitude,
+            }
+          : null,
       'acceptedAt': acceptedAt?.toIso8601String(),
       'isPickup': isPickup,
     };
@@ -140,6 +146,12 @@ class Order {
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],
+      deliveryAddress: json['deliveryAddress'] != null
+          ? LatLng(
+              json['deliveryAddress']['latitude'],
+              json['deliveryAddress']['longitude'],
+            )
+          : null,
       acceptedAt: json['acceptedAt'] != null
           ? DateTime.parse(json['acceptedAt'])
           : null,

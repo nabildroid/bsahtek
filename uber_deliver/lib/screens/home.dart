@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/screens/login.dart';
 import 'package:uber_deliver/screens/running.dart';
 import 'package:uber_deliver/screens/runningNoti.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  static go() => MaterialPageRoute(builder: (ctx) => HomeScreen());
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -16,55 +19,32 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<ServiceCubit>().init(); // not sure if this pattern is good
   }
 
   @override
   Widget build(BuildContext context) {
     context.read<ServiceCubit>().setContext(context);
-    /**
-     * listenWhen: (o, n) =>
-          (o.selectedRequest != n.selectedRequest) ||
-          o.focusOnRunning != n.focusOnRunning ||
-          o.runningRequest != n.runningRequest,
-      listener: (ctx, state) {
-        if (state.focusOnRunning && state.runningRequest != null) {
-          Navigator.of(ctx).push(
-            MaterialPageRoute(
-              builder: (ctx) => RunningScreen(
-                deliveryRequest: state.runningRequest!,
-              ),
-            ),
-          );
-          return;
-        } else if (state.selectedRequest != null) {
-          Navigator.of(ctx).push(
-            MaterialPageRoute(
-              builder: (ctx) => RunningNotiScreen(
-                deliveryRequest: state.selectedRequest!,
-              ),
-            ),
-          );
-
-          return;
-        }
-      },
-     */
 
     final service = context.read<ServiceCubit>();
+    final app = context.read<AppCubit>();
 
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
-          title: Text("Hello, Nabil",
-              style: TextStyle(
-                color: Colors.black,
-              )),
+          title: Text(
+            "Hello, " + app.state.deliveryMan!.name,
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
           actions: [
             CircleAvatar(
               backgroundImage: NetworkImage(
-                  "https://avatars.githubusercontent.com/u/19208222?v=4"),
+                app.state.deliveryMan!.photo,
+              ),
             ),
             SizedBox(
               width: 10,
@@ -82,9 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Card(
                       isLoading: state.loadingAvailability ||
                           state.runningRequest != null,
-                      id: "defzefze",
+                      id: app.state.deliveryMan!.id.substring(0, 5),
                       isAvailable: state.isAvailable,
-                      onSwitch: () => service.toggleAvailability(context),
+                      onSwitch: service.toggleAvailability,
                     );
                   }),
               SizedBox(
