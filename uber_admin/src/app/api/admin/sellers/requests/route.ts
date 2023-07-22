@@ -1,5 +1,5 @@
 import firebase, {
-  NotAllowed,
+  AllowOnlyIF,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { ISeller } from "@/utils/types";
@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 
 // get list of all  (pending-tobe) drivers
 export async function GET(request: Request) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF("admin", request)) return VerificationError();
 
   const query = await firebase
     .firestore()

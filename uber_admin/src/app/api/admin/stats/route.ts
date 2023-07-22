@@ -1,5 +1,5 @@
 import firebase, {
-  NotAllowed,
+  AllowOnlyIF,
   VerificationError,
 } from "../../repository/firebase";
 import { NextResponse } from "next/server";
@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF("admin", request)) return VerificationError();
 
   const query = await firebase
     .firestore()

@@ -3,7 +3,10 @@
  * else update the Track to be toSeller = true
  */
 
-import firebase from "@/app/api/repository/firebase";
+import firebase, {
+  AllowOnlyIF,
+  VerificationError,
+} from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
 import {
   AcceptOrder,
@@ -13,7 +16,9 @@ import {
 } from "@/utils/types";
 import * as admin from "firebase-admin";
 
+// i think only the seller is allowed to do this
 export async function POST(request: Request) {
+  if (await AllowOnlyIF("seller", request)) return VerificationError();
   const order = HandOver.parse(await request.json());
 
   if (order.isPickup == false) {

@@ -1,5 +1,5 @@
 import firebase, {
-  NotAllowed,
+  AllowOnlyIF,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
@@ -13,7 +13,7 @@ import {
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF("deliver", request)) return VerificationError();
 
   const tracking = Tracking.parse(await request.json());
 

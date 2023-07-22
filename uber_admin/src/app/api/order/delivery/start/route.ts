@@ -1,5 +1,5 @@
 import firebase, {
-  NotAllowed,
+  AllowOnlyIF,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
@@ -7,7 +7,7 @@ import { AcceptOrder, ITrack, StartDeliveryOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF("deliver", request)) return VerificationError();
 
   const order = StartDeliveryOrder.parse(await request.json());
 

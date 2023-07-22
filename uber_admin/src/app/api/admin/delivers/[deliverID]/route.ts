@@ -1,5 +1,5 @@
 import firebase, {
-  NotAllowed,
+  AllowOnlyIF,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { Deliver, IDeliver } from "@/utils/types";
@@ -14,7 +14,7 @@ type Context = {
 };
 // get details of a deliver
 export async function GET(request: Request, context: Context) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF("admin", request)) return VerificationError();
 
   const { deliverID } = context.params;
 
@@ -35,7 +35,7 @@ export async function GET(request: Request, context: Context) {
 
 // handle both acceptance, (there is not updates)
 export async function POST(request: Request, context: Context) {
-  if (await NotAllowed(request)) return VerificationError();
+  if (await AllowOnlyIF(request)) return VerificationError();
 
   const { deliverID } = context.params;
   const demand = Deliver.parse(await request.json());

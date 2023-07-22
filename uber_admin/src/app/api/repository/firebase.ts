@@ -19,7 +19,7 @@ export const VerificationError = (msg: string = "Not Allowed") =>
   new Response(msg, { status: 401 });
 // create express middleware to verify firebase token from cookie
 
-export const NotAllowed = async (req: Request) => {
+export const AllowOnlyIF = async (role: string, req: Request) => {
   const AuthToken = (req.headers as any).get("authorization")?.split(" ")[1];
 
   const token = AuthToken || "";

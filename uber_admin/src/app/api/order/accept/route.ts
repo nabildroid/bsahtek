@@ -1,9 +1,14 @@
-import firebase from "@/app/api/repository/firebase";
+import firebase, {
+  AllowOnlyIF,
+  VerificationError,
+} from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
 import { AcceptOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
+  if (await AllowOnlyIF("seller", request)) return VerificationError();
+
   const order = AcceptOrder.parse(await request.json());
 
   await admin.firestore().collection("orders").doc(order.id).update({
