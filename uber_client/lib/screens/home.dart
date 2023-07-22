@@ -49,7 +49,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
       context.read<AppCubit>().recheckRunningOrder();
     }
 
-    super.didChangeAppLifecycleState(appLifecycleState);
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
