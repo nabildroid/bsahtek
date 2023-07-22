@@ -19,7 +19,7 @@ class Cache {
     return isit;
   }
 
-  static Client? get currentClient {
+  static Client? get client {
     final data = _instance.getString("currentClient");
     if (data == null) {
       return null;
@@ -27,7 +27,7 @@ class Cache {
     return Client.fromJson(jsonDecode(data));
   }
 
-  static set currentClient(Client? client) {
+  static set client(Client? client) {
     if (client == null) {
       _instance.remove("currentClient");
     } else {
@@ -35,21 +35,6 @@ class Cache {
     }
   }
 
-  static bool get isLogin {
-    final data = _instance.getBool("isLogin");
-    if (data == null) {
-      return false;
-    }
-    return data;
-  }
-
-  static set isLogin(bool? isLogin) {
-    if (isLogin == null) {
-      _instance.remove("isLogin");
-    } else {
-      _instance.setBool("isLogin", isLogin);
-    }
-  }
 
   static void clear() async {
     await _instance.clear();

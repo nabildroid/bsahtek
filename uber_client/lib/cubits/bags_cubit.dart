@@ -9,11 +9,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/models/autosuggestion.dart';
 import 'package:uber_client/models/mapSquare.dart';
-import 'package:uber_client/repositories/bags_remote.dart';
 import 'package:uber_client/repositories/geocoding.dart';
 import 'package:uber_client/repositories/gps.dart';
 
 import '../models/bag.dart';
+import '../repositories/server.dart';
 
 class BagsFilter {
   final String search;
@@ -162,13 +162,8 @@ class BagsState extends Equatable {
 }
 
 class BagsQubit extends Cubit<BagsState> {
-  final GpsRepository gps;
-  final BagRemote bagRemote;
-
-  BagsQubit(
-    this.gps,
-    this.bagRemote,
-  ) : super(BagsState(
+  BagsQubit()
+      : super(BagsState(
           bags: [],
           squares: [],
           filter: BagsFilter(),
@@ -181,7 +176,7 @@ class BagsQubit extends Cubit<BagsState> {
     print("hello world");
 
     // get cached location and set it right away without fetching any data!
-    final gpsLocation = await getLocation();
+    final gpsLocation = await GpsRepository.getLocation();
     if (gpsLocation == null) return _fetchHot("alger");
 
     emit(state.copyWith(currentLocation: gpsLocation));
@@ -202,21 +197,8 @@ class BagsQubit extends Cubit<BagsState> {
     ));
   }
 
-  Future<LatLng?> getLocation() async {
-    final refusedToUseLocation =
-        !await gps.isPermitted() && !await gps.requestPermission();
-
-    if (refusedToUseLocation) {
-      return null;
-    } else {
-      final coords = await gps.getCurrentPosition();
-      if (coords == null) return null;
-      return LatLng(coords.dy, coords.dx);
-    }
-  }
-
   Future<List<Bag>> _fetchSquare(MapSquare square) async {
-    final bags = await bagRemote.getByCoordinations(
+    final bags = await Server().getBagsInCell(
       square.longitude,
       square.latitude,
     );
@@ -224,18 +206,18 @@ class BagsQubit extends Cubit<BagsState> {
   }
 
   void _fetchHot(String wilaya) async {
-    final bags = await bagRemote.getHotByWilaya(wilaya);
+    // final bags = await bagRemote.getHotByWilaya(wilaya);
 
-    if (bags.isNotEmpty) {
-      final centerPos = LatLng(bags.first.latitude, bags.first.longitude);
-      final square = MapSquare.fromOffset(
-          Offset(centerPos.longitude, centerPos.latitude), 1);
+    // if (bags.isNotEmpty) {
+    //   final centerPos = LatLng(bags.first.latitude, bags.first.longitude);
+    //   final square = MapSquare.fromOffset(
+    //       Offset(centerPos.longitude, centerPos.latitude), 1);
 
-      emit(
-        state.addSquares([square]).copyWith(currentLocation: centerPos),
-      );
-    }
-    emit(state.addBags(bags));
+    //   emit(
+    //     state.addSquares([square]).copyWith(currentLocation: centerPos),
+    //   );
+    // }
+    // emit(state.addBags(bags));
   }
 
   Future<List<Bag>> _visiteSquares(List<MapSquare> squares) async {

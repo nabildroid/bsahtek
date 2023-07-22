@@ -7,6 +7,7 @@ import {
   reverseCalculateSquareCenter,
   addKilometersToLongitude,
 } from "@/utils/coordination";
+import { AllowOnlyIF, VerificationError } from "../../repository/firebase";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export async function GET(
     params: { xyd: string };
   }
 ) {
+  if (await AllowOnlyIF("", req)) return VerificationError();
+
   const [x, y, distance] = context.params.xyd.split(",").map(parseFloat);
 
   const { x: originalX, y: originalY } = reverseCalculateSquareCenter(

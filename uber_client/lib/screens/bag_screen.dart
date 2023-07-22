@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
+import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/models/bag.dart';
 import 'package:uber_client/repositories/orders_remote.dart';
 
 import '../cubits/app_cubit.dart';
+import '../repositories/gps.dart';
 import '../repositories/server.dart';
 
 class BagScreen extends StatefulWidget {
@@ -37,8 +39,9 @@ class _BagScreenState extends State<BagScreen> {
   bool isPickup = false;
 
   void reserveNow() async {
+    final homeCubit = context.read<HomeCubit>();
     final appCubit = context.read<AppCubit>();
-    final location = await context.read<BagsQubit>().getLocation();
+    final location = await GpsRepository.getLocation();
 
     if (location == null) {
       return;
@@ -51,7 +54,7 @@ class _BagScreenState extends State<BagScreen> {
       location: location,
     );
 
-    await appCubit.orderBag(newOrder);
+    await homeCubit.orderBag(newOrder);
   }
 
   @override

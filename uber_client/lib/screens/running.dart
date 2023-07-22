@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uber_client/cubits/app_cubit.dart';
+import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/repositories/direction.dart';
 
 import '../models/order.dart';
@@ -97,7 +98,7 @@ class _RunningScreenState extends State<RunningScreen> {
   }
 
   void exit() {
-    context.read<AppCubit>().unFocusOnRunning();
+    context.read<HomeCubit>().unFocusOnRunning();
     Navigator.of(context).pop();
   }
 
@@ -109,7 +110,7 @@ class _RunningScreenState extends State<RunningScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        context.read<AppCubit>().unFocusOnRunning();
+        context.read<HomeCubit>().unFocusOnRunning();
         return true;
       },
       child: Scaffold(
