@@ -94,15 +94,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             offset: Offset(isMap ? 0 : 1, 0),
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeInOut,
-            child: BlocBuilder<BagsQubit, BagsState>(builder: (context, state) {
+            child: BlocBuilder<BagsQubit, BagsState>(
+                buildWhen: (previous, current) =>
+                    previous.currentLocation == null &&
+                    current.currentLocation != null,
+                builder: (context, state) {
+                  if (state.currentLocation == null) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
               return SizedBox.expand(
                 child: SquaresMap(
                   filterBags: (bag) {
                     return true;
                   },
-                  mapLoader: (context) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
                 ),
               );
             }),

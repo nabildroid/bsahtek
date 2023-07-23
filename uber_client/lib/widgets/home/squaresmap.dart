@@ -121,18 +121,18 @@ class _SquaresMapState extends State<SquaresMap> {
 
   @override
   Widget build(BuildContext context) {
-    const debug = true;
+    const debug = false;
+    print("Building The Map Widget, agin :()");
 
-    return BlocConsumer<BagsQubit, BagsState>(
-        listenWhen: (old, n) => old.visibleBags != n.visibleBags,
+    final state = context.read<BagsQubit>().state;
+
+    return BlocListener<BagsQubit, BagsState>(
+      listenWhen: (old, n) =>
+          old.visibleBags != n.visibleBags || old.quantities != n.quantities,
         listener: (context, state) async {
           convertSpotsToMarks(context);
         },
-        buildWhen: (old, n) => true, // todo refactor this
-        builder: (context, state) {
-          if (state.currentLocation == null) return widget.mapLoader(context);
-
-          return GoogleMap(
+      child: GoogleMap(
             initialCameraPosition: CameraPosition(
               target: state.currentLocation!,
               zoom: 15,
@@ -141,17 +141,15 @@ class _SquaresMapState extends State<SquaresMap> {
             compassEnabled: false,
             rotateGesturesEnabled: false,
             onCameraMove: (pos) {
-              setState(() => lastCameraPosition = pos);
+          lastCameraPosition = pos;
             },
             onCameraIdle: () async {
               if (lastCameraPosition != null) {
-                await onCameraStopMoving(
+            onCameraStopMoving(
                   lastCameraPosition!,
                   context.read<BagsQubit>(),
                 );
-                setState(() {
                   lastCameraPosition = null;
-                });
               }
             },
             polygons: {
@@ -167,17 +165,24 @@ class _SquaresMapState extends State<SquaresMap> {
                 )
             },
             onMapCreated: initMap,
-            markers: (<Marker>{}..addAll(
+        markers: (Set()
+          ..addAll(
                 markers.map(
                   (e) => Marker(
+                flat: true,
                     markerId: MarkerId(e.id),
                     position: e.position,
                     icon: e.icon,
+                consumeTapEvents: false,
+                draggable: false,
+
+                visible: !e.hidden,
                     // visible: Random().nextBool(),
                     anchor: const Offset(0.5, 0.5),
                   ),
                 ),
               )),
+      ),
           );
         });
   }
