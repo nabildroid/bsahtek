@@ -35,7 +35,7 @@ export async function GET(request: Request, context: Context) {
 
 // handle both acceptance, (there is not updates)
 export async function POST(request: Request, context: Context) {
-  if (await AllowOnlyIF(request)) return VerificationError();
+  if (await AllowOnlyIF("admin", request)) return VerificationError();
 
   const { deliverID } = context.params;
   const demand = Deliver.parse(await request.json());
