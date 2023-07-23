@@ -73,6 +73,33 @@ class _SquaresMapState extends State<SquaresMap> {
     updateMapScaleRatio(bounds);
   }
 
+// need to be here
+  Timer? debounce1;
+  setMarkers(Set<MinimunMarker> markers) async {
+    if (debounce1 != null && debounce1!.isActive) debounce1!.cancel();
+    debounce1 = Timer(const Duration(milliseconds: 500), () async {
+      if (!mounted) return;
+
+      if (markers.length == this.markers.length) {
+        final pureRendersMarkers =
+            markers.where((element) => !element.hidden).toList();
+
+        final noChange = pureRendersMarkers.length == this.markers.length &&
+            pureRendersMarkers.every(
+                (element) => this.markers.any((n) => n.id == element.id));
+
+        if (noChange) {
+          print("no Change in the markers");
+          return;
+        }
+      }
+
+      setState(() {
+        this.markers = markers;
+      });
+    });
+  }
+
   // convert spots to marks and group Marks if needed
   convertSpotsToMarks(BuildContext context) async {
     final visibleSpots = context.read<BagsQubit>().state.visibleBags;
@@ -93,7 +120,7 @@ class _SquaresMapState extends State<SquaresMap> {
     for (var citizen in citizens) {
       if (citizen.length == 1) {
         tempMarkers.add(MinimunMarker(
-            id: citizen.first.name,
+          id: citizen.first.id.toString(),
             position: LatLng(
               citizen.first.latitude,
               citizen.first.longitude,
@@ -103,9 +130,10 @@ class _SquaresMapState extends State<SquaresMap> {
         final centerPos = MapSquare.getCenter(
             citizen.map((e) => LatLng(e.latitude, e.longitude)).toList());
 
+        final id = "Group${citizen.map((e) => e.id.toString()).join(",")}";
         tempMarkers.add(MinimunMarker(
           //add start location marker
-          id: "Group" + citizen.first.name,
+          id: id,
           position: centerPos,
           icon:
               BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
@@ -113,10 +141,19 @@ class _SquaresMapState extends State<SquaresMap> {
       }
     }
 
-    setState(() {
-      markers.clear();
-      markers = tempMarkers;
-    });
+    // check if the markers changed or not
+    final pureRendersMarkers =
+        markers.where((element) => !element.hidden).toList();
+
+    final noChange = pureRendersMarkers.length == tempMarkers.length &&
+        pureRendersMarkers
+            .every((element) => tempMarkers.any((n) => n.id == element.id));
+
+    final toBeRemoved = pureRendersMarkers
+        .where((element) => tempMarkers.every((n) => n.id != element.id))
+        .toList();
+
+    setMarkers(tempMarkers);
   }
 
   @override
