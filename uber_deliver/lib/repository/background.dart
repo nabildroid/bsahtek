@@ -3,11 +3,15 @@ import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/repository/gps.dart';
 import 'package:uber_deliver/repository/server.dart';
 
+import '../main.dart';
 import '../models/delivery_request.dart';
 import '../models/order.dart';
 import 'cache.dart';
@@ -21,30 +25,34 @@ abstract class BackgroundIDs {
 }
 
 abstract class Backgrounds {
+  static Future<void> init() async {
+    await AndroidAlarmManager.initialize();
+  }
+
   static Future<void> stopAvailability() async {
     await AndroidAlarmManager.cancel(BackgroundIDs.availability);
   }
 
   static Future<void> schedulerAvailability() async {
-    await AndroidAlarmManager.initialize();
-
     await AndroidAlarmManager.periodic(
-      Duration(minutes: 2),
+      Duration(minutes: 5),
       exact: true,
       wakeup: true,
-      startAt: DateTime.now().add(Duration(seconds: 20)),
+      allowWhileIdle: true,
+      startAt: DateTime.now().add(Duration(seconds: 1)),
       BackgroundIDs.availability,
       available,
     );
   }
 
   static Future<void> schedulerRunning() async {
-    await AndroidAlarmManager.initialize();
-
     await AndroidAlarmManager.periodic(
-      Duration(seconds: 2),
+      Duration(minutes: 1),
+      rescheduleOnReboot: true,
+      allowWhileIdle: true,
+      wakeup: true,
       exact: true,
-      startAt: DateTime.now().add(Duration(seconds: 2)),
+      startAt: DateTime.now().add(Duration(seconds: 10)),
       BackgroundIDs.running,
       running,
     );
@@ -59,16 +67,36 @@ abstract class Backgrounds {
     await Cache.init();
     await Server.init();
 
+    print("going to get the GPS");
+
     // get gps location
-    final location = LatLng(52.2, 3);
+    final location = await GpsRepository.getLocation(goThrough: true);
+
+    print(location);
+    if (location == null) return;
     final order = Cache.runningRequest;
+
+    Cache.trackingLocation = location;
+
     if (order == null) {
       await AwesomeNotifications().cancelAll();
-      Backgrounds.stopRunning();
+      await Backgrounds.stopRunning();
       return;
     }
 
-    Server().pushTrack(order.order.toTrack(location!));
+    final deliveryManID = Server.auth.currentUser!.uid;
+    final alreadyFromSeller = Cache.trackedToSeller == null
+        ? false
+        : Cache.trackedToSeller!.difference(DateTime.now()).inHours < 3;
+
+    final updatedTrack = await Server().pushTrack(
+        order.order.toTrack(deliveryManID, location, alreadyFromSeller));
+
+    if (updatedTrack.toSeller == true && alreadyFromSeller) {
+      Cache.trackedToSeller = DateTime.now();
+    } else if (updatedTrack.toSeller != true) {
+      Cache.trackedToSeller = null;
+    }
 
     print("Hello Running");
     // send request to api
@@ -101,8 +129,7 @@ abstract class Backgrounds {
     await Cache.init();
     await Server.init();
 
-    final location = LatLng(36.0 + Random().nextDouble(),
-        3 + Random().nextDouble()); //await ServiceCubit.getLocation();
+    final location = await GpsRepository.getLocation(goThrough: true);
     if (location == null) return Future.value(false);
 
     final cell = DirectionRepository.roundToSquareCenter(

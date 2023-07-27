@@ -1,11 +1,17 @@
+import 'dart:async';
+
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
-
+import 'package:uber_deliver/repository/gps.dart';
+import 'package:uber_deliver/screens/runningNoti.dart';
 import '../models/delivery_request.dart';
-import '../repository/direction.dart';
+import '../repository/cache.dart';
+import '../repository/server.dart';
 
 class RunningScreen extends StatefulWidget {
   final DeliveryRequest deliveryRequest;
@@ -42,6 +48,11 @@ class _RunningScreenState extends State<RunningScreen> {
     super.initState();
   }
 
+  TimeOfDay estimitedDelivery = TimeOfDay.now();
+
+  LatLng? currentLocation;
+  bool isCloseToClient = false;
+
   void exit() {
     context.read<ServiceCubit>().unfocusFromRunning();
     Navigator.of(context).pop();
@@ -50,6 +61,15 @@ class _RunningScreenState extends State<RunningScreen> {
   void stop() {
     context.read<ServiceCubit>().killDelivery();
     Navigator.of(context).pop();
+  }
+
+  void handover() async {
+    final location = await GpsRepository.getLocation();
+    if (location == null) return;
+
+    await Server().finishTrack(widget.deliveryRequest.order, location);
+    context.read<ServiceCubit>().finishDelivery();
+    exit();
   }
 
   void initMap() {
@@ -71,10 +91,52 @@ class _RunningScreenState extends State<RunningScreen> {
           zoom.center.longitude,
         ),
         zoom.zoom);
+
+    setState(() {
+      estimitedDelivery =
+          TimeOfDay.fromDateTime(widget.deliveryRequest.order.lastUpdate.add(
+        Duration(
+          seconds: widget.deliveryRequest.toClient.duration.inSeconds +
+              widget.deliveryRequest.toSeller.duration.inSeconds,
+        ),
+      ));
+    });
+
+    Timer.periodic(const Duration(minutes: 1), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      Cache.trackingLocation = await GpsRepository.getLocation();
+      final trackLocation = Cache.trackingLocation;
+
+      final alreadyFromSeller = Cache.trackedToSeller != null;
+
+      if (trackLocation == null) return;
+
+      final distanceToClient = Geolocator.distanceBetween(
+        trackLocation.latitude,
+        trackLocation.longitude,
+        widget.deliveryRequest.order.clientAddress.latitude,
+        widget.deliveryRequest.order.clientAddress.longitude,
+      );
+
+      setState(() {
+        currentLocation = trackLocation;
+        isCloseToClient = distanceToClient < 500 && alreadyFromSeller;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // todo the client is sending the order information via the notification, we don't have any information to verify the pricing
+    final totalPrice = distanceToPrice(
+          widget.deliveryRequest.toSeller.distance / 1000,
+        ) +
+        int.parse(widget.deliveryRequest.order.bagPrice);
+
     return WillPopScope(
       onWillPop: () {
         context.read<ServiceCubit>().unfocusFromRunning();
@@ -130,6 +192,12 @@ class _RunningScreenState extends State<RunningScreen> {
                       borderStrokeWidth: 4,
                       radius: 8,
                     ),
+                    if (currentLocation != null)
+                      CircleMarker(
+                        point: currentLocation!,
+                        color: Colors.yellow,
+                        radius: 8,
+                      ),
                   ],
                 ),
               ],
@@ -153,9 +221,9 @@ class _RunningScreenState extends State<RunningScreen> {
                   backgroundColor: Colors.blueGrey.shade900,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: stop,
+                onPressed: () {},
                 icon: Icon(Icons.stop),
-                label: Text("Stop (test)"),
+                label: Text("$\I$totalPrice"),
               ),
             ),
             Align(
@@ -163,13 +231,16 @@ class _RunningScreenState extends State<RunningScreen> {
               child: Hero(
                 tag: "running",
                 child: AcceptedOrderPanel(
-                  deliveryAt: TimeOfDay.now(),
+                  handOver: isCloseToClient ? handover : null,
+                  clientLocation: widget.deliveryRequest.order.clientAddress,
+                  sellerLocation: widget.deliveryRequest.order.sellerAddress,
+                  deliveryAt: estimitedDelivery,
                   clientName: widget.deliveryRequest.order.clientName,
-                  clientPhone: "+213 555 555 555",
+                  clientPhone: widget.deliveryRequest.order.clientPhone,
                   clientPhoto:
                       "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
-                  sellerName: "seller Name",
-                  sellerPhone: "+213 555 555 555",
+                  sellerName: widget.deliveryRequest.order.sellerName,
+                  sellerPhone: widget.deliveryRequest.order.sellerPhone,
                   sellerPhoto:
                       "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
                 ),
@@ -189,6 +260,11 @@ class AcceptedOrderPanel extends StatelessWidget {
   final String clientName;
   final String? sellerName;
 
+  final LatLng? sellerLocation;
+  final LatLng clientLocation;
+
+  final VoidCallback? handOver;
+
   final String clientPhone;
   final String? sellerPhone;
 
@@ -202,6 +278,9 @@ class AcceptedOrderPanel extends StatelessWidget {
     this.sellerName,
     this.sellerPhone,
     this.sellerPhoto,
+    required this.clientLocation,
+    this.sellerLocation,
+    this.handOver,
     required this.clientPhone,
     required this.clientPhoto,
   });
@@ -245,19 +324,19 @@ class AcceptedOrderPanel extends StatelessWidget {
         SizedBox(
           height: 12,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            3,
-            (index) => Icon(
-              Icons.shopping_bag_rounded,
-              color: Colors.green,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 12,
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //   children: List.generate(
+        //     3,
+        //     (index) => Icon(
+        //       Icons.shopping_bag_rounded,
+        //       color: Colors.green,
+        //     ),
+        //   ),
+        // ),
+        // SizedBox(
+        //   height: 12,
+        // ),
         ListTile(
           textColor: Colors.white,
           leading: CircleAvatar(
@@ -282,7 +361,14 @@ class AcceptedOrderPanel extends StatelessWidget {
                 radius: 20,
                 backgroundColor: Colors.white70,
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // go to google map with the client location and start the navigation, use clientLocation
+                    AndroidIntent(
+                      action: 'action_view',
+                      data:
+                          'geo:${clientLocation.latitude},${clientLocation.longitude}',
+                    ).launch();
+                  },
                   icon: Icon(
                     Icons.gps_fixed_outlined,
                     color: Colors.blueGrey.shade900,
@@ -296,7 +382,12 @@ class AcceptedOrderPanel extends StatelessWidget {
                   radius: 20,
                   backgroundColor: Colors.white,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      AndroidIntent(
+                        action: 'android.intent.action.DIAL',
+                        data: 'tel:${clientPhone}',
+                      ).launch();
+                    },
                     icon: Icon(
                       Icons.phone,
                       color: Colors.blueGrey.shade900,
@@ -306,7 +397,25 @@ class AcceptedOrderPanel extends StatelessWidget {
           ),
           style: ListTileStyle.drawer,
         ),
-        if (sellerName != null)
+
+        if (handOver != null)
+          Row(
+            children: [
+              Expanded(
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.black,
+                  ),
+                  onPressed: handOver,
+                  icon: Icon(Icons.download_done_outlined),
+                  label: Text("hand over"),
+                ),
+              ),
+            ],
+          ),
+
+        if (sellerName != null && handOver == null)
           ListTile(
             textColor: Colors.white,
             leading: CircleAvatar(
@@ -331,7 +440,13 @@ class AcceptedOrderPanel extends StatelessWidget {
                   radius: 20,
                   backgroundColor: Colors.white70,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      AndroidIntent(
+                        action: 'action_view',
+                        data:
+                            'geo:${sellerLocation!.latitude},${sellerLocation!.longitude}',
+                      ).launch();
+                    },
                     icon: Icon(
                       Icons.gps_fixed_outlined,
                       color: Colors.blueGrey.shade900,
@@ -345,7 +460,12 @@ class AcceptedOrderPanel extends StatelessWidget {
                     radius: 20,
                     backgroundColor: Colors.white,
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        AndroidIntent(
+                          action: 'android.intent.action.DIAL',
+                          data: 'tel:${sellerPhone}',
+                        ).launch();
+                      },
                       icon: Icon(
                         Icons.phone,
                         color: Colors.blueGrey.shade900,
@@ -356,100 +476,6 @@ class AcceptedOrderPanel extends StatelessWidget {
             style: ListTileStyle.drawer,
           ),
       ]),
-    );
-  }
-}
-
-class DeliveryRequestPanel extends StatelessWidget {
-  final int deliveryFromDuration;
-  final int deliveryFromDistance;
-
-  final int deliveryToDuration;
-  final int deliveryToDistance;
-
-  final int pricePerKM;
-
-  final int totalPrice;
-
-  const DeliveryRequestPanel({
-    super.key,
-    required this.deliveryFromDuration,
-    required this.deliveryFromDistance,
-    required this.deliveryToDuration,
-    required this.deliveryToDistance,
-    required this.pricePerKM,
-    required this.totalPrice,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(20).copyWith(
-        bottom: 0,
-      ),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.shade900,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver from"),
-            trailing:
-                Text("${deliveryFromDistance} km ${deliveryFromDuration} min"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver to"),
-            trailing:
-                Text("${deliveryToDistance} km ${deliveryToDistance} min"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          ListTile(
-            textColor: Colors.white70,
-            title: Text("Deliver Pricing"),
-            trailing: Text("\$${pricePerKM} / km"),
-            style: ListTileStyle.drawer,
-            visualDensity: VisualDensity.compact,
-          ),
-          Divider(
-            color: Colors.white54,
-          ),
-          ListTile(
-            textColor: Colors.white,
-            style: ListTileStyle.drawer,
-            title: Text("Total"),
-            trailing: Text("\$${totalPrice}",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Accept",
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    shape: StadiumBorder(),
-                  ),
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
     );
   }
 }

@@ -120,21 +120,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ActionButton(
-                    label: "Add",
-                    icon: Icons.add_shopping_cart_rounded,
-                  ),
+                      label: "Add",
+                      icon: Icons.add_shopping_cart_rounded,
+                      onTap: context.read<HomeCubit>().addQuantity),
                   ActionButton(
-                      label: "Subtract",
-                      icon: Icons.remove_circle_outline_sharp),
+                    label: "Subtract",
+                    icon: Icons.remove_circle_outline_sharp,
+                    onTap: () =>
+                        context.read<HomeCubit>().removeQuantity(false),
+                  ),
                   SizedBox(width: 5),
                   ActionButton(
-                      label: "Pause",
-                      icon: Icons.remove_shopping_cart_outlined),
+                    label: "Pause",
+                    icon: Icons.remove_shopping_cart_outlined,
+                    onTap: () => context.read<HomeCubit>().removeQuantity(true),
+                  ),
                 ],
               )
             ],
           ),
           bottom: BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
+            final sortedOrders = state.prevOrders.toList()
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
             return SingleChildScrollView(
               controller: _scrollController,
               child: Column(
@@ -160,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   SizedBox(height: 12),
-                  ...state.prevOrders.map((e) => OrderTile(order: e)).toList(),
+                  ...sortedOrders.map((e) => OrderTile(order: e)).toList(),
                   SizedBox(height: 100),
                 ],
               ),
@@ -253,8 +261,7 @@ class BagPreview extends StatelessWidget {
                                 ),
                                 Row(children: [
                                   CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                        "https://picsum.photos/200/300"),
+                                    backgroundImage: NetworkImage(bag.photo),
                                   ),
                                   SizedBox(width: 8),
                                   Expanded(
@@ -369,36 +376,56 @@ class OrderTile extends StatelessWidget {
           TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold),
     );
 
+    IconData icon = Icons.playlist_add_check_circle_outlined;
+
     if (order.isDelivered != true) {
-      if (order.acceptedAt == null) {
+      final isRunning = order.acceptedAt == null &&
+          DateTime.now().difference(order.createdAt).inMinutes < 10;
+
+      final isWaiting = order.acceptedAt != null &&
+          DateTime.now().difference(order.acceptedAt!).inHours < 5;
+
+      if (isWaiting) {
+        trailing = Icon(
+          Icons.play_circle_outline_outlined,
+          color: Colors.green,
+        );
+      } else if (isRunning) {
         trailing = Icon(
           Icons.pending_actions,
-          color: Colors.yellow,
+          color: Colors.yellow.shade800,
         );
-      } else if (order.isPickup) {
-        trailing = Icon(Icons.handshake);
       } else {
-        trailing = Icon(Icons.delivery_dining);
+        trailing = Icon(
+          Icons.timer_off_outlined,
+          color: Colors.red.shade800,
+        );
       }
+    }
+
+    if (order.isPickup) {
+      icon = Icons.handshake;
+    } else {
+      icon = Icons.delivery_dining;
     }
 
     return ListTile(
       onTap: () {
-        if (order.acceptedAt == null) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (context) => RunningOrder(
-                      order: order,
-                      index: 1,
-                    )),
-          );
-        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) => RunningOrder(
+                    order: order,
+                    index: 1,
+                  )),
+        );
       },
       leading: Icon(
-        Icons.playlist_add_check_circle_outlined,
+        icon,
       ),
-      title: Text("#${order.id}"),
-      subtitle: Text(order.clientPhone),
+      title: Text(order.clientName),
+      subtitle: Text(
+        "#${order.id}",
+      ),
       trailing: trailing,
     );
   }
@@ -407,10 +434,12 @@ class OrderTile extends StatelessWidget {
 class ActionButton extends StatelessWidget {
   final String label;
   final IconData icon;
+  final VoidCallback onTap;
   const ActionButton({
     super.key,
     required this.label,
     required this.icon,
+    required this.onTap,
   });
 
   @override
@@ -418,16 +447,7 @@ class ActionButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-          onTap: () async {
-            AndroidIntent intent = AndroidIntent(
-              // app chrome
-              package: "com.android.chrome",
-              componentName: "com.google.android.apps.chrome.Main",
-
-              //activity: "com.example.app.MainActivity", // replace with the specific activity you want to open, if needed
-            );
-            await intent.launch();
-          },
+          onTap: onTap,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -1,7 +1,7 @@
 import db from "@/app/api/repository/db";
 import { eq } from "drizzle-orm";
 import firebase, {
-  AllowOnlyIF,
+  BlocForNot,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { AcceptSeller, ISeller, Seller } from "@/utils/types";
@@ -18,7 +18,7 @@ type Context = {
 };
 // get details of a seller
 export async function GET(request: Request, context: Context) {
-  if (await AllowOnlyIF("admin", request)) return VerificationError();
+  if (await BlocForNot("admin", request)) return VerificationError();
   const { sellerID } = context.params;
 
   const query = await firebase
@@ -55,7 +55,7 @@ export async function GET(request: Request, context: Context) {
 
 // accept seller and assign them a bag
 export async function POST(request: Request, context: Context) {
-  if (await AllowOnlyIF("admin", request)) return VerificationError();
+  if (await BlocForNot("admin", request)) return VerificationError();
   const { sellerID } = context.params;
   const demand = AcceptSeller.parse(await request.json());
   if (sellerID !== demand.id)
@@ -123,7 +123,7 @@ export async function POST(request: Request, context: Context) {
 }
 
 export async function DELETE(request: Request, context: Context) {
-  if (await AllowOnlyIF("admin", request)) return VerificationError();
+  if (await BlocForNot("admin", request)) return VerificationError();
   const { sellerID } = context.params;
 
   const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);

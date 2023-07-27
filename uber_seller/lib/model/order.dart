@@ -1,3 +1,4 @@
+import 'package:uber_seller/model/bag.dart';
 import 'package:uber_seller/model/seller.dart';
 
 class Order {
@@ -14,7 +15,9 @@ class Order {
   final String clientTown;
 
   final String sellerID;
-  final LatLng sellerAddress;
+  final LatLng? sellerAddress;
+  final String? sellerName;
+  final String? sellerPhone;
 
   final String bagID;
   final String bagName;
@@ -51,7 +54,9 @@ class Order {
     required this.clientTown,
     this.isDelivered,
     required this.deliveryPath,
-    required this.sellerAddress,
+    this.sellerAddress,
+    this.sellerName,
+    this.sellerPhone,
     this.deliveryManID,
     this.deliveryPhone,
     this.deliveryName,
@@ -85,10 +90,14 @@ class Order {
             'latitude': value.latitude,
             'longitude': value.longitude,
           })),
-      'sellerAddress': {
-        'latitude': sellerAddress.latitude,
-        'longitude': sellerAddress.longitude,
-      },
+      'sellerAddress': sellerAddress != null
+          ? {
+              'latitude': sellerAddress!.latitude,
+              'longitude': sellerAddress!.longitude,
+            }
+          : null,
+      'sellerName': sellerName,
+      'sellerPhone': sellerPhone,
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
@@ -128,10 +137,14 @@ class Order {
           ),
         ),
       ),
-      sellerAddress: LatLng(
-        latitude: json['sellerAddress']['latitude'] + .0,
-        longitude: json['sellerAddress']['longitude'] + .0,
-      ),
+      sellerAddress: json['sellerAddress'] != null
+          ? LatLng(
+              latitude: json['sellerAddress']['latitude'] + .0,
+              longitude: json['sellerAddress']['longitude'] + .0,
+            )
+          : null,
+      sellerName: json['sellerName'],
+      sellerPhone: json['sellerPhone'],
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],
@@ -142,9 +155,23 @@ class Order {
     );
   }
 
-  Order accept() {
+  Order accept(Seller seller, Bag bag) {
+    if (bag.id.toString() != bagID) {
+      throw Exception("Bag id is not the same");
+    }
+
+    if (seller.id != sellerID) {
+      throw Exception("Seller id is not the same");
+    }
+
     final data = toJson();
     data["acceptedAt"] = DateTime.now().toIso8601String();
+    data["sellerAddress"] = {
+      "latitude": bag.latitude,
+      "longitude": bag.longitude,
+    };
+    data["sellerName"] = seller.name;
+    data["sellerPhone"] = seller.phone;
 
     return Order.fromJson(data);
   }

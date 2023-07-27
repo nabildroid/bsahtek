@@ -5,22 +5,20 @@ import firebase, {
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
 import {
   AcceptOrder,
+  IOrder,
   ITrack,
   StartDeliveryOrder,
   Track,
   Tracking,
 } from "@/utils/types";
 import * as admin from "firebase-admin";
-import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   if (await BlocForNot("deliver", request)) return VerificationError();
 
   const tracking = Tracking.parse(await request.json());
 
-  console.log(tracking);
-
-  const update = {
+  const updateTrack = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp() as any as Date,
     deliveryLocation: tracking.deliverLocation,
     path: admin.firestore.FieldValue.arrayUnion(
@@ -28,40 +26,26 @@ export async function POST(request: Request) {
     ) as any,
   } as Partial<ITrack>;
 
-  const distanceToClient = calculateDistance(
-    tracking.deliverLocation,
-    tracking.clientLocation
-  );
-  const distanceToSeller = calculateDistance(
-    tracking.deliverLocation,
-    tracking.sellerLocation
-  );
+  const updateOrder = {
+    updatedAt: admin.firestore.FieldValue.serverTimestamp() as any as Date,
+    isDelivered: true,
+  } as Partial<IOrder>;
 
-  console.log({ distanceToClient, distanceToSeller });
+  // todo notify the seller
 
-  if (distanceToClient > 0.5 && distanceToClient < 1 && tracking.toSeller) {
-    update.toClient = true;
-
-    console.log("notify client");
-    await EndDelivery(tracking.clientID);
-  }
-
-  // todo allowing the user to temp with toSeller is kinda bad!, but we are already accepting his GeoLocation, so it's not that bad
-  if (distanceToSeller < 1 && !tracking.toSeller) {
-    console.log("notify Seller");
-    await InformSeller(tracking.sellerID, tracking.orderID);
-
-    tracking.toSeller = true;
-  }
-
-
-  await firebase
+  // store the updates in one transaction to avoid inconsistency
+  firebase
     .firestore()
     .collection("tracks")
     .doc(tracking.id)
-    .update(update);
+    .update(updateTrack);
+  firebase
+    .firestore()
+    .collection("orders")
+    .doc(tracking.orderID)
+    .update(updateOrder);
 
-  return NextResponse.json(tracking);
+  return new Response(JSON.stringify({}));
 }
 
 async function EndDelivery(clientID: string) {
@@ -110,24 +94,24 @@ async function InformSeller(sellerID: string, orderID: string) {
   if (data) {
     const clientToken = data.notiID;
 
-    // await firebase.messaging().send({
-    //   token: clientToken,
-    //   fcmOptions: {
-    //     analyticsLabel: "OrderArrived",
-    //   },
-    //   android: {
-    //     priority: "high",
-    //     ttl: 1000 * 60 * 10,
-    //     notification: {
-    //       body: `your order is almost there`,
-    //       title: "Ready to pick up",
-    //     },
-    //   },
-    //   data: {
-    //     click_action: "FLUTTER_NOTIFICATION_CLICK",
-    //     type: "delivery_need_to_pickup",
-    //     orderID,
-    //   },
-    // });
+    await firebase.messaging().send({
+      token: clientToken,
+      fcmOptions: {
+        analyticsLabel: "OrderArrived",
+      },
+      android: {
+        priority: "high",
+        ttl: 1000 * 60 * 10,
+        notification: {
+          body: `your order is almost there`,
+          title: "Ready to pick up",
+        },
+      },
+      data: {
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+        type: "delivery_need_to_pickup",
+        orderID,
+      },
+    });
   }
 }

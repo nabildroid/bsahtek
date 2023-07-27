@@ -5,11 +5,12 @@ import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uber_seller/cubits/app_cubit.dart';
 import 'package:uber_seller/repository/server.dart';
 
 import '../model/bag.dart';
 import '../model/order.dart';
-import '../model/seller.dart';
 import '../repository/cache.dart';
 import '../repository/messages_remote.dart';
 import '../screens/running_order.dart';
@@ -102,13 +103,46 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(bags: bags));
 
     final bagsIds = bags.map((e) => e.id.toString()).toList();
-    final quantities = await Server().getQuantities(bagsIds);
 
-    Cache.quantities = quantities;
+    // we get first from cache
 
-    emit(state.copyWith(
-      quantity: quantities[bags.first.id] ?? 0,
-    ));
+    final cachedZones = Cache.zones;
+    var inWithin = cachedZones.where((element) => element.quantities.keys.any(
+          (key) => bagsIds.contains(key),
+        ));
+
+    if (inWithin.isNotEmpty) {
+      final id = bags.first.id.toString();
+      for (var element in inWithin) {
+        if (element.quantities.containsKey(id)) {
+          emit(state.copyWith(
+            quantity: element.quantities[id] ?? 0,
+          ));
+          break;
+        }
+      }
+    }
+
+    // then from the server
+    final zones = await Server().getZones(bagsIds);
+
+    zones.forEach((element) => Cache.addZone(element));
+
+    inWithin = zones.where((element) => element.quantities.keys.any(
+          (key) => bagsIds.contains(key),
+        ));
+
+    if (inWithin.isNotEmpty) {
+      final id = bags.first.id.toString();
+      for (var element in inWithin) {
+        if (element.quantities.containsKey(id)) {
+          emit(state.copyWith(
+            quantity: element.quantities[id] ?? 0,
+          ));
+          break;
+        }
+      }
+    }
   }
 
   void syncPrevOrders() async {
@@ -116,13 +150,13 @@ class HomeCubit extends Cubit<HomeState> {
 
     _stopListeningToOrders = await Server().listenToOrders(
       lastUpdated: Cache.lastUpdatedPrevOrders,
-      onChange: (orders) {
+      onChange: (orders) async {
         for (var order in orders) {
-          if (Cache.lastUpdatedPrevOrders.isBefore(order.lastUpdate)) {
-            // todo i think this is not needed!
-            continue;
-          }
-          Cache.updatePrevOrder(order);
+          // if (Cache.lastUpdatedPrevOrders.isBefore(order.lastUpdate)) {
+          //   // todo i think this is not needed!
+          //   continue;
+          // }
+          await Cache.updatePrevOrder(order);
         }
 
         emit(state.copyWith(prevOrders: Cache.prevOrders));
@@ -190,25 +224,41 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void acceptOrder(Order order) async {
-    final acceptedOrder = order.accept();
-    await Server().acceptOrder(acceptedOrder);
+    final bag = state.bags
+        .firstWhere((element) => element.id.toString() == order.bagID);
 
-    emit(
-      state.copyWith(
-          runningOrders: state.runningOrders
-              .where((element) => element != order)
-              .toList()),
-    );
+    // todo i don't love this pattern
+    useContext((ctx) async {
+      final seller = ctx.read<AppCubit>().state.seller!;
+
+      final acceptedOrder = order.accept(seller, bag);
+      await Server().acceptOrder(acceptedOrder);
+
+      emit(
+        state.copyWith(
+            runningOrders: state.runningOrders
+                .where((element) => element != order)
+                .toList()),
+      );
+    });
   }
 
-  void addQuantity() {}
+  void addQuantity() async {
+    if (state.bags.isEmpty) return;
+    final id = state.bags.first.id.toString();
+    final zones = Cache.zones;
+    await Server().addQuantity(zones, id, 1);
+    emit(state.copyWith(quantity: state.quantity + 1));
+  }
 
-  void removeQuantity(bool all) {
+  void removeQuantity(bool all) async {
+    if (state.bags.isEmpty) return;
+    final id = state.bags.first.id.toString();
+    final zones = Cache.zones;
+
     final quantity = state.quantity;
-    if (all) {
-      emit(state.copyWith(quantity: 0));
-    } else {
-      emit(state.copyWith(quantity: max(0, quantity - 1)));
-    }
+
+    await Server().addQuantity(zones, id, all ? -quantity : -1);
+    emit(state.copyWith(quantity: state.quantity + (all ? -quantity : -1)));
   }
 }

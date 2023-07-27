@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uber_deliver/models/delivery_man.dart';
 import 'package:uber_deliver/repository/server.dart';
 
@@ -23,6 +24,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isNeedToSubmit = false;
   bool isLoading = true;
   bool isOtp = false;
+
+  bool needGoogle = true;
+
+  bool loadingPhone = false;
+
+  bool isFromGoogle = false;
 
   String? verificationId;
   int? resendToken;
@@ -63,6 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void validateOTP() async {
     if (verificationId == null) return;
+    setState(() {
+      loadingPhone = true;
+    });
 
     final auth = PhoneAuthProvider.credential(
       verificationId: verificationId!,
@@ -70,9 +80,39 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     final user = await Server.auth.signInWithCredential(auth);
+
+    // if (isFromGoogle) {
+    //   Server.auth.currentUser?.linkWithCredential(auth);
+    // }
+  }
+
+  signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    final auth = await FirebaseAuth.instance.signInWithCredential(credential);
+
+    if (auth.user?.phoneNumber != null) {
+      setState(() {
+        needGoogle = false;
+        isFromGoogle = true;
+      });
+    }
   }
 
   void login() async {
+    setState(() {
+      loadingPhone = true;
+      needGoogle = false;
+      isOtp = true;
+    });
     await Server.auth.verifyPhoneNumber(
       timeout: const Duration(minutes: 2),
       phoneNumber: "+213${phoneController.text}",
@@ -83,6 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
       verificationFailed: (FirebaseAuthException e) {
         setState(() {
           codeError = true;
+          loadingPhone = false;
+          isOtp = false;
+          needGoogle = true;
         });
       },
       codeSent: (String verificationId, int? resendToken) async {
@@ -90,6 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
           this.verificationId = verificationId;
           this.resendToken = resendToken;
           this.isOtp = true;
+
+          loadingPhone = false;
+          needGoogle = false;
         });
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
@@ -115,67 +161,153 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Login"),
-          centerTitle: true,
+        body: Column(
+      children: [
+        Expanded(
+          flex: 5,
+          child: Container(
+            color: Colors.green,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: .9,
+                child: ColorFiltered(
+                  colorFilter:
+                      ColorFilter.mode(Colors.white, BlendMode.srcATop),
+
+                  child: Image.network(
+                    'https://wastnothin.vercel.app/static/logo.png',
+                  ), // Replace 'colored_image.png' with your image file path
+                ),
+              ),
+            ),
+          ),
         ),
-        body: Builder(
-          builder: (ctx) {
-            if (isOtp) {
+        Expanded(
+          flex: 8,
+          child: Builder(
+            builder: (ctx) {
+              if (isOtp) {
+                return Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: TextField(
+                        controller: otpController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'OTP',
+                        ),
+                      ),
+                    ),
+                    if (!loadingPhone)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                        child: ConstrainedBox(
+                          constraints:
+                              BoxConstraints.tightFor(width: double.infinity),
+                          child: ElevatedButton(
+                            onPressed: validateOTP,
+                            child: const Text("Confirm"),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              }
+
               return Column(
                 children: [
-                  const SizedBox(height: 50),
-                  Text(
-                    "Enter OTP",
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 40),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
-                      controller: otpController,
+                      controller: phoneController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: 'OTP',
+                        labelText: 'Phone Number',
                       ),
                     ),
                   ),
-                  const SizedBox(height: 50),
-                  ElevatedButton(
-                    onPressed: validateOTP,
-                    child: const Text("Submit"),
-                  ),
+                  if (!loadingPhone)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints.tightFor(width: double.infinity),
+                        child: ElevatedButton(
+                          onPressed: login,
+                          child: const Text("Login"),
+                        ),
+                      ),
+                    ),
+                  if (!isOtp && needGoogle && !isFromGoogle)
+                    Expanded(
+                        child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: SingleChildScrollView(
+                        child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints.tightFor(
+                                      width: double.infinity),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      signInWithGoogle();
+                                    },
+                                    // background with white color and shadow
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.white),
+                                      shadowColor: MaterialStateProperty.all(
+                                          Colors.black.withOpacity(.2)),
+                                      elevation: MaterialStateProperty.all(4),
+                                      shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(24),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: Image.network(
+                                              "https://developers.google.com/static/identity/images/g-logo.png"),
+                                        ),
+                                        SizedBox(width: 8),
+                                        const Text(
+                                          "login with Google",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )),
+                      ),
+                    )),
                 ],
               );
-            }
-
-            return Column(
-              children: [
-                const SizedBox(height: 50),
-                Text(
-                  "Enter Phone Number",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                const SizedBox(height: 50),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TextField(
-                    controller: phoneController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Phone Number',
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 50),
-                ElevatedButton(
-                  onPressed: login,
-                  child: const Text("Login"),
-                ),
-              ],
-            );
-          },
-        ));
+            },
+          ),
+        ),
+      ],
+    ));
   }
 }
 

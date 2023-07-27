@@ -25,7 +25,7 @@ class ViewMode extends StatelessWidget {
 
   final disabledStyle = TextButton.styleFrom(
     textStyle: TextStyle(
-      color: Colors.green.shade800,
+      color: Colors.green.shade100,
       fontWeight: FontWeight.bold,
     ),
   );
@@ -41,11 +41,12 @@ class ViewMode extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-              child: TextButton(
-            onPressed: () => onClick(true),
-            style: leftSelected ? activeStyle : disabledStyle,
-            child: Text(leftLabel),
-          )),
+            child: TextButton(
+              onPressed: () => onClick(true),
+              style: leftSelected ? activeStyle : disabledStyle,
+              child: Text(leftLabel),
+            ),
+          ),
           Expanded(
             child: TextButton(
               style: !leftSelected ? activeStyle : disabledStyle,

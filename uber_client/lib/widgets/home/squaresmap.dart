@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -19,6 +20,7 @@ class MinimunMarker {
   final String id;
   final LatLng position;
   final BitmapDescriptor icon;
+  bool hidden = false;
 
   MinimunMarker({
     required this.id,
@@ -28,12 +30,10 @@ class MinimunMarker {
 }
 
 class SquaresMap extends StatefulWidget {
-  final Widget Function(BuildContext context) mapLoader;
   final bool Function(Bag) filterBags;
 
   const SquaresMap({
     Key? key,
-    required this.mapLoader,
     required this.filterBags,
   }) : super(key: key);
 
@@ -52,6 +52,7 @@ class _SquaresMapState extends State<SquaresMap> {
 
   void initMap(GoogleMapController controller) {
     mapController = controller;
+
     context.read<BagsQubit>().attachCameraEvent((p0) {
       mapController.animateCamera(p0);
     });
@@ -103,6 +104,7 @@ class _SquaresMapState extends State<SquaresMap> {
   // convert spots to marks and group Marks if needed
   convertSpotsToMarks(BuildContext context) async {
     final visibleSpots = context.read<BagsQubit>().state.visibleBags;
+    final quantities = context.read<BagsQubit>().state.quantities;
 
     final citizens = Utils.groupSpots(visibleSpots, (a, b) {
       final latDiff = (a.latitude - b.latitude).abs();
@@ -121,11 +123,15 @@ class _SquaresMapState extends State<SquaresMap> {
       if (citizen.length == 1) {
         tempMarkers.add(MinimunMarker(
           id: citizen.first.id.toString(),
-            position: LatLng(
-              citizen.first.latitude,
-              citizen.first.longitude,
-            ), //position of marker
-            icon: BitmapDescriptor.defaultMarker));
+          position: LatLng(
+            citizen.first.latitude,
+            citizen.first.longitude,
+          ), //position of marker
+          icon: await MapMark.instance.minNum(
+            1,
+            (quantities[citizen.first.id.toString()] ?? 0) > 0,
+          ),
+        ));
       } else {
         final centerPos = MapSquare.getCenter(
             citizen.map((e) => LatLng(e.latitude, e.longitude)).toList());
@@ -135,8 +141,7 @@ class _SquaresMapState extends State<SquaresMap> {
           //add start location marker
           id: id,
           position: centerPos,
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          icon: await MapMark.instance.minNum(citizen.length, true),
         ));
       }
     }
@@ -166,61 +171,60 @@ class _SquaresMapState extends State<SquaresMap> {
     return BlocListener<BagsQubit, BagsState>(
       listenWhen: (old, n) =>
           old.visibleBags != n.visibleBags || old.quantities != n.quantities,
-        listener: (context, state) async {
-          convertSpotsToMarks(context);
-        },
+      listener: (context, state) async {
+        convertSpotsToMarks(context);
+      },
       child: GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: state.currentLocation!,
-              zoom: 15,
-            ),
-            zoomControlsEnabled: false,
-            compassEnabled: false,
-            rotateGesturesEnabled: false,
-            onCameraMove: (pos) {
+        initialCameraPosition: CameraPosition(
+          target: state.currentLocation!,
+          zoom: 15,
+        ),
+        zoomControlsEnabled: false,
+        compassEnabled: false,
+        rotateGesturesEnabled: false,
+        onCameraMove: (pos) {
           lastCameraPosition = pos;
-            },
-            onCameraIdle: () async {
-              if (lastCameraPosition != null) {
+        },
+        onCameraIdle: () async {
+          if (lastCameraPosition != null) {
             onCameraStopMoving(
-                  lastCameraPosition!,
-                  context.read<BagsQubit>(),
-                );
-                  lastCameraPosition = null;
-              }
-            },
-            polygons: {
-              if (debug)
-                ...state.visibleSquares.map(
-                  (e) => Polygon(
-                    polygonId: PolygonId(e.id),
-                    points: e.toPoints(),
-                    fillColor: Colors.black12,
-                    strokeWidth: 1,
-                    strokeColor: Colors.black,
-                  ),
-                )
-            },
-            onMapCreated: initMap,
+              lastCameraPosition!,
+              context.read<BagsQubit>(),
+            );
+            lastCameraPosition = null;
+          }
+        },
+        polygons: {
+          if (debug)
+            ...state.visibleSquares.map(
+              (e) => Polygon(
+                polygonId: PolygonId(e.id),
+                points: e.toPoints(),
+                fillColor: Colors.black12,
+                strokeWidth: 1,
+                strokeColor: Colors.black,
+              ),
+            )
+        },
+        onMapCreated: initMap,
         markers: (Set()
           ..addAll(
-                markers.map(
-                  (e) => Marker(
+            markers.map(
+              (e) => Marker(
                 flat: true,
-                    markerId: MarkerId(e.id),
-                    position: e.position,
-                    icon: e.icon,
+                markerId: MarkerId(e.id),
+                position: e.position,
+                icon: e.icon,
                 consumeTapEvents: false,
                 draggable: false,
 
                 visible: !e.hidden,
-                    // visible: Random().nextBool(),
-                    anchor: const Offset(0.5, 0.5),
-                  ),
-                ),
-              )),
+                // visible: Random().nextBool(),
+                anchor: const Offset(0.5, 0.5),
+              ),
+            ),
+          )),
       ),
-          );
-        });
+    );
   }
 }

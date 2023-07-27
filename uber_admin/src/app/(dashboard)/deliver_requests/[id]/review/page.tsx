@@ -107,7 +107,7 @@ export default function Page(props: Props) {
 
 
         </div>
-        {data?.active == false && <button
+        {true && <button
             onClick={accept}
             className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
             Accept

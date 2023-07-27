@@ -4,12 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/order.dart';
 import '../model/seller.dart';
+import '../model/zone.dart';
 
 class Cache {
   static late SharedPreferences _instance;
   static Future<void> init() async {
     _instance = await SharedPreferences.getInstance();
-    _instance.clear();
   }
 
   static bool get isFirstRun {
@@ -85,23 +85,19 @@ class Cache {
         'prevOrders', olders.map((e) => jsonEncode(e.toJson())).toList());
   }
 
-  static Map<String, int> get quantities {
-    final quantitiesJson = _instance.getStringList('quantities') ?? [];
-    return {};
-    return quantitiesJson
-        .map((e) => jsonDecode(e) as Map<String, int>)
-        .reduce((value, element) {
-      value.addAll(element);
-      return value;
-    });
+  static addZone(Zone zone) async {
+    // add make json out of zone and add it to the list of zone and avoid duplicates
+    final zonesJson = _instance.getStringList('zones') ?? [];
+    // remove duplicates
+    zonesJson.removeWhere((e) => Zone.fromJson(jsonDecode(e)).id == zone.id);
+
+    zonesJson.add(jsonEncode(zone.toJson()));
+
+    await _instance.setStringList('zones', zonesJson);
   }
 
-  static set quantities(Map<String, int> quantities) {
-    _instance.setStringList(
-        'quantities',
-        quantities
-            .map((key, value) => MapEntry(key, jsonEncode(value)))
-            .values
-            .toList());
+  static List<Zone> get zones {
+    final zonesJson = _instance.getStringList('zones') ?? [];
+    return zonesJson.map((e) => Zone.fromJson(jsonDecode(e))).toList();
   }
 }

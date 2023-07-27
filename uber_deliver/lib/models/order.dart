@@ -19,6 +19,8 @@ class Order {
 
   final String sellerID;
   final LatLng sellerAddress;
+  final String sellerName;
+  final String sellerPhone;
   final DateTime? acceptedAt;
 
   final String bagID;
@@ -56,6 +58,8 @@ class Order {
     this.isDelivered,
     this.deliveryPath,
     required this.sellerAddress,
+    required this.sellerName,
+    required this.sellerPhone,
     this.deliveryManID,
     this.deliveryPhone,
     this.deliveryAddress,
@@ -94,6 +98,8 @@ class Order {
         'latitude': sellerAddress.latitude,
         'longitude': sellerAddress.longitude,
       },
+      'sellerName': sellerName,
+      'sellerPhone': sellerPhone,
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
@@ -143,6 +149,8 @@ class Order {
         json['sellerAddress']['latitude'],
         json['sellerAddress']['longitude'],
       ),
+      sellerName: json['sellerName'],
+      sellerPhone: json['sellerPhone'],
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],
@@ -172,14 +180,18 @@ class Order {
     return Order.fromJson(data);
   }
 
-  Track toTrack(LatLng location) {
+  Track toTrack(String deliveryManID, LatLng location, bool areadyFromSeller) {
     return Track(
       id: id,
       orderID: id,
       clientID: clientID,
-      deliveryLocation: location,
+      deliverLocation: location,
+      sellerLocation: sellerAddress,
+      clientLocation: clientAddress,
+      deliveryManID: deliveryManID,
+      sellerID: sellerID,
       toClient: false,
-      toSeller: false,
+      toSeller: areadyFromSeller,
     );
   }
 }

@@ -1,20 +1,27 @@
 import firebase, {
-  AllowOnlyIF,
+  BlocForNot,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
-import { AcceptOrder } from "@/utils/types";
+import { AcceptOrder, IOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
-  if (await AllowOnlyIF("seller", request)) return VerificationError();
+  if (await BlocForNot("seller", request)) return VerificationError();
 
   const order = AcceptOrder.parse(await request.json());
 
-  await admin.firestore().collection("orders").doc(order.id).update({
-    acceptedAt: order.acceptedAt,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  await admin
+    .firestore()
+    .collection("orders")
+    .doc(order.id)
+    .update({
+      acceptedAt: order.acceptedAt,
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
+      sellerAddress: order.sellerAddress,
+      sellerName: order.sellerName,
+      sellerPhone: order.sellerPhone,
+    } satisfies Partial<IOrder>);
 
   // notify client
   const query = await firebase
@@ -24,7 +31,7 @@ export async function POST(request: Request) {
     .get();
   const data = query.data();
 
-  // if (!data) return new Response("Seller not found");
+  // if (!data) return new Response("Client not found");
   // const clientToken = data.notiID;
 
   // await firebase.messaging().send({
@@ -43,6 +50,7 @@ export async function POST(request: Request) {
   //     },
   //   },
   //   data: {
+  //     type: "order_accepted",
   //     order: JSON.stringify(order),
   //   },
   // });

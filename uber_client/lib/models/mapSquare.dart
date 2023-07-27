@@ -115,27 +115,6 @@ class MapSquare extends Equatable {
     return differenceInKm;
   }
 
-  static double calculateDistance(LatLng point1, LatLng point2) {
-    double toRadians(double degrees) {
-      return degrees * pi / 180;
-    }
-
-    const double earthRadius = 6371; // in kilometers
-
-    double dLat = toRadians(point2.latitude - point1.latitude);
-    double dLon = toRadians(point2.longitude - point1.longitude);
-
-    double a = pow(sin(dLat / 2), 2) +
-        cos(toRadians(point1.latitude)) *
-            cos(toRadians(point2.latitude)) *
-            pow(sin(dLon / 2), 2);
-
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    double distance = earthRadius * c;
-    return distance;
-  }
-
   static Offset roundToSquareCenter(double x, double y, int squareSpace) {
     const degreesPerKm = 1 / 111.32; // Approximate degrees per kilometer
     final squareSpaceDegrees = squareSpace * degreesPerKm;

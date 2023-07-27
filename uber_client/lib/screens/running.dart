@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/repositories/direction.dart';
 
@@ -12,6 +11,11 @@ import '../repositories/server.dart';
 
 class RunningScreen extends StatefulWidget {
   final Order order;
+
+  static go(Order order) => MaterialPageRoute(
+      builder: (context) => RunningScreen(
+            order: order,
+          ));
 
   RunningScreen({
     Key? key,
@@ -31,6 +35,9 @@ class _RunningScreenState extends State<RunningScreen> {
 
   List<LatLng> toClient = [];
   List<LatLng> toSeller = [];
+
+  TimeOfDay estimatedTime =
+      TimeOfDay.fromDateTime(DateTime.now().add(const Duration(minutes: 30)));
 
   @override
   void dispose() {
@@ -72,6 +79,14 @@ class _RunningScreenState extends State<RunningScreen> {
       this.tracking = tracking;
       toSeller = directions[0].points;
       toClient = directions[1].points;
+
+      estimatedTime = TimeOfDay.fromDateTime(tracking.updatedAt.add(
+        Duration(
+          seconds: directions[0].duration.inSeconds +
+              directions[1].duration.inSeconds,
+        ),
+      ));
+
       initMap();
     });
   }
@@ -129,7 +144,7 @@ class _RunningScreenState extends State<RunningScreen> {
                 TileLayer(
                   urlTemplate:
                       'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.app',
+                  userAgentPackageName: 'me.laknabil.uber_client',
                 ),
                 PolylineLayer(
                   polylines: [
@@ -203,13 +218,11 @@ class _RunningScreenState extends State<RunningScreen> {
               child: Hero(
                 tag: "running",
                 child: AcceptedOrderPanel(
-                  deliveryAt: TimeOfDay.now(),
+                  deliveryAt: estimatedTime,
                   deliverName: widget.order.deliveryName!,
                   deliverPhone: widget.order.deliveryPhone!,
-                  clientPhoto:
-                      "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
-                  sellerName: "seller Name",
-                  sellerPhone: "+213 555 555 555",
+                  sellerName: widget.order.sellerName,
+                  sellerPhone: widget.order.sellerPhone ?? "+2563566356",
                   sellerPhoto:
                       "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
                 ),
@@ -232,7 +245,6 @@ class AcceptedOrderPanel extends StatelessWidget {
   final String deliverPhone;
   final String? sellerPhone;
 
-  final String clientPhoto;
   final String? sellerPhoto;
 
   const AcceptedOrderPanel({
@@ -243,7 +255,6 @@ class AcceptedOrderPanel extends StatelessWidget {
     this.sellerPhone,
     this.sellerPhoto,
     required this.deliverPhone,
-    required this.clientPhoto,
   });
 
   @override
@@ -283,19 +294,19 @@ class AcceptedOrderPanel extends StatelessWidget {
         SizedBox(
           height: 12,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            3,
-            (index) => Icon(
-              Icons.shopping_bag_rounded,
-              color: Colors.green,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 12,
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //   children: List.generate(
+        //     3,
+        //     (index) => Icon(
+        //       Icons.shopping_bag_rounded,
+        //       color: Colors.green,
+        //     ),
+        //   ),
+        // ),
+        // SizedBox(
+        //   height: 12,
+        // ),
         ListTile(
           textColor: Colors.white,
           leading: CircleAvatar(

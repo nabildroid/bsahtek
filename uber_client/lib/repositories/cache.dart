@@ -10,6 +10,7 @@ class Cache {
 
   static Future<void> init() async {
     _instance = await SharedPreferences.getInstance();
+    // await _instance.clear();
   }
 
   static bool get isFirstRun {
@@ -34,7 +35,6 @@ class Cache {
       _instance.setString("currentClient", jsonEncode(client.toJson()));
     }
   }
-
 
   static void clear() async {
     await _instance.clear();

@@ -4,16 +4,11 @@ import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/repositories/cache.dart';
-import 'package:uber_client/repositories/gps.dart';
 import 'package:uber_client/repositories/messages_remote.dart';
 import 'package:uber_client/repositories/server.dart';
-import 'package:uber_client/screens/home.dart';
 import 'package:uber_client/screens/loading_to_home.dart';
-import 'package:uber_client/screens/login.dart';
-import 'package:uber_client/screens/splash.dart';
 
 import 'repositories/notifications.dart';
-import 'screens/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

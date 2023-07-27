@@ -18,22 +18,39 @@ class MapMark {
 
   MapMark._internal();
 
-  Future<BitmapDescriptor> minNum(int n) async {
+  Future<BitmapDescriptor> minNum(int n, bool isActive) async {
     int roof = 0;
 
-    if (n < 10) {
-      roof = 5;
-    } else if (n < 50) {
-      roof = 10;
-    } else if (n < 100) {
-      roof = 50;
+    if (n == 1) {
+      roof = 1;
+    } else {
+      if (n < 3) {
+        roof = 2;
+      } else if (n < 10) {
+        roof = 5;
+      } else if (n < 50) {
+        roof = 10;
+      } else if (n < 100) {
+        roof = 50;
+      }
     }
 
-    if (!draws.containsKey("g_$roof")) {
-      final bytes = await _createCanvas([
-        _drawDefaultCircle,
-        (canvas, width) => _drawDefaultCircleText("$roof+", canvas, width),
-      ]);
+    if (!draws.containsKey("g_$roof${isActive ? 1 : 0}")) {
+      late final Uint8List bytes;
+      if (roof == 1) {
+        bytes = await _createCanvas([
+          (canvas, width) => _drawDefaultCircle(
+                canvas,
+                width * 2 ~/ 3,
+                isActive: isActive,
+              ),
+        ]);
+      } else {
+        bytes = await _createCanvas([
+          _drawDefaultCircle,
+          (canvas, width) => _drawDefaultCircleText("$roof+", canvas, width),
+        ]);
+      }
       draws["g_$roof"] = BitmapDescriptor.fromBytes(bytes);
     }
 
@@ -65,9 +82,9 @@ class MapMark {
     textPainter.paint(canvas, offset);
   }
 
-  void _drawDefaultCircle(Canvas canvas, int width) {
+  void _drawDefaultCircle(Canvas canvas, int width, {bool isActive = true}) {
     final paint = Paint()
-      ..color = Colors.green.shade700
+      ..color = isActive ? Colors.green.shade700 : Colors.grey.shade600
       ..strokeWidth = 2
       ..style = PaintingStyle.fill;
 

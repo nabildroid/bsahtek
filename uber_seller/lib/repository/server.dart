@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +11,9 @@ import 'package:uber_seller/model/bag.dart';
 import '../model/seller.dart';
 import '../model/order.dart' as Model;
 import '../model/sellerSubmit.dart';
+import '../model/zone.dart';
 import '../utils/firestore.dart';
+import 'cache.dart';
 
 class Server {
   static late FirebaseFirestore firestore;
@@ -37,28 +40,26 @@ class Server {
     return json.map<Bag>((e) => Bag.fromJson(e)).toList();
   }
 
-  Future<Map<String, int>> getQuantities(List<String> bagsIds) async {
+  Future<List<Zone>> getZones(List<String> bagsIds) async {
     final ref = firestore.collection("zones");
 
+    //  todo add also the last updated to prevent refetching the same data
+
+    final id = "quantities.${bagsIds[0]}";
     // todo to ensure security make it like "qunanities.sellerID.bagID" and enforce it through security rules
     final queries = await Future.wait(bagsIds.map(
-      (bagdId) => ref.where("quantities.$bagsIds[0]", isNotEqualTo: null).get(),
+      (bagdId) => ref.where(id, isNull: false).get(),
     ));
 
     final docs = queries.map((e) => e.docs).expand((e) => e).toList();
 
-    final quantities = <String, int>{};
-
-    for (var doc in docs) {
-      for (var bagId in bagsIds) {
-        final quantity = doc.data()["quantities"][bagId];
-        if (quantity != null) {
-          quantities[bagId] = quantity;
-        }
-      }
-    }
-
-    return quantities;
+    return docs.map((e) {
+      final data = e.data();
+      return Zone(
+        id: e.id,
+        quantities: Map<String, int>.from(data["quantities"]),
+      );
+    }).toList();
   }
 
   Future<void> assignNotiIDtoSeller({
@@ -141,15 +142,21 @@ class Server {
     // todo add condition to prevent push Noti to interfer with this!
 
     final stream = query.snapshots().listen((event) {
-      // todo handle date time
-      final orders = event.docs
-          .map((e) => Model.Order.fromJson(
-                FirestoreUtils.goodJson(
-                  {...e.data(), "id": e.id},
-                ),
-              ))
-          .toList();
-      onChange.call(orders);
+      final List<Model.Order> changes = [];
+
+      event.docChanges.forEach((change) {
+        if (change.type == DocumentChangeType.removed) return;
+
+        final doc = change.doc.data();
+
+        changes.add(Model.Order.fromJson(
+          FirestoreUtils.goodJson(
+            {...doc!, "id": change.doc.id},
+          ),
+        ));
+      });
+
+      onChange(changes);
     });
 
     return stream.cancel;
@@ -169,5 +176,42 @@ class Server {
 
     auth.currentUser!.reload();
     // update the user account!
+  }
+
+  Future<void> addQuantity(List<Zone> zones, String bagID, int quantity) async {
+    for (var zone in zones) {
+      if (zone.quantities.containsKey(bagID)) {
+        final ref = firestore.collection("zones").doc(zone.id);
+        await ref.update({
+          "quantities.$bagID":
+              quantity.abs() == 1 ? FieldValue.increment(quantity) : quantity,
+        });
+      }
+    }
+  }
+
+  Future<String> getCityName(LatLng location) async {
+    final response = await Dio().get(
+      "https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}",
+    );
+
+    if (response.statusCode == 200) {
+      final json = response.data;
+      final address = json["address"];
+      if (address == null) return "";
+      String city;
+      if (address.containsKey("town")) {
+        city = address["town"];
+      } else if (address.containsKey("county")) {
+        city = address["county"];
+      } else if (address.containsKey("village")) {
+        city = address["village"];
+      } else {
+        city = "";
+      }
+      return city;
+    } else {
+      return "";
+    }
   }
 }

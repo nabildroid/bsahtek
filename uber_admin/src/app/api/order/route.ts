@@ -1,33 +1,43 @@
 import { IOrder, NewOrder, Order } from "@/utils/types";
 import * as admin from "firebase-admin";
-import firebase from "../repository/firebase";
+import firebase, {
+  BlocForNot,
+  VerificationError,
+} from "../repository/firebase";
 import { TypeOf, z } from "zod";
+import { seller } from "@/local_repository/server";
 
 export async function POST(request: Request) {
+  if (await BlocForNot("", request)) return VerificationError();
+
   const newOrder = NewOrder.parse(await request.json());
-  console.log(newOrder);
   const query = await firebase
     .firestore()
     .collection("sellers")
     .doc(newOrder.sellerID)
     .get();
   const data = query.data();
+  console.log(newOrder);
 
   if (!data) return new Response("Seller not found");
   const sellerToken = data.notiID;
+
+  console.log("whent through");
 
   const { id } = await firebase
     .firestore()
     .collection("orders")
     .add({
       ...newOrder,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
 
   const order = {
     id,
     ...newOrder,
-  } satisfies IOrder;
+  } as IOrder;
+
+  console.log(order);
 
   await firebase.messaging().send({
     token: sellerToken,
@@ -49,7 +59,7 @@ export async function POST(request: Request) {
     data: {
       order: JSON.stringify(order),
       click_action: "FLUTTER_NOTIFICATION_CLICK",
-      type:"new_order"
+      type: "new_order",
     },
   });
 

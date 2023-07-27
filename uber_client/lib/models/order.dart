@@ -15,7 +15,9 @@ class Order {
   final bool isPickup;
 
   final String sellerID;
-  final LatLng sellerAddress;
+  final LatLng? sellerAddress;
+  final String? sellerPhone;
+  final String? sellerName;
   final DateTime? acceptedAt;
 
   final String bagID;
@@ -51,13 +53,17 @@ class Order {
     required this.clientTown,
     this.isDelivered,
     this.deliveryPath,
-    required this.sellerAddress,
+    this.sellerAddress,
     this.deliveryManID,
     this.deliveryPhone,
     this.deliveryName,
     this.acceptedAt,
     required this.isPickup,
+    this.sellerPhone,
+    this.sellerName,
   });
+
+  // todo you can add multiple factories to model multiple states of this order
 
   toJson() {
     return {
@@ -85,10 +91,14 @@ class Order {
             'latitude': value.latitude,
             'longitude': value.longitude,
           })),
-      'sellerAddress': {
-        'latitude': sellerAddress.latitude,
-        'longitude': sellerAddress.longitude,
-      },
+      'sellerAddress': sellerAddress != null
+          ? {
+              'latitude': sellerAddress!.latitude,
+              'longitude': sellerAddress!.longitude,
+            }
+          : null,
+      'sellerPhone': sellerPhone,
+      'sellerName': sellerName,
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
@@ -128,10 +138,14 @@ class Order {
           ),
         ),
       ),
-      sellerAddress: LatLng(
-        json['sellerAddress']['latitude'],
-        json['sellerAddress']['longitude'],
-      ),
+      sellerAddress: json['sellerAddress'] != null
+          ? LatLng(
+              json['sellerAddress']['latitude'],
+              json['sellerAddress']['longitude'],
+            )
+          : null,
+      sellerPhone: json['sellerPhone'],
+      sellerName: json['sellerName'],
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],

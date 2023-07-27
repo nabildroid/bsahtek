@@ -55,6 +55,9 @@ export const Order = z.object({
     longitude: z.number(),
   }),
 
+  sellerName: z.string(),
+  sellerPhone: z.string(),
+
   bagID: z.string(),
   bagName: z.string(),
   bagImage: z.string(),
@@ -100,6 +103,7 @@ export const StartDeliveryOrder = Order.extend({
   reportId: true,
 });
 
+// todo refine for the dates!
 export const AcceptOrder = Order.extend({
   acceptedAt: z.string().transform((a) => new Date(a)),
 }).omit({
@@ -112,13 +116,35 @@ export const AcceptOrder = Order.extend({
   reportId: true,
 });
 
+export const HandOverToClient = Order.extend({
+  acceptedAt: z.string().transform((a) => new Date(a)),
+  isPickup: z.literal(true),
+}).omit({
+  deliveryManID: true,
+  deliveryPhone: true,
+  deliveryName: true,
+
+  isDelivered: true,
+  reportId: true,
+  deliveryPath: true,
+});
+
 export const HandOver = Order.extend({
   acceptedAt: z.string().transform((a) => new Date(a)),
+  isPickup: z.literal(false),
+  deliveryManID: z.string(),
+  deliveryPhone: z.string(),
+  deliveryName: z.string(),
 }).omit({
   isDelivered: true,
   reportId: true,
   deliveryPath: true,
 });
+
+export const HandOverForAll = z.discriminatedUnion("isPickup", [
+  HandOver,
+  HandOverToClient,
+]);
 
 export const NewOrder = Order.extend({}).omit({
   id: true,
@@ -130,6 +156,10 @@ export const NewOrder = Order.extend({}).omit({
   deliveryManID: true,
   deliveryPhone: true,
   deliveryName: true,
+
+  sellerName: true,
+  sellerPhone: true,
+  sellerAddress: true,
 });
 
 export const NewFood = z.object({
@@ -194,8 +224,9 @@ export const Tracking = Track.omit({
   createdAt: true,
   path: true,
   toClient: true,
-  toSeller: true,
   updatedAt: true,
+}).extend({
+  toSeller: z.boolean().optional(),
 });
 
 export const Seller = z.object({

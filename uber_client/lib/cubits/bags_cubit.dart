@@ -76,6 +76,7 @@ class BagsState extends Equatable {
 
   final LatLng? currentLocation;
   final Area? currentArea;
+  final Map<String, int> quantities;
 
   final List<MapSquare> squares;
   List<MapSquare> visibleSquares;
@@ -93,6 +94,7 @@ class BagsState extends Equatable {
     required this.filter,
     required this.attachedCameras,
     this.currentArea,
+    required this.quantities,
   });
 
   @override
@@ -105,6 +107,7 @@ class BagsState extends Equatable {
         visibleBags.map((e) => e.id).toList(),
         visibleSquares.map((e) => e.id).toList(),
         currentArea.toString(),
+        quantities.entries.map((e) => "${e.key};${e.value}").join(":"),
       ];
 
   BagsState copyWith({
@@ -117,6 +120,7 @@ class BagsState extends Equatable {
     List<MapSquare>? visibleSquares,
     BagsFilter? filter,
     Area? currentArea,
+    Map<String, int>? quantities,
   }) {
     return BagsState(
       bags: bags ?? this.bags,
@@ -127,6 +131,7 @@ class BagsState extends Equatable {
       filter: filter ?? this.filter,
       visibleBags: visibleBags ?? this.visibleBags,
       currentArea: currentArea ?? this.currentArea,
+      quantities: quantities ?? this.quantities,
     );
   }
 
@@ -159,9 +164,27 @@ class BagsState extends Equatable {
       attachedCameras: [...attachedCameras, callback],
     );
   }
+
+  BagsState addQuantity(Map<String, int> tobeInserted) {
+    final q = {...quantities, ...tobeInserted};
+
+    return copyWith(
+      quantities: q,
+    );
+  }
 }
 
 class BagsQubit extends Cubit<BagsState> {
+  final List<VoidCallback> activeSubs = [];
+
+  @override
+  close() async {
+    for (var sub in activeSubs) {
+      sub();
+    }
+    super.close();
+  }
+
   BagsQubit()
       : super(BagsState(
           bags: [],
@@ -170,6 +193,7 @@ class BagsQubit extends Cubit<BagsState> {
           attachedCameras: [],
           visibleBags: [],
           visibleSquares: [],
+          quantities: {},
         ));
 
   Future<void> init() async {
@@ -202,6 +226,21 @@ class BagsQubit extends Cubit<BagsState> {
       square.longitude,
       square.latitude,
     );
+    // listen to the associtated
+
+    activeSubs.add(Server().listenToZone(
+      "${square.longitude},${square.latitude}",
+      (data) {
+        final quantites = data["quantities"];
+
+        if (quantites == null) return;
+
+        final q = Map<String, int>.from(quantites);
+
+        emit(state.addQuantity(q));
+      },
+    ));
+
     return bags;
   }
 
@@ -290,24 +329,29 @@ class BagsQubit extends Cubit<BagsState> {
     required List<MapSquare> visibleSquares,
     required LatLng cameraPostion,
     int closeDistance = 5,
-    int maxDistance = 45,
+    int maxDistance = 20,
   }) {
+    print("checking visible spots");
     final visibleSpots = spots.where((spot) {
+      print("checking visible spots");
+
       final spotPosition = LatLng(spot.latitude, spot.longitude);
 
       final isWithinRegion =
           visibleSquares.any((element) => element.isWithin(cameraPostion));
 
-      final distance =
-          MapSquare.calculateDistance(cameraPostion, spotPosition).abs();
+      final distance = Geolocator.distanceBetween(
+            cameraPostion.latitude,
+            cameraPostion.longitude,
+            spotPosition.latitude,
+            spotPosition.longitude,
+          ) /
+          1000;
 
       final isFiltred = true; //widget.filterBags(spot);
 
       if (!isFiltred || !isWithinRegion) return false;
-      if (visibleSquares.length >= 4) return true; // todo make it dynamic
-      if (visibleSquares.length < 4 &&
-          visibleSquares.length > 1 &&
-          distance < maxDistance) return true;
+      if (visibleSquares.length > 1 && distance < maxDistance) return true;
       if (visibleSquares.length == 1 && distance < closeDistance) return true;
 
       return false;
@@ -319,23 +363,25 @@ class BagsQubit extends Cubit<BagsState> {
   static List<MapSquare> _checkVisibleSquares(
       LatLng center, LatLngBounds bounds) {
     final lat = [
-      MapSquare.addKlmToLongitude(bounds.northeast.latitude, 2),
-      MapSquare.addKlmToLongitude(bounds.southwest.latitude, -2)
+      MapSquare.addKlmToLongitude(bounds.northeast.latitude, 10),
+      MapSquare.addKlmToLongitude(bounds.southwest.latitude, -10)
     ];
     final lon = [
-      MapSquare.addKlmToLongitude(bounds.northeast.longitude, 2),
-      MapSquare.addKlmToLongitude(bounds.southwest.longitude, -2)
+      MapSquare.addKlmToLongitude(bounds.northeast.longitude, 10),
+      MapSquare.addKlmToLongitude(bounds.southwest.longitude, -10)
     ];
-    const visibility = 45; // 50km
 
+    const visibility = 30; // 50km
+
+    // shrink it
     while (MapSquare.calculateDifferenceInKm(lat[0], lat[1]) > visibility) {
-      lat[0] = lat[0] - 0.01;
-      lat[1] = lat[1] + 0.01;
+      lat[0] = lat[0] - 0.005;
+      lat[1] = lat[1] + 0.005;
     }
 
     while (MapSquare.calculateDifferenceInKm(lon[0], lon[1]) > visibility) {
-      lon[0] = lon[0] - 0.01;
-      lon[1] = lon[1] + 0.01;
+      lon[0] = lon[0] - 0.005;
+      lon[1] = lon[1] + 0.005;
     }
 
     print(MapSquare.calculateDifferenceInKm(lat[0], lat[1]));

@@ -13,6 +13,7 @@ abstract class Cache {
   static late SharedPreferences _instance;
   static Future<void> init() async {
     _instance = await SharedPreferences.getInstance();
+    await _instance.clear();
   }
 
   static bool get isFirstRun {
@@ -27,7 +28,11 @@ abstract class Cache {
     if (data == null) return null;
 
     final info = jsonDecode(data);
-    return DeliveryRequest.fromJson(info);
+    final request = DeliveryRequest.fromJson(info);
+
+    if (request.order.lastUpdate.difference(DateTime.now()).inHours > 3) {
+      return null;
+    }
   }
 
   static set runningRequest(DeliveryRequest? request) {
@@ -114,5 +119,68 @@ abstract class Cache {
       info[request.order.id] = request.toJson();
       await _instance.setString("deliveryRequestData", jsonEncode(info));
     }
+  }
+
+  static LatLng? get trackingLocation {
+    final data = _instance.getString("trackingLocation");
+    if (data == null) return null;
+
+    final info = jsonDecode(data);
+    return LatLng(info[0], info[1]);
+  }
+
+  static set trackingLocation(LatLng? location) {
+    if (location == null) {
+      _instance.remove("trackingLocation");
+      return;
+    }
+    _instance.setString(
+      "trackingLocation",
+      jsonEncode([location.latitude, location.longitude]),
+    );
+  }
+
+  static DateTime? get trackedToSeller {
+    final data = _instance.getString("trackedToSeller");
+    if (data == null) return null;
+
+    return DateTime.parse(data);
+  }
+
+  static set trackedToSeller(DateTime? time) {
+    if (time == null) {
+      _instance.remove("trackedToSeller");
+      return;
+    }
+    _instance.setString("trackedToSeller", time.toIso8601String());
+  }
+
+  static List<Order> get deliveredOrders {
+    final prevOrdersJson = _instance.getStringList('deliveredOrders') ?? [];
+    return prevOrdersJson.map((e) => Order.fromJson(jsonDecode(e))).toList();
+  }
+
+  static DateTime get lastUpdatedDeliveredOrders {
+    final olders = deliveredOrders;
+    if (olders.isEmpty) {
+      return DateTime(2001);
+    }
+    final t = olders
+        .map((e) => e.lastUpdate)
+        .reduce((value, element) => value.isAfter(element) ? value : element);
+
+    return t;
+  }
+
+  static Future<void> updateDeliveredOrders(Order order) async {
+    final olders = deliveredOrders;
+    final index = olders.indexWhere((element) => element.id == order.id);
+    if (index == -1) {
+      olders.add(order);
+    } else {
+      olders[index] = order;
+    }
+    await _instance.setStringList(
+        'deliveredOrders', olders.map((e) => jsonEncode(e.toJson())).toList());
   }
 }

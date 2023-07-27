@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   const update = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp() as any as Date,
-    delivertManID: tracking.deliveryManID, // todo check if belongs to him!
+    deliveryManID: tracking.deliveryManID, // todo check if belongs to him!
     deliveryLocation: tracking.deliverLocation,
     path: admin.firestore.FieldValue.arrayUnion(
       tracking.deliverLocation

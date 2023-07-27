@@ -4,13 +4,14 @@
  */
 
 import firebase, {
-  AllowOnlyIF,
+  BlocForNot,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
 import {
   AcceptOrder,
-  HandOver,
+  HandOverForAll,
+  HandOverToClient,
   ITrack,
   StartDeliveryOrder,
 } from "@/utils/types";
@@ -18,8 +19,9 @@ import * as admin from "firebase-admin";
 
 // i think only the seller is allowed to do this
 export async function POST(request: Request) {
-  if (await AllowOnlyIF("seller", request)) return VerificationError();
-  const order = HandOver.parse(await request.json());
+  if (await BlocForNot("seller", request)) return VerificationError();
+
+  const order = HandOverForAll.parse(await request.json());
 
   if (order.isPickup == false) {
     // set track to be toSeller = true
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
   } else {
     await firebase.firestore().collection("orders").doc(order.id).update({
       isDelivered: true,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // set order to be delivered

@@ -173,219 +173,33 @@ class _RunningNotiScreenState extends State<RunningNotiScreen> {
             Align(
               alignment: Alignment.bottomCenter,
               child: AnimatedSwitcher(
-                duration: Duration(milliseconds: 600),
-                switchInCurve: Curves.easeInOutExpo,
-                switchOutCurve: Curves.easeInOutExpo,
-                child: true
-                    ? DeliveryRequestPanel(
-                        accept: accept,
-                        deliveryFromDistance:
-                            (widget.deliveryRequest.toSeller.distance / 1000)
-                                .round(),
-                        deliveryFromDuration:
-                            widget.deliveryRequest.toSeller.duration.inMinutes,
-                        deliveryToDistance:
-                            (widget.deliveryRequest.toClient.distance / 1000)
-                                .round(),
-                        deliveryToDuration:
-                            widget.deliveryRequest.toClient.duration.inMinutes,
-                        pricePerKM: 15,
-                        totalPrice: 25,
-                      )
-                    : AcceptedOrderPanel(
-                        deliveryAt: TimeOfDay.now(),
-                        clientName: "John Doe",
-                        clientPhone: "+213 555 555 555",
-                        clientPhoto:
-                            "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
-                        sellerName: "John Doe",
-                        sellerPhone: "+213 555 555 555",
-                        sellerPhoto:
-                            "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png",
-                      ),
-              ),
+                  duration: Duration(milliseconds: 600),
+                  switchInCurve: Curves.easeInOutExpo,
+                  switchOutCurve: Curves.easeInOutExpo,
+                  child: DeliveryRequestPanel(
+                    accept: accept,
+                    deliveryFromDistance:
+                        (widget.deliveryRequest.toSeller.distance / 1000)
+                            .round(),
+                    deliveryFromDuration:
+                        widget.deliveryRequest.toSeller.duration.inMinutes,
+                    deliveryToDistance:
+                        (widget.deliveryRequest.toClient.distance / 1000)
+                            .round(),
+                    deliveryToDuration:
+                        widget.deliveryRequest.toClient.duration.inMinutes,
+                    deliveryPrice: distanceToPrice(
+                      widget.deliveryRequest.toClient.distance / 1000,
+                    ),
+                    totalPrice: distanceToPrice(
+                          widget.deliveryRequest.toClient.distance / 1000,
+                        ) +
+                        int.parse(widget.deliveryRequest.order.bagPrice),
+                  )),
             )
           ],
         ),
       ),
-    );
-  }
-}
-
-class AcceptedOrderPanel extends StatelessWidget {
-  final TimeOfDay deliveryAt;
-  final int stage = 0;
-
-  final String clientName;
-  final String? sellerName;
-
-  final String clientPhone;
-  final String? sellerPhone;
-
-  final String clientPhoto;
-  final String? sellerPhoto;
-
-  const AcceptedOrderPanel({
-    super.key,
-    required this.deliveryAt,
-    required this.clientName,
-    this.sellerName,
-    this.sellerPhone,
-    this.sellerPhoto,
-    required this.clientPhone,
-    required this.clientPhoto,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.all(20).copyWith(
-        bottom: 0,
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.shade900,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
-      ),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(
-          "Estimated delivey time at ${deliveryAt.format(context)}",
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(
-          height: 8,
-        ),
-        Text(
-          sellerName != null
-              ? "Seller and the Client are waiting for you"
-              : "Your order is already on its way to you!",
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-        ),
-        Divider(
-          color: Colors.white54,
-        ),
-        SizedBox(
-          height: 12,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            3,
-            (index) => Icon(
-              Icons.shopping_bag_rounded,
-              color: Colors.green,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 12,
-        ),
-        ListTile(
-          textColor: Colors.white,
-          leading: CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage(
-              clientPhoto,
-            ),
-          ),
-          title: Text(
-            clientName,
-          ),
-          subtitle: Text(
-            "Client",
-            style: TextStyle(
-              color: Colors.white70,
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.white70,
-                child: IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.gps_fixed_outlined,
-                    color: Colors.blueGrey.shade900,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 8,
-              ),
-              CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.phone,
-                      color: Colors.blueGrey.shade900,
-                    ),
-                  )),
-            ],
-          ),
-          style: ListTileStyle.drawer,
-        ),
-        if (sellerName != null)
-          ListTile(
-            textColor: Colors.white,
-            leading: CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(
-                sellerPhoto!,
-              ),
-            ),
-            title: Text(
-              sellerName!,
-            ),
-            subtitle: Text(
-              "Seller",
-              style: TextStyle(
-                color: Colors.white70,
-              ),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white70,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.gps_fixed_outlined,
-                      color: Colors.blueGrey.shade900,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white,
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: Icon(
-                        Icons.phone,
-                        color: Colors.blueGrey.shade900,
-                      ),
-                    )),
-              ],
-            ),
-            style: ListTileStyle.drawer,
-          ),
-      ]),
     );
   }
 }
@@ -397,7 +211,7 @@ class DeliveryRequestPanel extends StatelessWidget {
   final int deliveryToDuration;
   final int deliveryToDistance;
 
-  final int pricePerKM;
+  final int deliveryPrice;
 
   final int totalPrice;
 
@@ -409,7 +223,7 @@ class DeliveryRequestPanel extends StatelessWidget {
     required this.deliveryFromDistance,
     required this.deliveryToDuration,
     required this.deliveryToDistance,
-    required this.pricePerKM,
+    required this.deliveryPrice,
     required this.totalPrice,
     required this.accept,
   });
@@ -452,8 +266,8 @@ class DeliveryRequestPanel extends StatelessWidget {
               ),
               ListTile(
                 textColor: Colors.white70,
-                title: Text("Deliver Pricing"),
-                trailing: Text("\$${pricePerKM} / km"),
+                title: Text("Deliver Price"),
+                trailing: Text("\$${deliveryPrice}"),
                 style: ListTileStyle.drawer,
                 visualDensity: VisualDensity.compact,
               ),
@@ -491,4 +305,27 @@ class DeliveryRequestPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+int distanceToPrice(double distance) {
+  if (distance < 1)
+    return 10;
+  else if (distance < 5)
+    return 20;
+  else if (distance < 10)
+    return 30;
+  else if (distance < 15)
+    return 40;
+  else if (distance < 20)
+    return 50;
+  else if (distance < 25)
+    return 60;
+  else if (distance < 30)
+    return 70;
+  else if (distance < 35)
+    return 80;
+  else if (distance < 40)
+    return 90;
+  else
+    return 100;
 }

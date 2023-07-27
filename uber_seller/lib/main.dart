@@ -8,15 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:receive_intent/receive_intent.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uber_seller/model/seller.dart';
 import 'package:uber_seller/repository/cache.dart';
-import 'package:uber_seller/repository/messages_remote.dart';
 import 'package:uber_seller/repository/server.dart';
 import 'package:uber_seller/screens/Loading_to_home.dart';
-import 'package:uber_seller/screens/home.dart';
 import 'package:uber_seller/screens/running_order.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'cubits/app_cubit.dart';
 import 'cubits/home_cubit.dart';
@@ -25,15 +20,15 @@ import 'model/order.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final intentData = await getIntentData();
-  if (intentData != null) {
-    final order = Order.fromJson(jsonDecode(intentData));
+  // final intentData = await getIntentData();
+  // if (intentData != null) {
+  //   final order = Order.fromJson(jsonDecode(intentData));
 
-    runApp(QuickRunningOrderApp(order));
-    return;
-  }
+  //   runApp(QuickRunningOrderApp(order));
+  //   return;
+  // }
 
-  final cache = Cache.init();
+  await Cache.init();
 
   await Server.init();
 

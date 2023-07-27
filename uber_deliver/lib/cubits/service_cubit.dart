@@ -17,6 +17,7 @@ import '../models/delivery_request.dart';
 import '../models/order.dart';
 import '../repository/cache.dart';
 import '../repository/direction.dart';
+import '../repository/server.dart';
 import '../utils/utils.dart';
 
 class ServiceState extends Equatable {
@@ -26,29 +27,31 @@ class ServiceState extends Equatable {
   DeliveryRequest? runningRequest;
   bool focusOnRunning;
 
+  List<Order> deliveredOrders;
   DeliveryRequest? selectedRequest;
 
-  ServiceState({
-    required this.isAvailable,
-    this.selectedRequest,
-    this.runningRequest,
-    this.loadingAvailability = false,
-    this.focusOnRunning = false,
-  });
+  ServiceState(
+      {required this.isAvailable,
+      this.selectedRequest,
+      this.runningRequest,
+      this.loadingAvailability = false,
+      this.focusOnRunning = false,
+      required this.deliveredOrders});
 
-  ServiceState copyWith({
-    bool? isAvailable,
-    DeliveryRequest? selectedRequest,
-    bool? loadingAvailability,
-    DeliveryRequest? runningRequest,
-    bool? focusOnRunning,
-  }) {
+  ServiceState copyWith(
+      {bool? isAvailable,
+      DeliveryRequest? selectedRequest,
+      bool? loadingAvailability,
+      DeliveryRequest? runningRequest,
+      bool? focusOnRunning,
+      List<Order>? deliveredOrders}) {
     return ServiceState(
       isAvailable: isAvailable ?? this.isAvailable,
       runningRequest: runningRequest ?? this.runningRequest,
       selectedRequest: selectedRequest ?? this.selectedRequest,
       loadingAvailability: loadingAvailability ?? this.loadingAvailability,
       focusOnRunning: focusOnRunning ?? this.focusOnRunning,
+      deliveredOrders: deliveredOrders ?? this.deliveredOrders,
     );
   }
 
@@ -67,6 +70,7 @@ class ServiceState extends Equatable {
         selectedRequest?.order.id ?? "selectedOrderID",
         loadingAvailability,
         focusOnRunning,
+        deliveredOrders.map((e) => e.id + e.lastUpdate.toString()).toList()
       ];
 }
 
@@ -74,6 +78,7 @@ class ServiceCubit extends Cubit<ServiceState> {
   ServiceCubit()
       : super(ServiceState(
           isAvailable: false,
+          deliveredOrders: [],
         ));
 
   BuildContext? freshContext;
@@ -112,16 +117,10 @@ class ServiceCubit extends Cubit<ServiceState> {
       final city = await DirectionRepository.getCityName(location);
       await Notifications.available(city: city);
 
-      final cell = DirectionRepository.roundToSquareCenter(
-          location.longitude, location.latitude, 30);
-      final cellID = "zone-${cell.dy.round()}-${cell.dx.round()}";
-
-      await RemoteMessages().attachToCell(cellID);
-      print(cellID);
-      Cache.attachedCells = [cellID];
+      attachToLocation(location);
       await Cache.setAvailabilityLocation(location);
 
-      // await Backgrounds.schedulerAvailability();
+      await Backgrounds.schedulerAvailability();
     }
 
     emit(state.copyWith(
@@ -130,12 +129,21 @@ class ServiceCubit extends Cubit<ServiceState> {
     ));
   }
 
-  void killDelivery() async {
+  Future<void> killDelivery() async {
     await Notifications.notAvailable();
     emit(state.killRunningRequst().copyWith(isAvailable: false));
     Cache.runningRequest = null;
+    Cache.trackedToSeller = null;
     Cache.setAvailabilityLocation(null);
     await Backgrounds.stopRunning();
+  }
+
+  void finishDelivery() async {
+    await killDelivery();
+
+    await fetchDeliveredOrders();
+    // todo schedule notification to congratulate the deliver
+    // do hard fetch for the old tracks and orders to update the history
   }
 
   void startDelivery(DeliveryRequest request) async {
@@ -181,24 +189,40 @@ class ServiceCubit extends Cubit<ServiceState> {
   void init() async {
     print("Initing the cubits");
 
-    initListener();
-
     emit(state.copyWith(
       runningRequest: Cache.runningRequest,
       focusOnRunning: true,
-      isAvailable: Cache.availabilityLocation != null,
+      isAvailable:
+          Cache.runningRequest == null && Cache.availabilityLocation != null,
     ));
 
+    fetchDeliveredOrders();
     final needToShowRunning = Cache.runningRequest != null;
+
     if (needToShowRunning) {
-      useContext((context) => RunningScreen.go(context, Cache.runningRequest!));
+      Future.delayed(Duration(seconds: 1), () {
+        useContext(
+            (context) => RunningScreen.go(context, state.runningRequest!));
+      });
+
       await Backgrounds.stopRunning();
       await Backgrounds.schedulerRunning();
+      await Notifications.onMission(
+        clientName: Cache.runningRequest!.order.clientName,
+        distance: Cache.runningRequest!.toClient.distance +
+            Cache.runningRequest!.toSeller.distance,
+        duration: Cache.runningRequest!.toClient.duration +
+            Cache.runningRequest!.toSeller.duration,
+        city: Cache.runningRequest!.order.clientTown,
+      );
     } else {
       final isAlreadyAvailable = Cache.availabilityLocation != null;
       if (isAlreadyAvailable) {
+        attachToLocation(Cache.availabilityLocation!);
+
         final city =
             await DirectionRepository.getCityName(Cache.availabilityLocation!);
+
         await Notifications.available(city: city);
         await Backgrounds.stopAvailability();
         await Backgrounds.schedulerAvailability();
@@ -209,6 +233,8 @@ class ServiceCubit extends Cubit<ServiceState> {
         await RemoteMessages().unattachFromCells(Cache.attachedCells);
       }
     }
+
+    initListener();
   }
 
   void initListener() {
@@ -277,5 +303,26 @@ class ServiceCubit extends Cubit<ServiceState> {
     await Cache.saveDeliveryRequestData(request);
 
     return request;
+  }
+
+  Future<void> fetchDeliveredOrders() async {
+    emit(state.copyWith(deliveredOrders: Cache.deliveredOrders));
+    final updatedOrders =
+        await Server().getDeliveredOrders(Cache.lastUpdatedDeliveredOrders);
+
+    for (var update in updatedOrders) {
+      await Cache.updateDeliveredOrders(update);
+    }
+
+    emit(state.copyWith(deliveredOrders: Cache.deliveredOrders));
+  }
+
+  void attachToLocation(LatLng location) async {
+    final cell = DirectionRepository.roundToSquareCenter(
+        location.longitude, location.latitude, 30);
+    final cellID = "zone-${cell.dy.round()}-${cell.dx.round()}";
+    print("attaching to $cellID");
+    await RemoteMessages().attachToCell(cellID);
+    Cache.attachedCells = [cellID];
   }
 }

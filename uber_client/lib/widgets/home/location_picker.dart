@@ -3,13 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 
 class LocationPicker extends StatelessWidget {
-  final String title;
-  final String subtitle;
   final VoidCallback onTap;
   const LocationPicker({
     super.key,
-    required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 

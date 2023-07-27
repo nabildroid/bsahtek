@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/repository/direction.dart';
 import 'package:uber_deliver/screens/login.dart';
 import 'package:uber_deliver/screens/running.dart';
 import 'package:uber_deliver/screens/runningNoti.dart';
+
+import '../models/order.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -54,60 +57,42 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              BlocBuilder<ServiceCubit, ServiceState>(
-                  buildWhen: (_, __) => true,
-                  builder: (context, state) {
-                    return Card(
-                      isLoading: state.loadingAvailability ||
-                          state.runningRequest != null,
-                      id: app.state.deliveryMan!.id.substring(0, 5),
-                      isAvailable: state.isAvailable,
-                      onSwitch: service.toggleAvailability,
-                    );
-                  }),
-              SizedBox(
-                height: 10,
-              ),
-              Text(
-                "Past Deliveries",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BlocBuilder<ServiceCubit, ServiceState>(
+                    buildWhen: (_, __) => true,
+                    builder: (context, state) {
+                      return Card(
+                        isLoading: state.loadingAvailability ||
+                            state.runningRequest != null,
+                        id: app.state.deliveryMan!.id.substring(0, 5),
+                        isAvailable: state.isAvailable,
+                        onSwitch: service.toggleAvailability,
+                      );
+                    }),
+                SizedBox(
+                  height: 10,
                 ),
-              ),
-              ...List.generate(
-                10,
-                (index) => ListTile(
-                  leading: Icon(
-                    Icons.delivery_dining,
-                    color: Colors.green,
-                  ),
-                  title: Text("Carfour"),
-                  subtitle: Text("#565685"),
-                  trailing: RichText(
-                    text: TextSpan(
-                      text: "2.5km ",
-                      style: TextStyle(
-                        color: Colors.black54,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: " + \$15",
-                          style: TextStyle(
-                            color: Colors.green.shade800,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                Text(
+                  "Past Deliveries",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            ]),
+                BlocBuilder<ServiceCubit, ServiceState>(
+                  builder: (context, state) => Column(
+                    children: state.deliveredOrders
+                        .map(
+                          (e) => Delivered(order: e),
+                        )
+                        .toList(),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -139,6 +124,68 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return SizedBox.shrink();
           },
+        ),
+      ),
+    );
+  }
+}
+
+class Delivered extends StatefulWidget {
+  final Order order;
+  const Delivered({
+    super.key,
+    required this.order,
+  });
+
+  @override
+  State<Delivered> createState() => _DeliveredState();
+}
+
+class _DeliveredState extends State<Delivered> {
+  bool isLoading = true;
+
+  double totalDistance = 0;
+
+  @override
+  void initState() {
+    init();
+    super.initState();
+  }
+
+  void init() async {
+    final directions = await Future.wait([
+      DirectionRepository.direction(
+          widget.order.sellerAddress, widget.order.clientAddress),
+      DirectionRepository.direction(
+          widget.order.deliveryAddress!, widget.order.sellerAddress),
+    ]);
+
+    setState(() {
+      totalDistance = directions[0].distance + directions[1].distance;
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      duration: Duration(milliseconds: 350),
+      curve: Curves.easeInOutExpo,
+      offset: Offset(isLoading ? -1 : 0, 0),
+      child: ListTile(
+        leading: Icon(
+          Icons.delivery_dining,
+          color: Colors.green,
+        ),
+        title: Text(widget.order.sellerName),
+        subtitle: Text("#${widget.order.id.substring(0, 5)}"),
+        trailing: RichText(
+          text: TextSpan(
+            text: "${(totalDistance / 1000).toStringAsFixed(2)}km ",
+            style: TextStyle(
+              color: Colors.black54,
+            ),
+          ),
         ),
       ),
     );
@@ -197,7 +244,7 @@ class Card extends StatelessWidget {
                     children: [
                       RichText(
                         text: TextSpan(
-                          text: "FOODGOOD",
+                          text: "DILDEAL",
                           children: [
                             TextSpan(
                               text: "#$id",

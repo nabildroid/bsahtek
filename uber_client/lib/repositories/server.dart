@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../models/bag.dart';
 import '../models/client.dart';
@@ -86,6 +87,8 @@ class Server {
   Future<void> orderBag(Order order) async {
     final data = order.toJson() as Map<String, dynamic>;
     data.remove("id");
+    data.remove("sellerPhone");
+    data.remove("sellerAddress");
 
     final response = await http.post(
       "order",
@@ -121,5 +124,33 @@ class Server {
     final data = response.data["foods"] as List<dynamic>;
 
     return data.map((e) => Bag.fromJson(e)).toList();
+  }
+
+  VoidCallback listenToZone(
+      String zoneID, Function(Map<String, dynamic>) callback) {
+    final ref = firestore.collection("zones").doc(zoneID);
+
+    final sub = ref.snapshots().listen((event) {
+      if (event.exists) callback(event.data()!);
+    });
+
+    return sub.cancel;
+  }
+
+  VoidCallback listenToOrder(String orderID, Function(Order) callback) {
+    final ref = firestore.collection("orders").doc(orderID);
+
+    final sub = ref.snapshots().listen((event) {
+      if (event.exists) {
+        final data = FirestoreUtils.goodJson(event.data()!);
+
+        callback(Order.fromJson({
+          "id": event.id,
+          ...data,
+        }));
+      }
+    });
+
+    return sub.cancel;
   }
 }

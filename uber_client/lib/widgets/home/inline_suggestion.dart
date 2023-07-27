@@ -101,6 +101,10 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                       backgroundImage: NetworkImage(suggestion.image),
                     ),
                   ),
+                  trailing: Chip(
+                    label: Text(suggestion.quantity.toString()),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+                  ),
                   title: Text(
                     suggestion.title,
                     style: TextStyle(
@@ -108,25 +112,12 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                       color: Colors.black,
                     ),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        suggestion.subtitle,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        suggestion.thirdtitle,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                  subtitle: Text(
+                    suggestion.subtitle,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                    ),
                   ),
                 )
               ],

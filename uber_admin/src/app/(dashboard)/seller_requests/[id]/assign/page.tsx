@@ -218,8 +218,8 @@ export default function Page(props: Props) {
                     <label className="text-sm font-bold px-2">Bag Descripion</label>
                     <textarea
                         rows={2}
-                        value={(bagInfo.tags as any) ?? ""}
-                        onChange={(e) => setBagInfo({ ...bagInfo, tags: e.target.value })}
+                        value={bagInfo.description ?? ""}
+                        onChange={(e) => setBagInfo({ ...bagInfo, description: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name"></textarea>
                 </div>
 
@@ -237,10 +237,16 @@ export default function Page(props: Props) {
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
                     <label className="text-sm font-bold px-2">Bag Tags</label>
-                    <input
-                        value={(bagInfo.tags as any) ?? ""}
+                    <select
+                        value={bagInfo.tags}
                         onChange={(e) => setBagInfo({ ...bagInfo, tags: e.target.value })}
-                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
+                        className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name">
+                        <option value="valA">valA</option>
+                        <option value="valB">valB</option>
+                        <option value="valC">valC</option>
+
+                    </select>
+
                 </div>
 
                 <button

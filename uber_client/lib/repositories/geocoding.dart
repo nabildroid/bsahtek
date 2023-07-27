@@ -12,7 +12,18 @@ abstract class Geocoding {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return json["address"]["town"] as String;
+      final address = json["address"];
+      String city;
+      if (address.containsKey("town")) {
+        city = address["town"];
+      } else if (address.containsKey("county")) {
+        city = address["county"];
+      } else if (address.containsKey("village")) {
+        city = address["village"];
+      } else {
+        city = "";
+      }
+      return city;
     } else {
       return "";
     }

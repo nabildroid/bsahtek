@@ -25,7 +25,10 @@ class Server {
   static Future<void> init() async {
     await Firebase.initializeApp();
     firestore = FirebaseFirestore.instance;
+
     auth = FirebaseAuth.instance;
+
+    await auth.signOut();
   }
 
   Server();
@@ -59,8 +62,11 @@ class Server {
   VoidCallback onUserChange(Function(DeliveryMan?) listen,
       {bool forceFirst = false}) {
     bool forced = false;
+    bool alreadyGood = false;
     final sub = auth.authStateChanges().listen((event) async {
-      if (event == null) {
+      if (alreadyGood) return;
+
+      if (event == null || event.phoneNumber == null) {
         listen(null);
       } else {
         // calling getIdTokenResult will force authStateChanges to be called again
@@ -70,13 +76,15 @@ class Server {
 
         injectToken(idToken.token!);
         final role = idToken.claims?["role"] ?? "";
-        forced = true;
+        alreadyGood = true;
 
         listen(DeliveryMan.fromUser(
           event,
           role == "deliver",
         ));
       }
+
+      forced = true;
     });
 
     return sub.cancel;
@@ -115,6 +123,7 @@ class Server {
       DeliveryMan deliver, Order order, LatLng address) async {
     final updatedOrder = order.setDeliver(deliver, address);
 
+    // todo update only the information about the deliver man, so in security rules it become easy to check
     await firestore
         .collection('orders')
         .doc(order.id)
@@ -126,13 +135,26 @@ class Server {
     );
   }
 
-  Future<void> pushTrack(Track track) async {
-    await http.post(
+  Future<Track> pushTrack(Track track) async {
+    final response = await http.post(
       "order/delivery/track",
+      data: jsonEncode(track.toJson()),
+    );
+
+    return Track.fromJson(response.data);
+  }
+
+  Future<void> finishTrack(Order order, LatLng deliverLocation) async {
+    final deliveryManID = Server.auth.currentUser!.uid;
+    final track = order.toTrack(deliveryManID, deliverLocation, true);
+
+    await http.post(
+      "order/delivery/finish",
       data: jsonEncode(track.toJson()),
     );
   }
 
+  // todo rename it to something more meaningful
   Future<void> submitDelivery(
       String deliveryID, String phone, DeliverySubmit delivery) async {
     await Future.wait([
@@ -147,5 +169,25 @@ class Server {
 
     auth.currentUser!.reload();
     // update the user account!I
+  }
+
+  Future<List<Order>> getDeliveredOrders(DateTime lastRead) async {
+    final deliveryManID = Server.auth.currentUser!.uid;
+
+    final query = await firestore
+        .collection("orders")
+        .where("deliveryManID", isEqualTo: deliveryManID)
+        .where("lastUpdate", isGreaterThan: lastRead.toIso8601String())
+        .get();
+
+    final orders = query.docs
+        .map((e) {
+          final items = Utils.goodFirestoreJson(e.data());
+          return Order.fromJson({...items, 'id': e.id});
+        })
+        .where((element) => element.isDelivered == true)
+        .toList();
+
+    return orders;
   }
 }

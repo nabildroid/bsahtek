@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 abstract class Notifications {
@@ -7,6 +9,26 @@ abstract class Notifications {
     await _instance.cancelNotificationsByChannelKey("requests");
     await _instance.cancelNotificationsByChannelKey("running");
     await _instance.cancelNotificationsByChannelKey("availablity");
+  }
+
+  static Future<void> toDebug(double lat) async {
+    await _instance.createNotification(
+      content: NotificationContent(
+        id: Random().nextInt(100000),
+        channelKey: "debbb",
+        title: "${lat}debbb${Random().nextInt(100000)}",
+        fullScreenIntent: true,
+        body: "You are delivering to",
+        notificationLayout: NotificationLayout.Default,
+        wakeUpScreen: true,
+        displayOnForeground: true,
+        displayOnBackground: true,
+        showWhen: true,
+        autoDismissible: false,
+        criticalAlert: true,
+        locked: true,
+      ),
+    );
   }
 
   static Future<void> onMission({
@@ -118,8 +140,14 @@ abstract class Notifications {
 
   static Future<void> createChannels() async {
     _instance.initialize(
-        'https://avatars.githubusercontent.com/u/19208222?v=4',
+        null,
         [
+          NotificationChannel(
+            channelKey: "debbb",
+            channelName: 'debbb',
+            channelDescription:
+                'Notifications for when clients requests to have a delivery for thier orders',
+          ),
           NotificationChannel(
             channelKey: "requests",
             channelName: 'Delivery Requests',

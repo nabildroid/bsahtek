@@ -5,7 +5,7 @@ abstract class Notifications {
 
   static Future<void> createChannels() async {
     await _instance.requestPermissionToSendNotifications();
-    await _instance.initialize("resource://drawable/logo_circle_notification", [
+    await _instance.initialize(null, [
       NotificationChannel(
         channelKey: "delivery",
         channelName: 'Following Delivery',
@@ -36,6 +36,28 @@ abstract class Notifications {
     );
   }
 
+  static Future<void> orderAccepted(bool isPickup) async {
+    await _instance.createNotification(
+      content: NotificationContent(
+        id: 13,
+        channelKey: 'delivery',
+        criticalAlert: true,
+        wakeUpScreen: true,
+        showWhen: true,
+        locked: isPickup,
+        fullScreenIntent: true,
+        notificationLayout: NotificationLayout.Default,
+        displayOnForeground: true,
+        displayOnBackground: true,
+        title: 'Your order is Accepted',
+        body: isPickup ? 'You can pick it up' : 'its on the way',
+        payload: {
+          "type": "orderAccepted",
+        },
+      ),
+    );
+  }
+
   static Future<void> deliveryOnProgress(String productName) async {
     await _instance.createNotification(
       content: NotificationContent(
@@ -58,6 +80,11 @@ abstract class Notifications {
         },
       ),
     );
+  }
+
+  // clear
+  static Future<void> clear() async {
+    await _instance.cancelNotificationsByChannelKey("delivery");
   }
 
   static onClick(Function(String type) callback) {

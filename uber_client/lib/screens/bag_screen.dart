@@ -166,38 +166,39 @@ class _BagScreenState extends State<BagScreen> {
                   ],
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                                Colors.green.shade700),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100),
+              if (context.watch<HomeCubit>().state.runningOrder == null)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                  Colors.green.shade700),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
                               ),
+                              foregroundColor:
+                                  MaterialStateProperty.all(Colors.white),
                             ),
-                            foregroundColor:
-                                MaterialStateProperty.all(Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                goingToReserve = true;
+                              });
+                            },
+                            child: Text("Order"),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              goingToReserve = true;
-                            });
-                          },
-                          child: Text("Order"),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
               if (goingToReserve)
                 Positioned.fill(
                     child: Container(

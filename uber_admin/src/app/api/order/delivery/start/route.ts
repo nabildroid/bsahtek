@@ -1,5 +1,5 @@
 import firebase, {
-  AllowOnlyIF,
+  BlocForNot,
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
@@ -7,7 +7,7 @@ import { AcceptOrder, ITrack, StartDeliveryOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
-  if (await AllowOnlyIF("deliver", request)) return VerificationError();
+  if (await BlocForNot("deliver", request)) return VerificationError();
 
   const order = StartDeliveryOrder.parse(await request.json());
 
@@ -40,25 +40,25 @@ export async function POST(request: Request) {
   if (!data) return new Response("Client not found");
   const clientToken = data.notiID;
 
-  await firebase.messaging().send({
-    token: clientToken,
-    fcmOptions: {
-      analyticsLabel: "orderAcceptedNotifyClient",
-    },
-    android: {
-      priority: "high",
-      ttl: 1000 * 60 * 10,
-      notification: {
-        body: `${order.deliveryName} is on the way to deliver your ${order.bagName} to ${order.clientTown}`,
-        title: "Your order is on the way",
-      },
-    },
-    data: {
-      type: "delivery_start",
-      click_action: "FLUTTER_NOTIFICATION_CLICK",
-      order: JSON.stringify(order),
-    },
-  });
+  // await firebase.messaging().send({
+  //   token: clientToken,
+  //   fcmOptions: {
+  //     analyticsLabel: "orderAcceptedNotifyClient",
+  //   },
+  //   android: {
+  //     priority: "high",
+  //     ttl: 1000 * 60 * 10,
+  //     notification: {
+  //       body: `${order.deliveryName} is on the way to deliver your ${order.bagName} to ${order.clientTown}`,
+  //       title: "Your order is on the way",
+  //     },
+  //   },
+  //   data: {
+  //     type: "delivery_start",
+  //     click_action: "FLUTTER_NOTIFICATION_CLICK",
+  //     order: JSON.stringify(order),
+  //   },
+  // });
 
   console.log(order);
 
