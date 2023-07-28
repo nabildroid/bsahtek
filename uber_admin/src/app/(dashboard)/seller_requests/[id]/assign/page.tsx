@@ -9,6 +9,9 @@ import { AcceptSeller, ISeller, IAcceptSeller } from "@/utils/types";
 import { useState } from "react";
 import { IBag } from "@/types";
 
+import useUploadImage from "@/hooks/useUploadImage";
+
+
 type Props = {
     params: {
         id: string
@@ -16,6 +19,9 @@ type Props = {
 }
 
 export default function Page(props: Props) {
+
+    const uploader = useUploadImage();
+
 
     const router = useRouter();
     const [user] = useAtom(userAtomAsync);
@@ -162,7 +168,14 @@ export default function Page(props: Props) {
                 <div className="p-2 rounded-lg hover:bg-stone-200">
                     <label className="text-sm font-bold px-2">Seller Photo</label>
                     <label className="relative overflow-hidden w-full flex items-center justify-center">
-                        <input type="file" className="absolute inset-0 opacity-0" />
+                        <input type="file"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const url = await uploader(file, props.params.id, "seller/photo");
+                                setSellerInfo(a => ({ ...a, photo: url }));
+                            }}
+                            className="absolute inset-0 opacity-0" />
                         {sellerInfo.photo ? <img src={sellerInfo.photo} className="absolute object-cover inset-0 " /> : null}
                         <div className="ring-2 z-50 ring-black/50 aspect-square p-2 rounded-full">
                             <Lucide.Image size={20} className="text-black" />
@@ -226,7 +239,15 @@ export default function Page(props: Props) {
                 <div className="p-2 rounded-lg hover:bg-stone-200">
                     <label className="text-sm font-bold px-2">Bag Photo</label>
                     <label className="relative overflow-hidden w-full flex items-center justify-center">
-                        <input type="file" className="absolute inset-0 opacity-0" />
+                        <input
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                // todo this will make the old photos saved for ever!
+                                const url = await uploader(file, (Math.random() * 100000000).toString(), `seller/${props.params.id}/photo`);
+                                setBagInfo(a => ({ ...a, photo: url }));
+                            }}
+                            type="file" className="absolute inset-0 opacity-0" />
 
                         {bagInfo.photo ? <img src={bagInfo.photo} className="absolute object-cover inset-0 " /> : null}
                         <div className="ring-2 z-50 ring-black/50 aspect-square p-2 rounded-full">

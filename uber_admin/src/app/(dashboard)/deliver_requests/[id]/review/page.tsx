@@ -8,6 +8,7 @@ import { useQuery } from "react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AcceptSeller, IAcceptSeller, IDeliver } from "@/utils/types";
+import useUploadImage from "@/hooks/useUploadImage";
 
 type Props = {
     params: {
@@ -17,7 +18,7 @@ type Props = {
 
 export default function Page(props: Props) {
 
-
+    const uploader = useUploadImage();
     const router = useRouter();
     const [user] = useAtom(userAtomAsync);
 
@@ -64,6 +65,12 @@ export default function Page(props: Props) {
                     <label className="relative w-full flex items-center justify-center overflow-hidden">
                         <input
                             disabled
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const url = await uploader(file, deliverInfo.id, "deliver/photo");
+                                setDeliverInfo(a => ({ ...a, photo: url }));
+                            }}
                             type="file" className="absolute inset-0 opacity-0" />
                         {deliverInfo.photo ? <img src={deliverInfo.photo} className="absolute object-cover inset-0 " /> : null}
                         <div className="ring-2 z-50 ring-black/50 aspect-square p-2 rounded-full">

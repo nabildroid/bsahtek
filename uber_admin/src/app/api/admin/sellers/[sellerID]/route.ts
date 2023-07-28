@@ -97,6 +97,7 @@ export async function POST(request: Request, context: Context) {
   } satisfies Partial<IBag>;
 
   // todo update userClaims
+  // todo update the user informations
 
   if (demand.bagID) {
     await db

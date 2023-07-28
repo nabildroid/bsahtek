@@ -162,6 +162,8 @@ export const NewOrder = Order.extend({}).omit({
   sellerAddress: true,
 });
 
+
+// todo add photo url refine
 export const NewFood = z.object({
   name: z.string(),
 
