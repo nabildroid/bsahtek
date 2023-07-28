@@ -45,6 +45,16 @@ export async function POST(request: Request) {
     .doc(tracking.orderID)
     .update(updateOrder);
 
+  const today = new Date().toLocaleDateString();
+  const statsRef = firebase.firestore().collection("uber").doc("stats");
+
+  await statsRef.update({
+    [`today.${today}.orders`]: admin.firestore.FieldValue.increment(1),
+    [`today.${today}.delivered`]: admin.firestore.FieldValue.increment(1),
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    // todo what about updating the price also
+  });
+
   return new Response(JSON.stringify({}));
 }
 

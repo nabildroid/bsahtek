@@ -7,6 +7,8 @@ import * as Server from "@/local_repository/server";
 import { ResponsiveContainer, Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { cn } from "@/lib/utils";
 import { useQuery } from "react-query";
+import { IStats } from "@/types";
+import { ValueOf } from "next/dist/shared/lib/constants";
 
 
 
@@ -40,6 +42,8 @@ function fillMounthHistory(data: { orders: number, date: Date }[]) {
 }
 
 
+
+type Entry = ValueOf<IStats["today"]>;
 export default function Page() {
     console.log("need the user");
     const [user] = useAtom(userAtomAsync);
@@ -52,6 +56,12 @@ export default function Page() {
         refetchInterval: isRealtime ? 1000 * 10 : false,
         suspense: true,
     });
+
+
+    const todayKey = new Date().toLocaleDateString();
+    const today = ((data as any)?.today[todayKey] as unknown ?? null) as Entry | null;
+
+
 
 
     return <>
@@ -76,9 +86,9 @@ export default function Page() {
 
             <div className="grid sm:grid-cols-3 gap-8 grid-cols-1 px-2 sm:px-0 mt-2">
 
-                <Card title="Earning" value={data?.today?.earnings.toString() ?? "0"} />
-                <Card title="Orders" value={data?.today?.orders.toString() ?? "0"} />
-                <Card title="Delivers Request" value={data?.today?.deliversRequests.toString() ?? "0"} />
+                <Card title="Earning" value={today?.selled.toString() ?? "0"} />
+                <Card title="Orders" value={today?.orders.toString() ?? "0"} />
+                <Card title="Delivers Request" value={today?.deliversRequests.toString() ?? "0"} />
             </div>
 
         </div>
@@ -87,7 +97,12 @@ export default function Page() {
                 <h2 className="text-black font-bold text-sm mb-2">Orders in this mounth</h2>
 
                 <Chart data={
-                    fillMounthHistory(data?.thisMonth?.ordersHistory ?? []).map((x, i) => ({
+                    fillMounthHistory(
+                        Object.entries((data?.today) ?? {}).map(([key, value]) => ({
+                            orders: value.orders,
+                            date: new Date(key),
+                        }))
+                    ).map((x, i) => ({
                         x: x.date.getDate().toString(),
                         y: x.orders,
                     }))
