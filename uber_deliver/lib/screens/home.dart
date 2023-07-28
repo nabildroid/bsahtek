@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
 import 'package:uber_deliver/repository/direction.dart';
+import 'package:uber_deliver/screens/delivered_screen.dart';
 import 'package:uber_deliver/screens/login.dart';
 import 'package:uber_deliver/screens/running.dart';
 import 'package:uber_deliver/screens/runningNoti.dart';
@@ -173,6 +174,8 @@ class _DeliveredState extends State<Delivered> {
       curve: Curves.easeInOutExpo,
       offset: Offset(isLoading ? -1 : 0, 0),
       child: ListTile(
+        onTap: () =>
+            Navigator.of(context).push(DeliveredScreen.go(widget.order)),
         leading: Icon(
           Icons.delivery_dining,
           color: Colors.green,
