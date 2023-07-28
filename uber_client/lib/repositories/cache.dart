@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../cubits/bags_cubit.dart';
 import '../models/bag.dart';
 import '../models/client.dart';
 import '../models/order.dart';
@@ -39,6 +41,30 @@ class Cache {
 
   static void clear() async {
     await _instance.clear();
+  }
+
+  // currentArea
+  static Area? get currentArea {
+    final data = _instance.getString("currentArea");
+    if (data == null) {
+      return Area(
+        center: LatLng(
+          36.777609783186975,
+          2.9853606820318834,
+        ),
+        name: "Beni Messous",
+        radius: 30,
+      );
+    }
+    return Area.fromMap(jsonDecode(data));
+  }
+
+  static set currentArea(Area? area) {
+    if (area == null) {
+      _instance.remove("currentArea");
+    } else {
+      _instance.setString("currentArea", jsonEncode(area.toMap()));
+    }
   }
 
   static Order? get runningOrder {

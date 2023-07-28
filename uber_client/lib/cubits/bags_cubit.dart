@@ -13,6 +13,7 @@ import 'package:uber_client/repositories/geocoding.dart';
 import 'package:uber_client/repositories/gps.dart';
 
 import '../models/bag.dart';
+import '../repositories/cache.dart';
 import '../repositories/server.dart';
 
 class Area {
@@ -29,6 +30,25 @@ class Area {
   @override
   String toString() {
     return "center: $center, name: $name, radius: $radius";
+  }
+
+  toMap() {
+    return {
+      "center": {
+        "latitude": center.latitude,
+        "longitude": center.longitude,
+      },
+      "name": name,
+      "radius": radius,
+    };
+  }
+
+  factory Area.fromMap(Map<String, dynamic> map) {
+    return Area(
+      center: LatLng(map["center"]["latitude"], map["center"]["longitude"]),
+      name: map["name"],
+      radius: map["radius"],
+    );
   }
 }
 
@@ -175,13 +195,16 @@ class BagsQubit extends Cubit<BagsState> {
           visibleSquares: [],
           selectedTags: [],
           quantities: {},
+          currentArea: Cache.currentArea,
         ));
 
   Future<void> init() async {
     print("hello world");
 
     // get cached location and set it right away without fetching any data!
-    final gpsLocation = await GpsRepository.getLocation();
+    final gpsLocation =
+        (await GpsRepository.getLocation() ?? Cache.currentArea?.center);
+    // since we have a fall back when the gps is null, we can use it, so the bellow code is not needed
     if (gpsLocation == null) return _fetchHot("alger");
 
     emit(state.copyWith(currentLocation: gpsLocation));
@@ -191,14 +214,31 @@ class BagsQubit extends Cubit<BagsState> {
       MapSquare.createBounds(gpsLocation, 10),
     );
 
-    final city = (await Geocoding.getCityName(gpsLocation)).split(",")[0];
+    final defaultDistance = Cache.currentArea?.radius ?? 10;
+    final defaultCityName = Cache.currentArea?.name ?? "Algeria";
     emit(state.copyWith(
       currentLocation: gpsLocation,
       currentArea: Area(
         center: gpsLocation,
-        name: city,
-        radius: 10,
+        name: defaultCityName,
+        radius: defaultDistance,
       ),
+    ));
+
+    if (gpsLocation.toJson() == Cache.currentArea?.center.toJson()) return;
+
+    final city = (await Geocoding.getCityName(gpsLocation)).split(",")[0];
+    final newArea = Area(
+      center: gpsLocation,
+      name: city,
+      radius: defaultDistance,
+    );
+
+    Cache.currentArea = newArea;
+
+    emit(state.copyWith(
+      currentLocation: gpsLocation,
+      currentArea: newArea,
     ));
   }
 
@@ -265,6 +305,11 @@ class BagsQubit extends Cubit<BagsState> {
   void setArea(Area area) {
     emit(state.copyWith(currentArea: area));
     // this is a hack to make sure the camera is moved after the state is updated
+
+    moveCamera(CameraUpdate.newLatLng(LatLng(
+      area.center.latitude,
+      area.center.longitude,
+    )));
     Future.delayed(Duration(milliseconds: 500)).then((value) {
       updateMapVisibilty(
         area.center,

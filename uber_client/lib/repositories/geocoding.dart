@@ -13,6 +13,8 @@ abstract class Geocoding {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final address = json["address"];
+
+      if (address == null) return "";
       String city;
       if (address.containsKey("town")) {
         city = address["town"];

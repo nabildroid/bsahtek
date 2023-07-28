@@ -31,7 +31,10 @@ class _LocationSelectorState extends State<LocationSelector> {
 
   Map<String, LatLng> suggestions = {};
 
-  LatLng centre = LatLng(0, 0);
+  LatLng centre = LatLng(
+    36.777609783186975,
+    2.9853606820318834,
+  );
   int distance = 20;
 
   GoogleMapController? mapController;
@@ -64,19 +67,40 @@ class _LocationSelectorState extends State<LocationSelector> {
 
   void applyLocation() async {
     final bagsCubit = context.read<BagsQubit>();
-    Navigator.of(context).pop();
 
-    final locationName = await Geocoding.getCityName(centre);
+    final prevArea = bagsCubit.state.currentArea;
+
     bagsCubit.setArea(Area(
       center: centre,
       radius: distance,
-      name: locationName.split(",")[0],
+      name: bagsCubit.state.currentArea?.name ?? "Beni Messous",
     ));
+
+    // not sure if this pattern is good
+    Navigator.of(context).pop();
+
+    final locationName = await Geocoding.getCityName(centre);
+
+    if (locationName != "") {
+      bagsCubit.setArea(Area(
+        center: centre,
+        radius: distance,
+        name: locationName,
+      ));
+    } else {
+      bagsCubit.setArea(prevArea!);
+    }
   }
 
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      distance = context.read<BagsQubit>().state.currentArea?.radius ?? 30;
+      centre = context.read<BagsQubit>().state.currentArea?.center ??
+          LatLng(36.777609783186975, 2.9853606820318834);
+    });
 
     Timer? debouncer;
 
@@ -86,7 +110,7 @@ class _LocationSelectorState extends State<LocationSelector> {
       if (debouncer != null) debouncer!.cancel();
       if (debouncer?.isActive ?? false) debouncer?.cancel();
 
-      debouncer = Timer(const Duration(seconds: 2), () {
+      debouncer = Timer(const Duration(seconds: 1), () {
         if (!mounted) return;
 
         if (query.isEmpty) {
@@ -155,6 +179,17 @@ class _LocationSelectorState extends State<LocationSelector> {
                           },
                           onMapCreated: (controller) {
                             mapController = controller;
+                            mapController?.moveCamera(
+                              CameraUpdate.newCameraPosition(
+                                CameraPosition(
+                                  target: centre,
+                                  zoom: MapSquare.calculateZoomLevel(
+                                    distance + 0.0,
+                                    MediaQuery.of(context).size.width,
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                           zoomControlsEnabled: false,
                           myLocationEnabled: false,
