@@ -34,6 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
   String? verificationId;
   int? resendToken;
 
+  AuthCredential? googleCredential;
+  GoogleSignInAccount? googleUser;
+
   bool codeError = false;
 
   final phoneController = TextEditingController(text: "798398545");
@@ -46,26 +49,28 @@ class _LoginScreenState extends State<LoginScreen> {
     // why forcing the hard token refrech and we just login in fresh,
     // when it comes to a no activated user, we need to force the refrech
     stopListening = Server().onUserChange(
-      (user) {
-        final isAlreadyLogin = user != null;
-        final isAlreadyActivated = user?.isActive == true;
-
-        if (isAlreadyActivated) {
-          stopListening();
-          Navigator.of(context).pop(user);
-          return;
-        }
-
-        if (isAlreadyLogin) {
-          setState(() => isNeedToSubmit = true);
-        }
-
-        setState(() => isLoading = false);
-      },
+      checkUser,
       forceFirst: true,
     );
 
     super.initState();
+  }
+
+  void checkUser(DeliveryMan? user) {
+    final isAlreadyLogin = user != null;
+    final isAlreadyActivated = user?.isActive == true;
+
+    if (isAlreadyActivated) {
+      stopListening.call();
+      Navigator.of(context).pop(user);
+      return;
+    }
+
+    if (isAlreadyLogin) {
+      setState(() => isNeedToSubmit = true);
+    }
+
+    setState(() => isLoading = false);
   }
 
   void validateOTP() async {
@@ -80,30 +85,47 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     final user = await Server.auth.signInWithCredential(auth);
-
-    // if (isFromGoogle) {
-    //   Server.auth.currentUser?.linkWithCredential(auth);
-    // }
+    if (googleCredential != null) {
+      await Server.auth.currentUser?.linkWithCredential(googleCredential!);
+    }
   }
 
   signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    //todo get phone nummber
 
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+    googleUser = await GoogleSignIn().signIn();
+
+    if (googleUser == null) return;
+
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser!.authentication;
 
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
     );
 
-    final auth = await FirebaseAuth.instance.signInWithCredential(credential);
+    final allowedMethd =
+        await Server.auth.fetchSignInMethodsForEmail(googleUser!.email);
 
-    if (auth.user?.phoneNumber != null) {
+    final isNotAssociated = allowedMethd.isEmpty;
+    if (isNotAssociated) {
+      googleCredential = AuthCredential(
+        providerId: credential.providerId,
+        signInMethod: credential.signInMethod,
+        token: credential.token,
+        accessToken: credential.accessToken,
+      );
+
       setState(() {
+        googleUser = googleUser;
         needGoogle = false;
         isFromGoogle = true;
       });
+    } else {
+      final user = await Server.auth.signInWithCredential(credential);
+      await Server.auth.currentUser!.getIdToken(true);
+      // we hope that the authStateChanges will fire!
     }
   }
 
@@ -157,7 +179,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
     if (isNeedToSubmit) {
-      return FormSubmit();
+      return FormSubmit(
+        defaultImage: googleUser?.photoUrl,
+      );
     }
 
     return Scaffold(
@@ -167,18 +191,39 @@ class _LoginScreenState extends State<LoginScreen> {
           flex: 5,
           child: Container(
             color: Colors.green,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: .9,
-                child: ColorFiltered(
-                  colorFilter:
-                      ColorFilter.mode(Colors.white, BlendMode.srcATop),
+            child: Column(
+              children: [
+                if (!needGoogle && googleUser != null)
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top),
+                    child: ListTile(
+                      leading: googleUser!.photoUrl != null
+                          ? CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(googleUser!.photoUrl!),
+                            )
+                          : null,
+                      title: Text(googleUser!.displayName ??
+                          Server.auth.currentUser!.email!),
+                    ),
+                  ),
+                Expanded(
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: .9,
+                      child: ColorFiltered(
+                        colorFilter:
+                            ColorFilter.mode(Colors.white, BlendMode.srcATop),
 
-                  child: Image.network(
-                    'https://wastnothin.vercel.app/static/logo.png',
-                  ), // Replace 'colored_image.png' with your image file path
+                        child: Image.network(
+                          'https://wastnothin.vercel.app/static/logo.png',
+                        ), // Replace 'colored_image.png' with your image file path
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -198,6 +243,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           border: OutlineInputBorder(),
                           labelText: 'OTP',
                         ),
+                      ),
+                    ),
+                    Text(
+                      "You will receive a code in your phone ${phoneController.text}",
+                      style: TextStyle(
+                        color: Colors.grey,
                       ),
                     ),
                     if (!loadingPhone)
@@ -312,7 +363,11 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class FormSubmit extends StatefulWidget {
-  FormSubmit({Key? key}) : super(key: key);
+  final String? defaultImage;
+  FormSubmit({
+    Key? key,
+    this.defaultImage,
+  }) : super(key: key);
 
   @override
   State<FormSubmit> createState() => _FormSubmitState();
@@ -324,20 +379,36 @@ class _FormSubmitState extends State<FormSubmit> {
   final wilaya = TextEditingController();
   final address = TextEditingController();
 
-  String photoURL = "https://firebase.flutter.dev/img/flutterfire_300x.png";
+  String? photoURL;
+
+  bool isThankYou = false;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    photoURL = widget.defaultImage;
+  }
 
   void submit() async {
+    setState(() => isLoading = true);
     final submit = DeliverySubmit(
       name: name.text,
       country: country.text,
       wilaya: wilaya.text,
       address: address.text,
-      photo: photoURL,
+      photo:
+          photoURL ?? "https://firebase.flutter.dev/img/flutterfire_300x.png",
     );
 
     final user = Server.auth.currentUser!;
 
     await Server().submitDelivery(user.uid, user.phoneNumber!, submit);
+
+    setState(() {
+      isLoading = false;
+      isThankYou = true;
+    });
   }
 
   @override
@@ -345,77 +416,101 @@ class _FormSubmitState extends State<FormSubmit> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Submit Request"),
+        automaticallyImplyLeading: false,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
+      body: isThankYou
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    size: 100,
+                    color: Colors.green,
+                  ),
+                  SizedBox(height: 16),
+                  Text("Thank you for your submission"),
+                  SizedBox(height: 8),
+                  Text("We will contact you soon"),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Material(
-                  borderRadius: BorderRadius.circular(10),
-                  elevation: 3,
-                  child: InkWell(
-                    onTap: () async {
-                      final newPhotoURL = await Server().pickImage(
-                          Server.auth.currentUser!.uid, "/seller/photo");
-                      if (newPhotoURL != null) {
-                        setState(() {
-                          photoURL = newPhotoURL;
-                        });
-                      }
-                    },
-                    child: Center(
-                      child: Container(
-                        height: 200,
-                        child: Image.network(
-                          photoURL,
-                          fit: BoxFit.cover,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(10),
+                        elevation: 3,
+                        child: InkWell(
+                          onTap: () async {
+                            setState(() => isLoading = true);
+                            final newPhotoURL = await Server().pickImage(
+                                Server.auth.currentUser!.uid, "/seller/photo");
+                            if (newPhotoURL != null) {
+                              setState(() {
+                                photoURL = newPhotoURL;
+                              });
+                            }
+
+                            setState(() => isLoading = false);
+                          },
+                          child: Center(
+                            child: Container(
+                              height: 200,
+                              child: photoURL != null
+                                  ? Image.network(
+                                      photoURL!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : SizedBox(),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+
+                    // Text Inputs
+                    TextFormField(
+                      controller: name,
+                      decoration: InputDecoration(labelText: "Name"),
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: country,
+                      decoration: InputDecoration(labelText: "Country"),
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: wilaya,
+                      decoration: InputDecoration(labelText: "Wilaya"),
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: address,
+                      decoration: InputDecoration(labelText: "Address"),
+                    ),
+
+                    SizedBox(height: 32),
+
+                    if (!isLoading)
+                      // Button to Submit
+                      ElevatedButton(
+                        onPressed: () {
+                          submit();
+                        },
+                        child: Text("Submit"),
+                      ),
+                  ],
                 ),
               ),
-
-              // Text Inputs
-              TextFormField(
-                controller: name,
-                decoration: InputDecoration(labelText: "Name"),
-              ),
-              SizedBox(height: 8),
-              TextFormField(
-                controller: country,
-                decoration: InputDecoration(labelText: "Country"),
-              ),
-              SizedBox(height: 8),
-              TextFormField(
-                controller: wilaya,
-                decoration: InputDecoration(labelText: "Wilaya"),
-              ),
-              SizedBox(height: 8),
-              TextFormField(
-                controller: address,
-                decoration: InputDecoration(labelText: "Address"),
-              ),
-
-              SizedBox(height: 32),
-
-              // Button to Submit
-              ElevatedButton(
-                onPressed: () {
-                  submit();
-                },
-                child: Text("Submit"),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 
 import '../models/order.dart';
+import '../repository/server.dart';
 
 class DeliveredScreen extends StatelessWidget {
   static go(Order order) => MaterialPageRoute(
@@ -16,19 +17,20 @@ class DeliveredScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Delivered'),
+        title: Text(
+          'Order Delivered',
+          style: TextStyle(color: Colors.black),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: [
           CircleAvatar(
-            radius: 15,
+            radius: 20,
             backgroundColor: Colors.white,
-            child: Icon(
-              Icons.person,
-              color: Colors.black,
-            ),
+            backgroundImage: NetworkImage(Server.auth.currentUser!.photoURL!),
           ),
+          SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
@@ -50,7 +52,10 @@ class DeliveredScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListTile(
-                  leading: Icon(Icons.price_check_outlined),
+                  leading: Icon(
+                    Icons.price_check_outlined,
+                    color: Colors.blueGrey.shade900,
+                  ),
                   title: Text('15\$'),
                   subtitle: Text('Price for delivery'),
                 ),
@@ -61,7 +66,10 @@ class DeliveredScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListTile(
-                  leading: Icon(Icons.map),
+                  leading: Icon(
+                    Icons.map,
+                    color: Colors.blueGrey.shade500,
+                  ),
                   title: Text('15 km'),
                   subtitle: Text('Distance'),
                 ),
@@ -72,7 +80,10 @@ class DeliveredScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListTile(
-                  leading: Icon(Icons.store),
+                  leading: Icon(
+                    Icons.store,
+                    color: Colors.blueGrey.shade900,
+                  ),
                   title: Text(order.sellerName),
                   subtitle: Text("Store Name"),
                   trailing: IconButton(
@@ -82,7 +93,10 @@ class DeliveredScreen extends StatelessWidget {
                         data: 'tel:${order.sellerPhone}',
                       ).launch();
                     },
-                    icon: Icon(Icons.call),
+                    icon: Icon(
+                      Icons.call,
+                      color: Colors.green.shade500,
+                    ),
                   ),
                 ),
               ),

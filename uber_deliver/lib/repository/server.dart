@@ -66,13 +66,15 @@ class Server {
   VoidCallback onUserChange(Function(DeliveryMan?) listen,
       {bool forceFirst = false}) {
     bool forced = false;
-    bool alreadyGood = false;
+    // sometime it's called mutliple times (7times!), so we need to force it to be called once
+    bool isGood = false;
     final sub = auth.authStateChanges().listen((event) async {
-      if (alreadyGood) return;
-
       if (event == null || event.phoneNumber == null) {
         listen(null);
       } else {
+        print("Auth changed" + Timestamp.now().toDate().toIso8601String());
+        if (isGood) return;
+        isGood = true;
         // calling getIdTokenResult will force authStateChanges to be called again
         final idToken = await event.getIdTokenResult(
           forced == false && forceFirst,
@@ -80,7 +82,6 @@ class Server {
 
         injectToken(idToken.token!);
         final role = idToken.claims?["role"] ?? "";
-        alreadyGood = true;
 
         listen(DeliveryMan.fromUser(
           event,

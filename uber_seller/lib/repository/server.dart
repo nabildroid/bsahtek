@@ -29,7 +29,7 @@ class Server {
     firestore = FirebaseFirestore.instance;
     auth = FirebaseAuth.instance;
     storage = FirebaseStorage.instance;
-    // auth.signOut();
+    await auth.signOut();
   }
 
   Server();
