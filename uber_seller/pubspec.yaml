@@ -50,6 +50,9 @@ dependencies:
   cloud_firestore: ^4.8.2
   android_intent_plus: ^4.0.1
 
+  firebase_storage:
+  image_picker:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -223,7 +223,7 @@ class _RunningScreenState extends State<RunningScreen> {
                 ),
                 onPressed: () {},
                 icon: Icon(Icons.stop),
-                label: Text("$\I$totalPrice"),
+                label: Text("\$$totalPrice"),
               ),
             ),
             Align(

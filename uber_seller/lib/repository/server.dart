@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uber_seller/model/bag.dart';
 
 import '../model/seller.dart';
@@ -13,10 +14,10 @@ import '../model/order.dart' as Model;
 import '../model/sellerSubmit.dart';
 import '../model/zone.dart';
 import '../utils/firestore.dart';
-import 'cache.dart';
 
 class Server {
   static late FirebaseFirestore firestore;
+  static late FirebaseStorage storage;
 
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
@@ -27,6 +28,7 @@ class Server {
     await Firebase.initializeApp();
     firestore = FirebaseFirestore.instance;
     auth = FirebaseAuth.instance;
+    storage = FirebaseStorage.instance;
     // auth.signOut();
   }
 
@@ -213,5 +215,22 @@ class Server {
     } else {
       return "";
     }
+  }
+
+  // No configuration required - the plugin should work out of the box. It is however highly recommended to prepare for Android killing the application when low on memory. How to prepare for this is discussed in the Handling MainActivity destruction on Android section.
+  Future<String?> pickImage(String fileName, String path) async {
+    final ImagePicker picker = ImagePicker();
+    // Pick an image.
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) return null;
+    final extention = image.path.split(".").last;
+    // Capture a photo.
+
+    Reference ref = storage.ref("$path/$fileName.$extention");
+    // Start upload of putString
+    await ref.putData(await image.readAsBytes());
+
+    return await ref.getDownloadURL();
   }
 }

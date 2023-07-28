@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uber_deliver/models/delivery_man.dart';
 import 'package:uber_deliver/repository/cache.dart';
@@ -18,6 +20,7 @@ import '../utils/utils.dart';
 class Server {
   static late FirebaseFirestore firestore;
   static late FirebaseAuth auth;
+  static late FirebaseStorage storage;
   static Dio http = Dio(BaseOptions(
     baseUrl: "http://192.168.0.105:3000/api/",
   ));
@@ -27,6 +30,7 @@ class Server {
     firestore = FirebaseFirestore.instance;
 
     auth = FirebaseAuth.instance;
+    storage = FirebaseStorage.instance;
 
     await auth.signOut();
   }
@@ -168,7 +172,6 @@ class Server {
     ]);
 
     auth.currentUser!.reload();
-    // update the user account!I
   }
 
   Future<List<Order>> getDeliveredOrders(DateTime lastRead) async {
@@ -189,5 +192,22 @@ class Server {
         .toList();
 
     return orders;
+  }
+
+// No configuration required - the plugin should work out of the box. It is however highly recommended to prepare for Android killing the application when low on memory. How to prepare for this is discussed in the Handling MainActivity destruction on Android section.
+  Future<String?> pickImage(String fileName, String path) async {
+    final ImagePicker picker = ImagePicker();
+    // Pick an image.
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) return null;
+    final extention = image.path.split(".").last;
+    // Capture a photo.
+
+    Reference ref = storage.ref("$path/$fileName.$extention");
+    // Start upload of putString
+    await ref.putData(await image.readAsBytes());
+
+    return await ref.getDownloadURL();
   }
 }

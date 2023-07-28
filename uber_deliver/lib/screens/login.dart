@@ -324,13 +324,15 @@ class _FormSubmitState extends State<FormSubmit> {
   final wilaya = TextEditingController();
   final address = TextEditingController();
 
+  String photoURL = "https://firebase.flutter.dev/img/flutterfire_300x.png";
+
   void submit() async {
     final submit = DeliverySubmit(
       name: name.text,
       country: country.text,
       wilaya: wilaya.text,
       address: address.text,
-      photo: "https://firebase.flutter.dev/img/flutterfire_300x.png",
+      photo: photoURL,
     );
 
     final user = Server.auth.currentUser!;
@@ -352,6 +354,34 @@ class _FormSubmitState extends State<FormSubmit> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Material(
+                  borderRadius: BorderRadius.circular(10),
+                  elevation: 3,
+                  child: InkWell(
+                    onTap: () async {
+                      final newPhotoURL = await Server().pickImage(
+                          Server.auth.currentUser!.uid, "/seller/photo");
+                      if (newPhotoURL != null) {
+                        setState(() {
+                          photoURL = newPhotoURL;
+                        });
+                      }
+                    },
+                    child: Center(
+                      child: Container(
+                        height: 200,
+                        child: Image.network(
+                          photoURL,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // Text Inputs
               TextFormField(
                 controller: name,
@@ -374,14 +404,7 @@ class _FormSubmitState extends State<FormSubmit> {
               ),
 
               SizedBox(height: 32),
-              // Button to Upload Photo
-              ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement the logic for uploading a photo
-                },
-                child: Text("Upload Photo"),
-              ),
-              SizedBox(height: 8),
+
               // Button to Submit
               ElevatedButton(
                 onPressed: () {

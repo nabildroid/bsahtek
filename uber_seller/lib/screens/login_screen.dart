@@ -187,18 +187,7 @@ class FormSubmit extends StatefulWidget {
 }
 
 class _FormSubmitState extends State<FormSubmit> {
-  /***
-   *  name: z.string(),
-  phone: z.string(),
-  address: z.string(),
-  wilaya: z.string(),
-  country: z.string(),
-  storeType: z.string(),
-  storeName: z.string(),
-  storeAddress: z.string(),
-  photo: z.string(),
-  active: z.boolean().default(false),
-   */
+  String photoURL = "https://firebase.flutter.dev/img/flutterfire_300x.png";
 
   final name = TextEditingController(text: "Mohamed");
   final country = TextEditingController(text: "Algeria");
@@ -219,7 +208,7 @@ class _FormSubmitState extends State<FormSubmit> {
       storeName: storeName.text,
       storeType: storeType.text,
       address: address.text,
-      photo: "https://firebase.flutter.dev/img/flutterfire_300x.png",
+      photo: photoURL,
     );
 
     await Server().submitSeller(user.uid, user.phoneNumber!, submit);
@@ -239,6 +228,34 @@ class _FormSubmitState extends State<FormSubmit> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Material(
+                  borderRadius: BorderRadius.circular(10),
+                  elevation: 3,
+                  child: InkWell(
+                    onTap: () async {
+                      final newPhotoURL = await Server().pickImage(
+                          Server.auth.currentUser!.uid, "/seller/photo");
+                      if (newPhotoURL != null) {
+                        setState(() {
+                          photoURL = newPhotoURL;
+                        });
+                      }
+                    },
+                    child: Center(
+                      child: Container(
+                        height: 200,
+                        child: Image.network(
+                          photoURL,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // Text Inputs
               TextFormField(
                 controller: name,
@@ -276,14 +293,7 @@ class _FormSubmitState extends State<FormSubmit> {
               ),
 
               SizedBox(height: 32),
-              // Button to Upload Photo
-              ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement the logic for uploading a photo
-                },
-                child: Text("Upload Photo"),
-              ),
-              SizedBox(height: 8),
+
               // Button to Submit
               ElevatedButton(
                 onPressed: () {
