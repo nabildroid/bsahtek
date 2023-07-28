@@ -36,6 +36,20 @@ export async function POST(request: Request) {
       lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    const today = new Date().toLocaleDateString();
+    const statsRef = firebase.firestore().collection("uber").doc("stats");
+
+    await statsRef.set(
+      {
+        [`today.${today}.orders`]: admin.firestore.FieldValue.increment(1),
+        [`today.${today}.selled`]: admin.firestore.FieldValue.increment(
+          Number(order.bagPrice)
+        ),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
     // set order to be delivered
   }
 
