@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uber_client/models/client.dart';
 
 import '../cubits/app_cubit.dart';
@@ -41,7 +42,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
 
       await Server().setupTokenization(alreadyInited: true);
       await context.read<AppCubit>().setUser(client);
-      Navigator.of(context).pushReplacement(HomeScreen.go());
+      context.replace("/home");
     }
   }
 

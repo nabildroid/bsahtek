@@ -153,4 +153,9 @@ class Server {
 
     return sub.cancel;
   }
+
+  List<Order> fetchPrevOrders(DateTime lastUpdate) {
+    // todo
+    return [];
+  }
 }

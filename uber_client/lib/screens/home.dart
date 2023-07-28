@@ -130,8 +130,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             heightFactor: .65,
                             child: ListView.builder(
                               itemBuilder: (ctx, index) {
-                                final spot = state.visibleBags[index];
+                                final spot = state.filtredBags[index];
                                 return SuggestionCard(
+                                  id: spot.id,
                                   title: spot.name,
                                   subtitle: "Bag 1",
                                   chip: "Bag 1",
@@ -149,10 +150,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   rating: "4.5",
                                   storeName: spot.sellerName,
                                   storePicture: spot.sellerPhoto,
-                                  onTap: () {},
+                                  onTap: () => BagScreen.go(context, spot),
+                                  onFavoriteTap: () => context
+                                      .read<HomeCubit>()
+                                      .toggleLiked(spot),
                                 );
                               },
-                              itemCount: state.visibleBags.length,
+                              itemCount: state.filtredBags.length,
                             )),
                       );
                     },
@@ -170,14 +174,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           },
                         ),
                         SizedBox(height: 8),
-                        // ViewMode(
-                        //   leftLabel: "List",
-                        //   rightLabel: "Map",
-                        //   leftSelected: !isMap,
-                        //   onClick: (isLeft) => setState(() => isMap = !isLeft),
-                        // ),
-                        // SizedBox(height: 8),
-                        // InlineFilters(),
+                        ViewMode(
+                          leftLabel: "List",
+                          rightLabel: "Map",
+                          leftSelected: !isMap,
+                          onClick: (isLeft) => setState(() => isMap = !isLeft),
+                        ),
+                        SizedBox(height: 8),
+                        InlineFilters(),
                       ],
                     ),
                     AnimatedSlide(

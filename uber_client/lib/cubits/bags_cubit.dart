@@ -15,43 +15,6 @@ import 'package:uber_client/repositories/gps.dart';
 import '../models/bag.dart';
 import '../repositories/server.dart';
 
-class BagsFilter {
-  final String search;
-  final bool hideSoldout;
-  final String bagType;
-  final bool isVegan;
-  final bool isVegetarian;
-
-  BagsFilter({
-    this.search = "",
-    this.hideSoldout = false,
-    this.bagType = "",
-    this.isVegan = false,
-    this.isVegetarian = false,
-  });
-
-  BagsFilter copyWith({
-    String? search,
-    bool? hideSoldout,
-    String? bagType,
-    bool? isVegan,
-    bool? isVegetarian,
-  }) {
-    return BagsFilter(
-      search: search ?? this.search,
-      hideSoldout: hideSoldout ?? this.hideSoldout,
-      bagType: bagType ?? this.bagType,
-      isVegan: isVegan ?? this.isVegan,
-      isVegetarian: isVegetarian ?? this.isVegetarian,
-    );
-  }
-
-  @override
-  String toString() {
-    return "search: $search, hideSoldout: $hideSoldout, bagType: $bagType, isVegan: $isVegan, isVegetarian: $isVegetarian";
-  }
-}
-
 class Area {
   final LatLng center;
   final String name;
@@ -83,7 +46,25 @@ class BagsState extends Equatable {
 
   final List<void Function(CameraUpdate)> attachedCameras;
 
-  final BagsFilter filter;
+  final List<String> selectedTags;
+  List<String> get availableTags {
+    final tags = <String>[];
+
+    for (var bag in bags) {
+      if (!tags.contains(bag.tags)) {
+        tags.add(bag.tags);
+      }
+    }
+
+    return tags;
+  }
+
+  List<Bag> get filtredBags {
+    if (selectedTags.isEmpty) return [...visibleBags];
+    return visibleBags
+        .where((element) => selectedTags.contains(element.tags))
+        .toList();
+  }
 
   BagsState({
     required this.bags,
@@ -91,10 +72,10 @@ class BagsState extends Equatable {
     this.currentLocation,
     required this.squares,
     required this.visibleSquares,
-    required this.filter,
     required this.attachedCameras,
     this.currentArea,
     required this.quantities,
+    required this.selectedTags,
   });
 
   @override
@@ -103,10 +84,10 @@ class BagsState extends Equatable {
         currentLocation.toString(),
         ...squares.map((e) => e.id).toList(),
         ...attachedCameras.map((e) => e.toString()).toList(),
-        filter.toString(),
         visibleBags.map((e) => e.id).toList(),
         visibleSquares.map((e) => e.id).toList(),
         currentArea.toString(),
+        selectedTags.toString(),
         quantities.entries.map((e) => "${e.key};${e.value}").join(":"),
       ];
 
@@ -118,9 +99,9 @@ class BagsState extends Equatable {
     List<void Function(CameraUpdate)>? attachedCameras,
     List<Bag>? visibleBags,
     List<MapSquare>? visibleSquares,
-    BagsFilter? filter,
     Area? currentArea,
     Map<String, int>? quantities,
+    List<String>? selectedTags,
   }) {
     return BagsState(
       bags: bags ?? this.bags,
@@ -128,10 +109,10 @@ class BagsState extends Equatable {
       squares: squares ?? this.squares,
       visibleSquares: visibleSquares ?? this.visibleSquares,
       attachedCameras: attachedCameras ?? this.attachedCameras,
-      filter: filter ?? this.filter,
       visibleBags: visibleBags ?? this.visibleBags,
       currentArea: currentArea ?? this.currentArea,
       quantities: quantities ?? this.quantities,
+      selectedTags: selectedTags ?? this.selectedTags,
     );
   }
 
@@ -189,10 +170,10 @@ class BagsQubit extends Cubit<BagsState> {
       : super(BagsState(
           bags: [],
           squares: [],
-          filter: BagsFilter(),
           attachedCameras: [],
           visibleBags: [],
           visibleSquares: [],
+          selectedTags: [],
           quantities: {},
         ));
 
@@ -281,10 +262,6 @@ class BagsQubit extends Cubit<BagsState> {
     }
   }
 
-  void updateFilter(BagsFilter filter) {
-    emit(state.copyWith(filter: filter));
-  }
-
   void setArea(Area area) {
     emit(state.copyWith(currentArea: area));
     // this is a hack to make sure the camera is moved after the state is updated
@@ -309,7 +286,7 @@ class BagsQubit extends Cubit<BagsState> {
     final freshSpots = await _visiteSquares(visibleSquares);
 
     final visibleSpots = _checkVisibleSpots(
-      spots: [...state.bags, ...freshSpots],
+      spots: [...state.visibleBags, ...freshSpots],
       visibleSquares: visibleSquares,
       cameraPostion: cameraPosition,
       closeDistance: state.currentArea?.radius ?? 5,
@@ -402,5 +379,16 @@ class BagsQubit extends Cubit<BagsState> {
 
     // todo don't forget to check for new ones then fetch them
     return visibles;
+  }
+
+  void toggleTag(String tag) {
+    final tags = [...state.selectedTags];
+    if (tags.contains(tag)) {
+      tags.remove(tag);
+    } else {
+      tags.add(tag);
+    }
+
+    emit(state.copyWith(selectedTags: tags));
   }
 }

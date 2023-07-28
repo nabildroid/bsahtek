@@ -6,6 +6,7 @@ import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/repositories/cache.dart';
 import 'package:uber_client/repositories/messages_remote.dart';
 import 'package:uber_client/repositories/server.dart';
+import 'package:uber_client/route.dart';
 import 'package:uber_client/screens/loading_to_home.dart';
 
 import 'repositories/notifications.dart';
@@ -33,13 +34,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => AppCubit()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: goRouter,
         debugShowCheckedModeBanner: false,
-        title: 'Uber Clone',
+        title: 'DILDEAL',
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
-        home: const LoadingToHomeScreen(),
       ),
     );
   }

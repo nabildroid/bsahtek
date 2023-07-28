@@ -146,9 +146,13 @@ class _LocationSelectorState extends State<LocationSelector> {
                             zoom: 14,
                           ),
                           compassEnabled: false,
-                          onCameraMove: (position) => setState(() {
-                            centre = position.target;
-                          }),
+                          onCameraMove: (position) {
+                            if (mounted) {
+                              setState(() {
+                                centre = position.target;
+                              });
+                            }
+                          },
                           onMapCreated: (controller) {
                             mapController = controller;
                           },

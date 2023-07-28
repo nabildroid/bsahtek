@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/bag.dart';
 import '../models/client.dart';
 import '../models/order.dart';
 
@@ -54,5 +55,55 @@ class Cache {
     } else {
       _instance.setString("runningOrder", jsonEncode(order.toJson()));
     }
+  }
+
+  // liked bags setter and getter
+  static List<Bag> get likedBags {
+    final data = _instance.getStringList("likedBags");
+    if (data == null) {
+      return [];
+    }
+    return data.map((e) => Bag.fromJson(jsonDecode(e))).toList();
+  }
+
+  static set likedBags(List<Bag> bags) {
+    if (bags.isEmpty) {
+      _instance.remove("likedBags");
+    } else {
+      _instance.setStringList(
+        "likedBags",
+        bags.map((e) => jsonEncode(e.toJson())).toList(),
+      );
+    }
+  }
+
+  static List<Order> get prevOrders {
+    final data = _instance.getStringList("prevOrders");
+    if (data == null) {
+      return [];
+    }
+    return data.map((e) => Order.fromJson(jsonDecode(e))).toList();
+  }
+
+  static set prevOrders(List<Order> bags) {
+    if (bags.isEmpty) {
+      _instance.remove("prevOrders");
+    } else {
+      _instance.setStringList(
+        "prevOrders",
+        bags.map((e) => jsonEncode(e.toJson())).toList(),
+      );
+    }
+  }
+
+  // get the newest order lastUpdate using prevOrders
+  static DateTime get lastUpdate {
+    final orders = prevOrders;
+    if (orders.isEmpty) {
+      return DateTime(2001);
+    }
+    // sort by lastUpdate and get the first one
+    orders.sort((a, b) => b.lastUpdate.compareTo(a.lastUpdate));
+    return orders.first.lastUpdate;
   }
 }

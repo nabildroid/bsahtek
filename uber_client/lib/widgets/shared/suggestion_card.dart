@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uber_client/cubits/home_cubit.dart';
 
 class SuggestionCard extends StatelessWidget {
+  // todo why not accepting the entire bag as a parameter?
   final String title;
+  final int id;
   final String subtitle;
   final String picture;
   final String rating;
@@ -15,10 +19,12 @@ class SuggestionCard extends StatelessWidget {
   final String storePicture;
 
   final VoidCallback onTap;
+  final VoidCallback onFavoriteTap;
 
   const SuggestionCard({
     super.key,
     required this.title,
+    required this.id,
     required this.subtitle,
     required this.picture,
     required this.rating,
@@ -29,10 +35,12 @@ class SuggestionCard extends StatelessWidget {
     required this.storeName,
     required this.storePicture,
     required this.onTap,
+    required this.onFavoriteTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isLiked = context.watch<HomeCubit>().isLiked(id);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
       child: GestureDetector(
@@ -89,10 +97,15 @@ class SuggestionCard extends StatelessWidget {
                                       ),
                                       Spacer(),
                                       IconButton(
-                                        onPressed: () {},
+                                        onPressed: onFavoriteTap,
                                         icon: Icon(
-                                          Icons.favorite_border,
-                                          color: Colors.white,
+                                          isLiked
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: isLiked
+                                              ? const Color.fromARGB(
+                                                  255, 26, 17, 17)
+                                              : Colors.white,
                                         ),
                                       )
                                     ],

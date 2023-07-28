@@ -21,18 +21,27 @@ class HomeState extends Equatable {
   Order? runningOrder;
   final bool focusOnRunningOrder;
 
+  final List<Bag> liked;
+  final List<Order> prevOrders;
+
   HomeState({
     this.runningOrder,
     this.focusOnRunningOrder = false,
+    required this.liked,
+    required this.prevOrders,
   });
 
   HomeState copyWith({
     bool? focusOnRunningOrder,
     bool? isRunningVisible = false,
+    List<Bag>? liked,
+    List<Order>? prevOrders,
   }) {
     return HomeState(
       runningOrder: runningOrder,
       focusOnRunningOrder: focusOnRunningOrder ?? this.focusOnRunningOrder,
+      liked: liked ?? this.liked,
+      prevOrders: prevOrders ?? this.prevOrders,
     );
   }
 
@@ -48,7 +57,11 @@ class HomeState extends Equatable {
 }
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(HomeState());
+  HomeCubit()
+      : super(HomeState(
+          liked: Cache.likedBags,
+          prevOrders: Cache.prevOrders,
+        ));
 
   Map<String, VoidCallback> tobeDisposed = {};
 
@@ -216,5 +229,20 @@ class HomeCubit extends Cubit<HomeState> {
       element();
     }
     super.close();
+  }
+
+  bool isLiked(int bagID) {
+    return state.liked.any((element) => element.id == bagID);
+  }
+
+  void toggleLiked(Bag bag) {
+    final liked = state.liked;
+    if (isLiked(bag.id)) {
+      liked.removeWhere((element) => element.id == bag.id);
+    } else {
+      liked.add(bag);
+    }
+    Cache.likedBags = liked;
+    emit(state.copyWith(liked: liked));
   }
 }
