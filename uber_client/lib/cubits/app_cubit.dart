@@ -26,7 +26,7 @@ class AppState extends Equatable {
 
   @override
   List<Object?> get props => [
-        client?.id,
+        client?.toJson(),
       ];
 }
 
@@ -52,5 +52,24 @@ class AppCubit extends Cubit<AppState> {
       clientID: userID,
       notiID: fcmToken,
     );
+  }
+
+  Future<void> updateClient(Client client) async {
+    await Future.wait([
+      Server.auth.currentUser!.updateDisplayName(client.name),
+      Server.auth.currentUser!.updatePhotoURL(client.photo),
+    ]);
+
+    Server.auth.currentUser!.reload();
+
+    emit(state.copyWith(client: client));
+    Cache.client = client;
+  }
+
+  Future<void> logOut() async {
+    await Server.auth.signOut();
+
+    Cache.clear(); // this will force the entire app to be clear!
+    emit(state.copyWith(client: null));
   }
 }

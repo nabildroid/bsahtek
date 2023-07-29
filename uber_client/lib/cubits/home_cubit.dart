@@ -53,6 +53,8 @@ class HomeState extends Equatable {
   List<Object?> get props => [
         runningOrder?.id ?? "runningOrders",
         focusOnRunningOrder,
+        liked.map((e) => e.id).toList(),
+        prevOrders.map((e) => e.id).toList(),
       ];
 }
 

@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/models/bag.dart';
-import 'package:uber_client/models/mapSquare.dart';
 import 'package:uber_client/screens/bag_screen.dart';
 import 'package:uber_client/screens/location_selector.dart';
-import 'package:uber_client/screens/running.dart';
 
 import '../widgets/home/orderConfirmedZone.dart';
 import '../widgets/home/inline_filters.dart';
@@ -90,161 +86,142 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           },
         ),
         Expanded(
-          child: SafeArea(
-            top: false,
-            child: Scaffold(
-              backgroundColor: Colors.grey.shade50,
-              body: Stack(fit: StackFit.expand, children: [
-                AnimatedSlide(
-                  offset: Offset(isMap ? 0 : 1, 0),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeInOut,
-                  child: BlocBuilder<BagsQubit, BagsState>(
-                      buildWhen: (previous, current) =>
-                          previous.currentLocation == null &&
-                          current.currentLocation != null,
-                      builder: (context, state) {
-                        if (state.currentLocation == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        return SizedBox.expand(
-                          child: SquaresMap(
-                            filterBags: (bag) {
-                              return true;
-                            },
-                          ),
-                        );
-                      }),
-                ),
-                AnimatedSlide(
-                  offset: Offset(isMap ? 1 : 0, 0),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeInOut,
-                  child: BlocBuilder<BagsQubit, BagsState>(
+          child: Scaffold(
+            backgroundColor: Colors.grey.shade50,
+            body: Stack(fit: StackFit.expand, children: [
+              AnimatedSlide(
+                offset: Offset(isMap ? 0 : 1, 0),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                child: BlocBuilder<BagsQubit, BagsState>(
+                    buildWhen: (previous, current) =>
+                        previous.currentLocation == null &&
+                        current.currentLocation != null,
                     builder: (context, state) {
+                      if (state.currentLocation == null) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
                       return SizedBox.expand(
-                        child: FractionallySizedBox(
-                            alignment: Alignment.bottomCenter,
-                            heightFactor: .65,
-                            child: ListView.builder(
-                              itemBuilder: (ctx, index) {
-                                final spot = state.filtredBags[index];
-                                return SuggestionCard(
-                                  id: spot.id,
-                                  title: spot.name,
-                                  subtitle: "Bag 1",
-                                  chip: "Bag 1",
-                                  discountPrice: spot.originalPrice.toString(),
-                                  distance: (Geolocator.distanceBetween(
-                                            spot.latitude,
-                                            spot.longitude,
-                                            state.currentLocation!.latitude,
-                                            state.currentLocation!.longitude,
-                                          ) /
-                                          1000)
-                                      .toStringAsFixed(2),
-                                  picture: spot.photo,
-                                  price: spot.price.toString(),
-                                  rating: "4.5",
-                                  storeName: spot.sellerName,
-                                  storePicture: spot.sellerPhoto,
-                                  onTap: () => BagScreen.go(context, spot),
-                                  onFavoriteTap: () => context
-                                      .read<HomeCubit>()
-                                      .toggleLiked(spot),
-                                );
-                              },
-                              itemCount: state.filtredBags.length,
-                            )),
-                      );
-                    },
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        LocationPicker(
-                          onTap: () {
-                            LocationSelector.go(context);
+                        child: SquaresMap(
+                          filterBags: (bag) {
+                            return true;
                           },
                         ),
-                        SizedBox(height: 8),
-                        ViewMode(
-                          leftLabel: "List",
-                          rightLabel: "Map",
-                          leftSelected: !isMap,
-                          onClick: (isLeft) => setState(() => isMap = !isLeft),
-                        ),
-                        SizedBox(height: 8),
-                        InlineFilters(),
-                      ],
-                    ),
-                    AnimatedSlide(
-                      curve: Curves.fastOutSlowIn,
-                      duration: Duration(milliseconds: 400),
-                      offset: Offset(0, isMap ? 0 : 1),
-                      child: BlocBuilder<BagsQubit, BagsState>(
-                        builder: (context, state) {
-                          return InlineSuggestions(
-                            onView: (index) {
-                              final spot = state.visibleBags[index];
-                              context
-                                  .read<BagsQubit>()
-                                  .moveCamera(CameraUpdate.newLatLng(LatLng(
-                                    spot.latitude,
-                                    spot.longitude,
-                                  )));
+                      );
+                    }),
+              ),
+              AnimatedSlide(
+                offset: Offset(isMap ? 1 : 0, 0),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                child: BlocBuilder<BagsQubit, BagsState>(
+                  builder: (context, state) {
+                    return SizedBox.expand(
+                      child: FractionallySizedBox(
+                          alignment: Alignment.bottomCenter,
+                          heightFactor: .65,
+                          child: ListView.builder(
+                            itemBuilder: (ctx, index) {
+                              final spot = state.filtredBags[index];
+                              return SuggestionCard(
+                                id: spot.id,
+                                title: spot.name,
+                                subtitle: "Bag 1",
+                                chip: "Bag 1",
+                                discountPrice: spot.originalPrice.toString(),
+                                distance: (Geolocator.distanceBetween(
+                                          spot.latitude,
+                                          spot.longitude,
+                                          state.currentLocation!.latitude,
+                                          state.currentLocation!.longitude,
+                                        ) /
+                                        1000)
+                                    .toStringAsFixed(2),
+                                picture: spot.photo,
+                                price: spot.price.toString(),
+                                rating: "4.5",
+                                storeName: spot.sellerName,
+                                storePicture: spot.sellerPhoto,
+                                onTap: () => BagScreen.go(context, spot),
+                                onFavoriteTap: () =>
+                                    context.read<HomeCubit>().toggleLiked(spot),
+                              );
                             },
-                            suggestions: [
-                              ...state.visibleBags,
-                            ]
-                                .map(
-                                  (e) => InlineSuggestion(
-                                    id: e.id.toString(),
-                                    title: e.sellerName,
-                                    subtitle: e.name,
-                                    image: e.sellerPhoto,
-                                    thirdtitle: e.description,
-                                    quantity:
-                                        state.quantities[e.id.toString()] ?? 0,
-                                    onTap: () {
-                                      BagScreen.go(context, e);
-                                    },
-                                  ),
-                                )
-                                .toList(),
+                            itemCount: state.filtredBags.length,
+                          )),
+                    );
+                  },
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 20),
+                      LocationPicker(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => LocationSelector(),
                           );
                         },
                       ),
+                      SizedBox(height: 10),
+                      ViewMode(
+                        leftLabel: "List",
+                        rightLabel: "Map",
+                        leftSelected: !isMap,
+                        onClick: (isLeft) => setState(() => isMap = !isLeft),
+                      ),
+                      SizedBox(height: 20),
+                      InlineFilters(),
+                    ],
+                  ),
+                  AnimatedSlide(
+                    curve: Curves.fastOutSlowIn,
+                    duration: Duration(milliseconds: 400),
+                    offset: Offset(0, isMap ? 0 : 1),
+                    child: BlocBuilder<BagsQubit, BagsState>(
+                      builder: (context, state) {
+                        return InlineSuggestions(
+                          onView: (index) {
+                            final spot = state.visibleBags[index];
+                            context
+                                .read<BagsQubit>()
+                                .moveCamera(CameraUpdate.newLatLng(LatLng(
+                                  spot.latitude,
+                                  spot.longitude,
+                                )));
+                          },
+                          suggestions: [
+                            ...state.visibleBags,
+                          ]
+                              .map(
+                                (e) => InlineSuggestion(
+                                  id: e.id.toString(),
+                                  title: e.sellerName,
+                                  subtitle: e.name,
+                                  image: e.sellerPhoto,
+                                  thirdtitle: e.description,
+                                  quantity:
+                                      state.quantities[e.id.toString()] ?? 0,
+                                  onTap: () {
+                                    BagScreen.go(context, e);
+                                  },
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ]),
-              bottomNavigationBar: BottomNavigationBar(
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
-                    label: 'Explore',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
-                    label: 'Profile',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.settings),
-                    label: 'Settings',
                   ),
                 ],
-                currentIndex: 0,
-                selectedItemColor: Colors.green,
-                onTap: (index) {},
               ),
-            ),
+            ]),
           ),
         ),
       ],

@@ -25,6 +25,7 @@ class Server {
     await Firebase.initializeApp();
     firestore = FirebaseFirestore.instance;
     auth = FirebaseAuth.instance;
+    // await auth.signOut();
   }
 
   Server();

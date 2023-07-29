@@ -28,4 +28,16 @@ class Client {
       'photo': photo,
     };
   }
+
+  Client copyWith({
+    String? name,
+    String? photo,
+  }) {
+    return Client(
+      id: this.id,
+      name: name ?? this.name,
+      phone: this.phone,
+      photo: photo ?? this.photo,
+    );
+  }
 }

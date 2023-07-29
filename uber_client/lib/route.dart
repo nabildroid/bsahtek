@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:uber_client/screens/favorit.dart';
 import 'package:uber_client/screens/home.dart';
 import 'package:uber_client/screens/loading_to_home.dart';
+import 'package:uber_client/screens/me/account_setting_screen.dart';
+import 'package:uber_client/screens/me/me_screen.dart';
+import 'package:uber_client/screens/me/setting_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
-final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');
 
 // the one and only GoRouter instance
 final goRouter = GoRouter(
@@ -20,9 +21,6 @@ final goRouter = GoRouter(
         child: LoadingToHomeScreen(),
       ),
     ),
-
-    // Stateful nested navigation based on:
-    // https://github.com/flutter/packages/blob/main/packages/go_router/example/lib/stateful_shell_route.dart
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         // the UI shell
@@ -30,7 +28,6 @@ final goRouter = GoRouter(
       },
       branches: [
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorAKey,
           routes: [
             // top route inside branch
             GoRoute(
@@ -42,7 +39,6 @@ final goRouter = GoRouter(
           ],
         ),
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorBKey,
           routes: [
             // top route inside branch
             GoRoute(
@@ -51,6 +47,32 @@ final goRouter = GoRouter(
                 child: FavoritScreen(),
               ),
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            // top route inside branch
+            GoRoute(
+                path: '/me',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                      child: MeScreen(),
+                    ),
+                routes: [
+                  GoRoute(
+                      path: 'settings',
+                      pageBuilder: (context, state) => const NoTransitionPage(
+                            child: SettingScreen(),
+                          ),
+                      routes: [
+                        GoRoute(
+                          path: 'account',
+                          pageBuilder: (context, state) =>
+                              const NoTransitionPage(
+                            child: AccountSettingScreen(),
+                          ),
+                        ),
+                      ])
+                ]),
           ],
         ),
       ],
@@ -68,10 +90,6 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
   void _goBranch(int index) {
     navigationShell.goBranch(
       index,
-      // A common pattern when using bottom navigation bars is to support
-      // navigating to the initial location when tapping the item that is
-      // already active. This example demonstrates how to support this behavior,
-      // using the initialLocation parameter of goBranch.
       initialLocation: index == navigationShell.currentIndex,
     );
   }
@@ -81,10 +99,14 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
+        height: 64,
+        backgroundColor: Colors.white,
         selectedIndex: navigationShell.currentIndex,
+        elevation: 10,
         destinations: const [
           NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
           NavigationDestination(label: 'Favort', icon: Icon(Icons.favorite)),
+          NavigationDestination(label: 'Me', icon: Icon(Icons.person_pin)),
         ],
         onDestinationSelected: _goBranch,
       ),

@@ -34,7 +34,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
     if (isAlreadyLogin) {
       await context.read<AppCubit>().setUser(Cache.client!);
       await Server().setupTokenization();
-      Navigator.of(context).pushReplacement(HomeScreen.go());
+      context.go("/home");
     } else {
       final client = await Navigator.of(context).push(
         LoginScreen.go(),
@@ -42,7 +42,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
 
       await Server().setupTokenization(alreadyInited: true);
       await context.read<AppCubit>().setUser(client);
-      context.replace("/home");
+      context.go("/home");
     }
   }
 

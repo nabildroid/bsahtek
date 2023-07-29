@@ -14,7 +14,10 @@ class FavoritScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Linked Bag"),
+        title: Text(
+          "Linked Bag",
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),

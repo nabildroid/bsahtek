@@ -24,7 +24,7 @@ class LocationPicker extends StatelessWidget {
           curve: Curves.easeInExpo,
           opacity: currentArea == null ? 0 : 1,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 21),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
