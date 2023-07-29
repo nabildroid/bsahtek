@@ -7,6 +7,24 @@ import firebase, {
 import { TypeOf, z } from "zod";
 import { seller } from "@/local_repository/server";
 
+/**
+ * 
+ the order expering is issue because, we have a monorepo, but no-sharing between the apps/website
+
+so, we need to hard code stuff, mostly durations for a thing to be considred as expired
+
+same goes with FCM notification the TTL is critical!!
+
+
+** Client post Order**
+	->Acceptance +10 min (Canceled)
+	->self-pickup  +1h (Canceled)
+	->Start Delivering  +10min (Canceled)
+	->Delivering in progress +1h (Canceled) 
+
+for now, we don't need to enforced serverSide, only clientSide, since all parties will agree on these durations!
+ */
+
 export async function POST(request: Request) {
   if (await BlocForNot("", request)) return VerificationError();
 

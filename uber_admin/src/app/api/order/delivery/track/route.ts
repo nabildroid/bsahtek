@@ -1,3 +1,4 @@
+
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -12,6 +13,9 @@ import {
 } from "@/utils/types";
 import * as admin from "firebase-admin";
 import { NextResponse } from "next/server";
+
+
+// todo (Security) for sake of no-extra read we need to hach the orderID,acceptedDate,clientID,sellerID,deliverID
 
 export async function POST(request: Request) {
   if (await BlocForNot("deliver", request)) return VerificationError();
