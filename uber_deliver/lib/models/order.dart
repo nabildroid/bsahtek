@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:uber_deliver/models/track.dart';
 
+import '../utils/constants.dart';
 import 'delivery_man.dart';
 
 class Order {
@@ -193,5 +194,44 @@ class Order {
       toClient: false,
       toSeller: areadyFromSeller,
     );
+  }
+
+// todo later move this logic to the server
+  bool get expired {
+    // todo you can throw an error with explanation if this order is expired, instead of returning true
+    if (isDelivered == true) {
+      return false;
+    }
+
+    // todo need revalidate this logic
+    final now = DateTime.now();
+
+    if (now.difference(lastUpdate) > Constants.lastUpdateBeforeExpired) {
+      // fall over to not let any edge case pass, including deliver take too long
+      return true;
+    }
+
+    if (acceptedAt == null &&
+        now.difference(lastUpdate) > Constants.needAcceptanceBeforeExpired) {
+      print("Order#$id expired: needAcceptanceBeforeExpired");
+      return true;
+    }
+
+    if (isPickup &&
+        acceptedAt != null &&
+        now.difference(acceptedAt!) > Constants.needSelfPickupBeforeExpired) {
+      print("Order#$id expired: needSelfPickupBeforeExpired");
+      return true;
+    }
+
+    if (isPickup == false &&
+        deliveryManID == null &&
+        acceptedAt != null &&
+        now.difference(acceptedAt!) > Constants.needDeliverBeforeExpired) {
+      print("Order#$id expired: needDeliverBeforeExpired");
+      return true;
+    }
+
+    return false;
   }
 }

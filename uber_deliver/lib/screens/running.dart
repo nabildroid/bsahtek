@@ -107,6 +107,11 @@ class _RunningScreenState extends State<RunningScreen> {
         timer.cancel();
         return;
       }
+      if (widget.deliveryRequest.order.expired) {
+        stop();
+        timer.cancel();
+        return;
+      }
 
       Cache.trackingLocation = await GpsRepository.getLocation();
       final trackLocation = Cache.trackingLocation;

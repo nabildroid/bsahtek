@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/repositories/backgrounds.dart';
+import 'package:uber_client/utils/constants.dart';
 
 import '../models/bag.dart';
 import '../models/client.dart';
@@ -24,11 +25,14 @@ class HomeState extends Equatable {
   final List<Bag> liked;
   final List<Order> prevOrders;
 
+  final DateTime? throttlingReservation;
+
   HomeState({
     this.runningOrder,
     this.focusOnRunningOrder = false,
     required this.liked,
     required this.prevOrders,
+    this.throttlingReservation,
   });
 
   HomeState copyWith({
@@ -36,12 +40,15 @@ class HomeState extends Equatable {
     bool? isRunningVisible = false,
     List<Bag>? liked,
     List<Order>? prevOrders,
+    DateTime? throttlingReservation,
   }) {
     return HomeState(
       runningOrder: runningOrder,
       focusOnRunningOrder: focusOnRunningOrder ?? this.focusOnRunningOrder,
       liked: liked ?? this.liked,
       prevOrders: prevOrders ?? this.prevOrders,
+      throttlingReservation:
+          throttlingReservation ?? this.throttlingReservation,
     );
   }
 
@@ -55,6 +62,7 @@ class HomeState extends Equatable {
         focusOnRunningOrder,
         liked.map((e) => e.id).toList(),
         prevOrders.map((e) => e.id).toList(),
+        throttlingReservation,
       ];
 }
 
@@ -63,6 +71,7 @@ class HomeCubit extends Cubit<HomeState> {
       : super(HomeState(
           liked: Cache.likedBags,
           prevOrders: Cache.prevOrders,
+          throttlingReservation: Cache.throttlingReservation,
         ));
 
   Map<String, VoidCallback> tobeDisposed = {};
@@ -104,8 +113,9 @@ class HomeCubit extends Cubit<HomeState> {
 
     RemoteMessages().setUpBackgroundMessageHandler();
     _subscribeToOnAppNotification();
+    syncPrevOrders();
 
-    if (Cache.runningOrder != null) {
+    if (Cache.runningOrder != null && Cache.runningOrder!.expired == false) {
       final running = Cache.runningOrder!;
       if (running.isPickup) {
         await Notifications.orderAccepted(true);
@@ -114,6 +124,7 @@ class HomeCubit extends Cubit<HomeState> {
       }
       focusOnRunningOrder();
     } else {
+      Cache.runningOrder = null;
       await Notifications.clear();
     }
   }
@@ -154,7 +165,8 @@ class HomeCubit extends Cubit<HomeState> {
       if (event.data["type"] == "delivery_start") {
         final order = Order.fromJson(jsonDecode(event.data["order"]));
 
-        await Backgrounds.firebaseMessagingBackgroundHandler(event);
+        if (!await Backgrounds.firebaseMessagingBackgroundHandler(event))
+          return;
 
         emit(state.copyWith(focusOnRunningOrder: true)..runningOrder = order);
         useContext((ctx) => RunningScreen.go(order));
@@ -166,14 +178,10 @@ class HomeCubit extends Cubit<HomeState> {
 
       if (event.data["type"] == "order_accepted") {
         tobeDisposed["runningOrder"]?.call();
+        var order = Order.fromJson(jsonDecode(event.data["order"]));
 
-        final data = FirestoreUtils.goodJson(
-          jsonDecode(event.data["order"]),
-        );
-
-        final order = Order.fromJson(data);
-
-        await Backgrounds.firebaseMessagingBackgroundHandler(event);
+        if (!await Backgrounds.firebaseMessagingBackgroundHandler(event))
+          return;
 
         emit(state.copyWith()..runningOrder = order);
         subscribeToRunningOrder();
@@ -198,7 +206,17 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> orderBag(Order order) async {
+    if (state.throttlingReservation?.isAfter(DateTime.now()) ?? false) {
+      return;
+    }
+
+    final throttling =
+        DateTime.now().add(Constants.pauseReservingAfterReservation);
+
+    emit(state.copyWith(throttlingReservation: throttling));
+
     await Server().orderBag(order);
+    syncPrevOrders(force: true);
   }
 
   void recheckRunningOrder() async {
@@ -238,13 +256,79 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void toggleLiked(Bag bag) {
-    final liked = state.liked;
+    final liked = List<Bag>.from(state.liked); // Create a new list
     if (isLiked(bag.id)) {
       liked.removeWhere((element) => element.id == bag.id);
     } else {
       liked.add(bag);
     }
     Cache.likedBags = liked;
-    emit(state.copyWith(liked: liked));
+    emit(state.copyWith(liked: liked)); // Pass the new list to the new state
+  }
+
+  void syncPrevOrders({bool force = false}) {
+    if (!force &&
+        Cache.prevOrders.isNotEmpty &&
+        Cache.prevOrders.every((element) => !element.inProgress)) {
+      // already in synced, assuming the app is used only one device
+      return;
+    }
+
+    tobeDisposed["prevOrders"]?.call();
+    tobeDisposed["prevOrders"] =
+        Server().listenToPrevOrders(Cache.lastUpdatePrevOrders, (changes) {
+      // if non of the orders has an active order then sync and dispose, otherwise keep listening
+      // but what about pusing an order
+
+      final allPrevOrders = [...state.prevOrders];
+
+      // check by id, if the changes contains an order that is already in the list then replace it
+      for (var change in changes) {
+        final index =
+            allPrevOrders.indexWhere((element) => element.id == change.id);
+        if (index != -1) {
+          allPrevOrders[index] = change;
+        } else {
+          allPrevOrders.add(change);
+        }
+      }
+
+      emit(state.copyWith(prevOrders: allPrevOrders));
+      Cache.prevOrders = allPrevOrders;
+
+      if (allPrevOrders.any((element) => element.inProgress)) return;
+
+      tobeDisposed["prevOrders"]?.call();
+    });
+  }
+
+  Future<String?> showEnterYourNameDialog() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: freshContext!,
+      builder: (context) => AlertDialog(
+        title: Text("Enter your name"),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: "Enter your name",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(controller.text);
+            },
+            child: Text("ok"),
+          ),
+        ],
+      ),
+    );
   }
 }

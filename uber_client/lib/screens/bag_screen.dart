@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
@@ -38,27 +41,75 @@ class _BagScreenState extends State<BagScreen> {
 
   bool isPickup = false;
 
+  final _controller = ScrollController();
+
+  double photoHeight = 0;
+  double ratio = 0;
+
+  bool isLoading = false;
+  bool isReserved = false;
+
   void reserveNow() async {
+    setState(() => isLoading = true);
     final homeCubit = context.read<HomeCubit>();
     final appCubit = context.read<AppCubit>();
     final location = await GpsRepository.getLocation();
 
     if (location == null) {
+      setState(() => isLoading = false);
       return;
     }
 
+    String name = appCubit.state.client!.name;
+    if (["", "user"].contains(name)) {
+      final newName = await homeCubit.showEnterYourNameDialog();
+      if (newName == null || ["", "user"].contains(newName)) {
+        setState(() => isLoading = false);
+        return;
+      }
+
+      appCubit.updateClient(
+        appCubit.state.client!.copyWith(name: newName),
+      );
+      name = newName;
+    }
+
     final newOrder = widget.bag.toOrder(
-      appCubit.state.client!,
+      appCubit.state.client!.copyWith(name: name),
       quantity: quantity,
       isPickup: isPickup,
       location: location,
     );
 
     await homeCubit.orderBag(newOrder);
+    setState(() => {isLoading = false, isReserved = true});
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() => goingToReserve = false);
+      context.go("/me");
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      if (photoHeight == 0) return;
+      setState(() {
+        ratio = min(_controller.offset, photoHeight) / photoHeight;
+        ratio = Curves.easeInOutExpo.transform(ratio);
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final throttled = context
+            .watch<HomeCubit>()
+            .state
+            .throttlingReservation
+            ?.isAfter(DateTime.now()) ??
+        false;
+
     return WillPopScope(
       onWillPop: () async {
         if (goingToReserve) {
@@ -74,17 +125,29 @@ class _BagScreenState extends State<BagScreen> {
         child: Scaffold(
           appBar: AppBar(
             elevation: 0,
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white.withOpacity(ratio),
             centerTitle: true,
-            title: Text(widget.bag.sellerName),
+            foregroundColor: Colors.black.withOpacity(ratio),
+            title: Text(
+              widget.bag.sellerName,
+            ),
             leading: AppBarButton(
               icon: Icons.arrow_back,
             ),
+            actions: [
+              AppBarButton(
+                icon: Icons.favorite_border,
+              ),
+              SizedBox(width: 8),
+            ],
           ),
+          // todo delete this line!
+          //regerg erger
           extendBodyBehindAppBar: true,
           body: Stack(
             children: [
               SingleChildScrollView(
+                controller: _controller,
                 child: Column(
                   children: [
                     AspectRatio(
@@ -93,32 +156,45 @@ class _BagScreenState extends State<BagScreen> {
                           fit: StackFit.expand,
                           children: [
                             Positioned.fill(
-                              child: Image.network(
-                                widget.bag.photo,
-                                fit: BoxFit.cover,
-                              ),
+                              child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                if (photoHeight == 0) {
+                                  photoHeight = constraints.maxHeight;
+                                }
+                                return ColoredBox(
+                                  color: Colors.grey.shade500,
+                                  child: Image.network(
+                                    widget.bag.photo,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              }),
                             ),
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: ListTile(
-                                  leading: Hero(
-                                    tag: "Bag-Seller-Photo${widget.bag.id}",
-                                    child: CircleAvatar(
-                                      radius: 26,
-                                      backgroundImage: NetworkImage(
-                                          "https://cdn.pixabay.com/photo/2015/03/04/22/35/head-659651_960_720.png"),
+                                child: Opacity(
+                                  opacity: 1 - ratio,
+                                  child: ListTile(
+                                    leading: Hero(
+                                      tag: "Bag-Seller-Photo${widget.bag.id}",
+                                      child: CircleAvatar(
+                                        radius: 26,
+                                        backgroundImage: NetworkImage(
+                                          widget.bag.sellerPhoto,
+                                        ),
+                                      ),
                                     ),
+                                    title: Text(widget.bag.sellerName,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!
+                                            .copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            )),
                                   ),
-                                  title: Text(widget.bag.sellerName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall!
-                                          .copyWith(
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                          )),
                                 ),
                               ),
                             )
@@ -127,6 +203,7 @@ class _BagScreenState extends State<BagScreen> {
                     Container(
                       padding: EdgeInsets.all(8),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ListTile(
                             visualDensity: VisualDensity.compact,
@@ -159,7 +236,22 @@ class _BagScreenState extends State<BagScreen> {
                             title: Text("4.6"),
                             horizontalTitleGap: 0,
                             visualDensity: VisualDensity.compact,
-                          )
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 20),
+                            child: Text(
+                              "Description",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(widget.bag.description),
+                          ),
                         ],
                       ),
                     ),
@@ -333,8 +425,31 @@ class _BagScreenState extends State<BagScreen> {
                                     foregroundColor:
                                         MaterialStateProperty.all(Colors.white),
                                   ),
-                                  onPressed: reserveNow,
-                                  child: Text("Reserve Now"),
+                                  onPressed:
+                                      throttled || isLoading || isReserved
+                                          ? () {}
+                                          : reserveNow,
+                                  child: AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 300),
+                                    child: isLoading ||
+                                            (throttled && !isReserved)
+                                        ? SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : isReserved
+                                            ? Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                              )
+                                            : Text(
+                                                "Reserve Now",
+                                                key: ValueKey("Reserve Now"),
+                                              ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -363,7 +478,7 @@ class AppBarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: CircleAvatar(
-        backgroundColor: Colors.white30,
+        backgroundColor: Colors.white38,
         radius: 20,
         child: IconButton(
           color: Colors.black,

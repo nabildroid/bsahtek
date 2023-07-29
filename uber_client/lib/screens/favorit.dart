@@ -15,7 +15,7 @@ class FavoritScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Linked Bag",
+          "Liked Bag",
           style: TextStyle(color: Colors.black),
         ),
         backgroundColor: Colors.transparent,

@@ -21,6 +21,8 @@ class SuggestionCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onFavoriteTap;
 
+  final double aspectRatio;
+
   const SuggestionCard({
     super.key,
     required this.title,
@@ -36,6 +38,7 @@ class SuggestionCard extends StatelessWidget {
     required this.storePicture,
     required this.onTap,
     required this.onFavoriteTap,
+    this.aspectRatio = 16 / 11,
   });
 
   @override
@@ -46,7 +49,7 @@ class SuggestionCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: AspectRatio(
-          aspectRatio: 16 / 11,
+          aspectRatio: aspectRatio,
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -88,13 +91,13 @@ class SuggestionCard extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      Chip(
-                                        label: Text(
-                                          chip,
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        backgroundColor: Colors.black,
-                                      ),
+                                      // Chip(
+                                      //   label: Text(
+                                      //     chip,
+                                      //     style: TextStyle(color: Colors.white),
+                                      //   ),
+                                      //   backgroundColor: Colors.black,
+                                      // ),
                                       Spacer(),
                                       IconButton(
                                         onPressed: onFavoriteTap,

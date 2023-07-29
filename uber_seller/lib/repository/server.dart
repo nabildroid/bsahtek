@@ -140,7 +140,7 @@ class Server {
     final sellerID = auth.currentUser!.uid;
     final query = firestore.collection("orders");
     // .where("sellerID", isEqualTo: sellerID)
-    // .where("updatedAt", isGreaterThan: lastUpdated);
+    // .where("updatedAt", isGreaterThan:  Timestamp.fromDate(lastUpdate));
     // todo add condition to prevent push Noti to interfer with this!
 
     final stream = query.snapshots().listen((event) {

@@ -69,20 +69,23 @@ abstract class Backgrounds {
 
     print("going to get the GPS");
 
+    final request = Cache.runningRequest;
+
+    if (request == null || request.order.expired) {
+      // todo show notification in case the order is expired
+      await AwesomeNotifications().cancelAll();
+      await Backgrounds.stopRunning();
+      Cache.runningRequest = null;
+      return;
+    }
+
     // get gps location
     final location = await GpsRepository.getLocation(goThrough: true);
 
     print(location);
     if (location == null) return;
-    final order = Cache.runningRequest;
 
     Cache.trackingLocation = location;
-
-    if (order == null) {
-      await AwesomeNotifications().cancelAll();
-      await Backgrounds.stopRunning();
-      return;
-    }
 
     final deliveryManID = Server.auth.currentUser!.uid;
     final alreadyFromSeller = Cache.trackedToSeller == null
@@ -90,7 +93,7 @@ abstract class Backgrounds {
         : Cache.trackedToSeller!.difference(DateTime.now()).inHours < 3;
 
     final updatedTrack = await Server().pushTrack(
-        order.order.toTrack(deliveryManID, location, alreadyFromSeller));
+        request.order.toTrack(deliveryManID, location, alreadyFromSeller));
 
     if (updatedTrack.toSeller == true && alreadyFromSeller) {
       Cache.trackedToSeller = DateTime.now();
@@ -110,14 +113,15 @@ abstract class Backgrounds {
   static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     await Cache.init();
-    final myLocation = Cache.availabilityLocation;
-    if (myLocation == null) {
-      await AwesomeNotifications().cancelAll();
-      return;
-    }
 
     if (message.data.containsKey("type") &&
         message.data["type"] == "orderAccepted") {
+      final myLocation = Cache.availabilityLocation;
+      if (myLocation == null) {
+        await AwesomeNotifications().cancelAll();
+        return;
+      }
+
       await ServiceCubit.handleAcceptedOrderNoti(message, myLocation);
     }
 

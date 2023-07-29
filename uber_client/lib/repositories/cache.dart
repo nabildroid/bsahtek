@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uber_client/utils/constants.dart';
 
 import '../cubits/bags_cubit.dart';
 import '../models/bag.dart';
@@ -47,14 +48,7 @@ class Cache {
   static Area? get currentArea {
     final data = _instance.getString("currentArea");
     if (data == null) {
-      return Area(
-        center: LatLng(
-          36.777609783186975,
-          2.9853606820318834,
-        ),
-        name: "Beni Messous",
-        radius: 30,
-      );
+      return Constants.defaultArea;
     }
     return Area.fromMap(jsonDecode(data));
   }
@@ -123,7 +117,7 @@ class Cache {
   }
 
   // get the newest order lastUpdate using prevOrders
-  static DateTime get lastUpdate {
+  static DateTime get lastUpdatePrevOrders {
     final orders = prevOrders;
     if (orders.isEmpty) {
       return DateTime(2001);
@@ -131,5 +125,21 @@ class Cache {
     // sort by lastUpdate and get the first one
     orders.sort((a, b) => b.lastUpdate.compareTo(a.lastUpdate));
     return orders.first.lastUpdate;
+  }
+
+  static DateTime? get throttlingReservation {
+    final data = _instance.getString("throttlingReservation");
+    if (data == null) {
+      return null;
+    }
+    return DateTime.parse(data);
+  }
+
+  static set throttlingReservation(DateTime? date) {
+    if (date == null) {
+      _instance.remove("throttlingReservation");
+    } else {
+      _instance.setString("throttlingReservation", date.toIso8601String());
+    }
   }
 }

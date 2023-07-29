@@ -155,8 +155,31 @@ class Server {
     return sub.cancel;
   }
 
-  List<Order> fetchPrevOrders(DateTime lastUpdate) {
-    // todo
-    return [];
+  VoidCallback listenToPrevOrders(
+      DateTime lastUpdate, void Function(List<Order>) listen) {
+    final query = firestore
+        .collection("orders")
+        .where("clientID", isEqualTo: auth.currentUser!.uid)
+        .where("lastUpdate", isGreaterThan: Timestamp.fromDate(lastUpdate));
+
+    final stream = query.snapshots().listen((event) {
+      final List<Order> changes = [];
+
+      event.docChanges.forEach((change) {
+        if (change.type == DocumentChangeType.removed) return;
+
+        final doc = change.doc.data();
+
+        changes.add(Order.fromJson(
+          FirestoreUtils.goodJson(
+            {...doc!, "id": change.doc.id},
+          ),
+        ));
+      });
+
+      listen(changes);
+    });
+
+    return stream.cancel;
   }
 }

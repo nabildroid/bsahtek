@@ -20,45 +20,52 @@ abstract class BackgroundIDs {
 }
 
 abstract class Backgrounds {
+  /**
+   * return `false` if order is expired or something bad happened
+   */
   @pragma('vm:entry-point')
-  static Future<void> firebaseMessagingBackgroundHandler(
+  static Future<bool> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     await Cache.init();
     await Server.init();
 
-    if (!message.data.containsKey("type")) return;
+    if (!message.data.containsKey("type")) return false;
 
     final type = message.data["type"];
 
     if (type == "delivery_start") {
       var order = Order.fromJson(jsonDecode(message.data["order"]));
+      if (order.expired)
+        return false; // todo remove the notification, and log to the server
+
       await Notifications.deliveryOnProgress(order.deliveryName!);
       Cache.runningOrder = order;
-      return;
+      return true;
     }
 
     if (type == "delivery_end") {
       await Notifications.deliveryEnd();
       Cache.runningOrder = null;
-      return;
+      return true;
     }
 
     if (type == "order_accepted") {
-      final data = FirestoreUtils.goodJson(
-        jsonDecode(message.data["order"]),
-      );
+      var order = Order.fromJson(jsonDecode(message.data["order"]));
+      if (order.expired) return false; // todo remove the notification
 
-      final order = Order.fromJson(data);
       Cache.runningOrder = order;
-
       await Notifications.orderAccepted(order.isPickup);
 
-      return;
+      return true;
     }
 
     if (message.data["type"] == "delivery_end") {
       await Notifications.deliveryEnd();
       Cache.runningOrder = null;
+
+      return true;
     }
+
+    return true;
   }
 }

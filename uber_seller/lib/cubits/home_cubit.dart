@@ -172,6 +172,7 @@ class HomeCubit extends Cubit<HomeState> {
         return _deliveryNeedToPickup(event.data["orderID"]);
       } else if (event.data["type"] == "new_order") {
         final order = Order.fromJson(jsonDecode(event.data["order"]));
+        if (order.expired) return;
         emit(state.pushRunningOrder(order));
         useContext((ctx) => RunningOrder.go(ctx, order: order, index: 1));
       }
@@ -206,10 +207,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     // filter older than 1 min
     final now = DateTime.now();
-    final filteredOrders = orders.where((element) {
-      final diff = now.difference(element.createdAt);
-      return diff.inMinutes < 1;
-    }).toList();
+    final filteredOrders = orders.where((element) => !element.expired).toList();
 
     emit(state.copyWith(runningOrders: filteredOrders));
     for (var i = 0; i < filteredOrders.length; i++) {
@@ -224,6 +222,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void acceptOrder(Order order) async {
+    if (order.expired) return;
     final bag = state.bags
         .firstWhere((element) => element.id.toString() == order.bagID);
 

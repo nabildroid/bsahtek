@@ -1,6 +1,7 @@
 // private navigators
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uber_client/screens/discover.dart';
 import 'package:uber_client/screens/favorit.dart';
 import 'package:uber_client/screens/home.dart';
 import 'package:uber_client/screens/loading_to_home.dart';
@@ -31,6 +32,17 @@ final goRouter = GoRouter(
           routes: [
             // top route inside branch
             GoRoute(
+              path: '/discover',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: DiscoverScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            // top route inside branch
+            GoRoute(
               path: '/home',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: HomeScreen(),
@@ -49,6 +61,7 @@ final goRouter = GoRouter(
             ),
           ],
         ),
+        // todo add more branch for my orders (success or expired!)
         StatefulShellBranch(
           routes: [
             // top route inside branch
@@ -104,6 +117,7 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
         selectedIndex: navigationShell.currentIndex,
         elevation: 10,
         destinations: const [
+          NavigationDestination(label: 'Discover', icon: Icon(Icons.explore)),
           NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
           NavigationDestination(label: 'Favort', icon: Icon(Icons.favorite)),
           NavigationDestination(label: 'Me', icon: Icon(Icons.person_pin)),

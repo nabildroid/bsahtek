@@ -21,7 +21,7 @@ class Area {
   final String name;
   final int radius;
 
-  Area({
+  const Area({
     required this.center,
     required this.name,
     required this.radius,
@@ -55,7 +55,7 @@ class Area {
 class BagsState extends Equatable {
   final List<Bag> bags;
   final List<Bag> visibleBags;
-  final List<Autosuggestion> autosuggestions = [];
+  final List<Autosuggestion> autosuggestions = []; // todo remove this
 
   final LatLng? currentLocation;
   final Area? currentArea;
@@ -350,7 +350,7 @@ class BagsQubit extends Cubit<BagsState> {
     required List<Bag> spots,
     required List<MapSquare> visibleSquares,
     required LatLng cameraPostion,
-    int closeDistance = 5,
+    int closeDistance = 5, // todo move it to the Constants
     int maxDistance = 20,
   }) {
     print("checking visible spots");

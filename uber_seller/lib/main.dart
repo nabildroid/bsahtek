@@ -40,6 +40,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   Cache.init();
 
   final order = Order.fromJson(jsonDecode(message.data["order"]));
+
+  if (order.expired) {
+    return;
+  }
   await Cache.pushRunningOrder(order);
 
   if (false) {

@@ -181,7 +181,7 @@ class Server {
     final query = await firestore
         .collection("orders")
         .where("deliveryManID", isEqualTo: deliveryManID)
-        .where("lastUpdate", isGreaterThan: lastRead.toIso8601String())
+        .where("lastUpdate", isGreaterThan: Timestamp.fromDate(lastRead))
         .get();
 
     final orders = query.docs

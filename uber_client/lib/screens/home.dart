@@ -10,7 +10,7 @@ import 'package:uber_client/screens/location_selector.dart';
 import '../widgets/home/orderConfirmedZone.dart';
 import '../widgets/home/inline_filters.dart';
 import '../widgets/home/inline_suggestion.dart';
-import '../widgets/home/location_picker.dart';
+import '../widgets/shared/location_picker.dart';
 import '../widgets/home/orderTrackZone.dart';
 import '../widgets/home/squaresmap.dart';
 import '../widgets/home/view_mode.dart';

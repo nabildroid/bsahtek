@@ -4,9 +4,11 @@ import 'package:uber_client/cubits/bags_cubit.dart';
 
 class LocationPicker extends StatelessWidget {
   final VoidCallback onTap;
+  final bool isTransparent;
   const LocationPicker({
     super.key,
     required this.onTap,
+    this.isTransparent = false,
   });
 
   @override
@@ -27,15 +29,17 @@ class LocationPicker extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: !isTransparent ? Colors.white : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                )
-              ],
+              boxShadow: !isTransparent
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  : null,
             ),
             child: Row(children: [
               const Icon(

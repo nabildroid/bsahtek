@@ -4,6 +4,7 @@ abstract class Notifications {
   static final AwesomeNotifications _instance = AwesomeNotifications();
 
   static Future<void> createChannels() async {
+    // todo setup the default channel for firebase messaging
     await _instance.requestPermissionToSendNotifications();
     await _instance.initialize(null, [
       NotificationChannel(

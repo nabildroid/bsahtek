@@ -258,6 +258,7 @@ class ServiceCubit extends Cubit<ServiceState> {
         final order = Order.fromJson(jsonDecode(message.data["order"]));
 
         // keep checking until background task is done
+        // todo this might be infinit when the order is expired
         while (true) {
           final request = Cache.getDeliveryRequestData(order.id);
           if (request != null) {
@@ -288,6 +289,8 @@ class ServiceCubit extends Cubit<ServiceState> {
   static Future<DeliveryRequest> handleAcceptedOrderNoti(
       RemoteMessage message, LatLng myLocation) async {
     final order = Order.fromJson(jsonDecode(message.data["order"]));
+
+    if (order.expired) throw Exception("Order is expired");
 
     final directions = await Future.wait([
       DirectionRepository.direction(order.sellerAddress, order.clientAddress),
