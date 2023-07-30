@@ -8,14 +8,22 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1090457346712:android:d4f11e6f7b3a1c940ba6ed",
+        "mobilesdk_app_id": "1:1090457346712:android:aeff8c2b8d084ed20ba6ed",
         "android_client_info": {
-          "package_name": "me.laknabil.uber_seller"
+          "package_name": "me.laknabil.uber_client"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1090457346712-t2kcgk6rdpdj61rtuuq87jfndl7scqp7.apps.googleusercontent.com",
+          "client_id": "1090457346712-1jauvd0sajp920t16d151mkuehsp4q49.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "30c93003de9f27bf554b281a7a325206864962d9"
+          }
+        },
+        {
+          "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -28,7 +36,81 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1090457346712-t2kcgk6rdpdj61rtuuq87jfndl7scqp7.apps.googleusercontent.com",
+              "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1090457346712:android:ba0e0f6c81aa57cf0ba6ed",
+        "android_client_info": {
+          "package_name": "me.laknabil.uber_deliver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1090457346712-9bsr2i33efctn0om6t2l7dtp1fq4hfer.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_deliver",
+            "certificate_hash": "30c93003de9f27bf554b281a7a325206864962d9"
+          }
+        },
+        {
+          "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb_C_-tZiZtXrfdRtUwAswKo2-gkVh7UY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1090457346712:android:d4f11e6f7b3a1c940ba6ed",
+        "android_client_info": {
+          "package_name": "me.laknabil.uber_seller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1090457346712-qm61di60lttu6uoev16v5pve2015hl7k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "30c93003de9f27bf554b281a7a325206864962d9"
+          }
+        },
+        {
+          "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb_C_-tZiZtXrfdRtUwAswKo2-gkVh7UY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

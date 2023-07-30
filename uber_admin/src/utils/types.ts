@@ -42,7 +42,7 @@ export const Order = z.object({
 
   clientID: z.string(),
   clientName: z.string(),
-  clientPhone: z.string(),
+  clientPhone: z.string().nonempty( ),
   clientAddress: z.object({
     latitude: z.number(),
     longitude: z.number(),
