@@ -185,8 +185,10 @@ class Server {
       if (zone.quantities.containsKey(bagID)) {
         final ref = firestore.collection("zones").doc(zone.id);
         await ref.update({
-          "quantities.$bagID":
-              quantity.abs() == 1 ? FieldValue.increment(quantity) : quantity,
+          "quantities": {
+            bagID:
+                quantity.abs() == 1 ? FieldValue.increment(quantity) : quantity,
+          }
         });
       }
     }

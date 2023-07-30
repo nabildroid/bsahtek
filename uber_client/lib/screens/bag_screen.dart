@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_client/cubits/bags_cubit.dart';
@@ -112,9 +113,19 @@ class _BagScreenState extends State<BagScreen> {
         false;
 
     final isLiked = context.watch<HomeCubit>().isLiked(widget.bag.id);
+
+    final bagsCubit = context.watch<BagsQubit>();
     final maxQuantity =
-        context.watch<BagsQubit>().state.quantities[widget.bag.id.toString()] ??
-            0;
+        bagsCubit.state.quantities[widget.bag.id.toString()] ?? 0;
+
+    // todo use gps instead of currentLocation, and move it in the reserve handler
+    final distance = Geolocator.distanceBetween(
+          widget.bag.latitude,
+          widget.bag.longitude,
+          bagsCubit.state.currentLocation!.latitude,
+          bagsCubit.state.currentLocation!.longitude,
+        ) /
+        1000;
 
     return WillPopScope(
       onWillPop: () async {
@@ -428,8 +439,11 @@ class _BagScreenState extends State<BagScreen> {
                               Expanded(
                                 child: TextButton(
                                   style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all(
-                                        Colors.green.shade700),
+                                    backgroundColor: distance > 50
+                                        ? MaterialStateProperty.all(
+                                            Colors.grey.shade600)
+                                        : MaterialStateProperty.all(
+                                            Colors.green.shade700),
                                     shape: MaterialStateProperty.all(
                                       RoundedRectangleBorder(
                                         borderRadius:
@@ -439,10 +453,12 @@ class _BagScreenState extends State<BagScreen> {
                                     foregroundColor:
                                         MaterialStateProperty.all(Colors.white),
                                   ),
-                                  onPressed:
-                                      throttled || isLoading || isReserved
-                                          ? () {}
-                                          : reserveNow,
+                                  onPressed: distance > 50 ||
+                                          throttled ||
+                                          isLoading ||
+                                          isReserved
+                                      ? () {}
+                                      : reserveNow,
                                   child: AnimatedSwitcher(
                                     duration: Duration(milliseconds: 300),
                                     child: isLoading ||
@@ -459,10 +475,13 @@ class _BagScreenState extends State<BagScreen> {
                                                 Icons.check,
                                                 color: Colors.white,
                                               )
-                                            : Text(
-                                                "Reserve Now",
-                                                key: ValueKey("Reserve Now"),
-                                              ),
+                                            : distance > 50
+                                                ? Text("Too Far")
+                                                : Text(
+                                                    "Reserve Now",
+                                                    key:
+                                                        ValueKey("Reserve Now"),
+                                                  ),
                                   ),
                                 ),
                               ),
