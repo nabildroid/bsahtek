@@ -162,7 +162,6 @@ export const NewOrder = Order.extend({}).omit({
   sellerAddress: true,
 });
 
-
 // todo add photo url refine
 export const NewFood = z.object({
   name: z.string(),
@@ -275,3 +274,15 @@ export type IAcceptSeller = z.infer<typeof AcceptSeller>;
 
 export type ISeller = z.infer<typeof Seller>;
 export type IDeliver = z.infer<typeof Deliver>;
+
+export const OrderExpireTask = z.object({
+  orderID: z.string(),
+  bagID: z.number(),
+  sellerID: z.string(),
+  quantity: z.number(),
+  clientID: z.string(),
+  zone: z.string(),
+  acceptedAt: z.string().transform((a) => new Date(a)),
+});
+
+export type IOrderExpireTask = z.infer<typeof OrderExpireTask>;

@@ -11,6 +11,9 @@ import {
   Track,
   Tracking,
 } from "@/utils/types";
+
+import * as Tasks from "@/app/api/repository/tasks";
+
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
@@ -44,6 +47,8 @@ export async function POST(request: Request) {
     .collection("orders")
     .doc(tracking.orderID)
     .update(updateOrder);
+
+  await cancelOrderExpiration(tracking.orderID);
 
   const today = new Date().toLocaleDateString();
   const statsRef = firebase.firestore().collection("uber").doc("stats");
@@ -124,4 +129,10 @@ async function InformSeller(sellerID: string, orderID: string) {
       },
     });
   }
+}
+
+export async function cancelOrderExpiration(orderID: string) {
+  const ids = await Tasks.getIdsByURLpartial(orderID);
+
+  await Promise.all(ids.map((id) => Tasks.remove(id)));
 }

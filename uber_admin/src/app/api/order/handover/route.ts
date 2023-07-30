@@ -16,6 +16,7 @@ import {
   StartDeliveryOrder,
 } from "@/utils/types";
 import * as admin from "firebase-admin";
+import { cancelOrderExpiration } from "../delivery/finish/route";
 
 // i think only the seller is allowed to do this
 export async function POST(request: Request) {
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
       isDelivered: true,
       lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    await cancelOrderExpiration(order.id);
 
     const today = new Date().toLocaleDateString();
     const statsRef = firebase.firestore().collection("uber").doc("stats");

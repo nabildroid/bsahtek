@@ -3,14 +3,50 @@ import firebase, {
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
-import { AcceptOrder, IOrder } from "@/utils/types";
+import { AcceptOrder, IOrder, IOrderExpireTask } from "@/utils/types";
 import * as admin from "firebase-admin";
+import * as Tasks from "@/app/api/repository/tasks";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   if (await BlocForNot("seller", request)) return VerificationError();
 
   const order = AcceptOrder.parse(await request.json());
 
+  const sellerZone = calculateSquareCenter(
+    order.sellerAddress.longitude,
+    order.sellerAddress.latitude,
+    30
+  );
+
+  // update the quantities
+  await admin
+    .firestore()
+    .collection("zones")
+    .doc(`${sellerZone.x},${sellerZone.y}`)
+    .set(
+      {
+        quantities: {
+          [order.bagID]: admin.firestore.FieldValue.increment(
+            order.quantity * -1
+          ),
+        },
+      },
+      { merge: true }
+    );
+
+  // set up cronjob to reset the quantities after order expiration
+  await scheduleExpires({
+    orderID: order.id,
+    bagID: Number(order.bagID),
+    acceptedAt: order.acceptedAt,
+    clientID: order.clientID,
+    sellerID: order.sellerID,
+    quantity: order.quantity,
+    zone: `${sellerZone.x},${sellerZone.y}`,
+  });
+
+  // update the order
   await admin
     .firestore()
     .collection("orders")
@@ -57,12 +93,7 @@ export async function POST(request: Request) {
 
   // notify sellers Topic;
   if (!order.isPickup) {
-    const center = calculateSquareCenter(
-      order.clientAddress.longitude,
-      order.clientAddress.latitude,
-      30
-    );
-    const topic = `zone-${center.y}-${center.x}`;
+    const topic = `zone-${sellerZone.y}-${sellerZone.x}`;
     console.log(topic);
     await firebase.messaging().sendToTopic(
       topic,
@@ -86,4 +117,25 @@ export async function POST(request: Request) {
   }
 
   return new Response(JSON.stringify(order));
+}
+
+async function scheduleExpires(experation: IOrderExpireTask) {
+  const baseURL = process.env.VERCEL_URL;
+  if (baseURL === undefined) {
+    console.error("VERCEL_URL is undefined, we can't schedule the task");
+    return;
+  }
+
+  const url = `https://${baseURL}/api/order/accept/expires`.replaceAll(
+    "https://https://",
+    "https://"
+  );
+
+  return NextResponse.json(
+    await Tasks.create({
+      url: url + "?orderID=" + experation.orderID,
+      delayInSeconds: 60 * 2,
+      data: experation,
+    })
+  );
 }
