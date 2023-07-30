@@ -87,7 +87,7 @@ class AutoSuggestionView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.watch<BagsQubit>().state;
 
-    final bags = cubit.bags;
+    final bags = cubit.visibleBags;
 
     final filtredBags = bags.where((bag) {
       final distance = Geolocator.distanceBetween(

@@ -37,6 +37,7 @@ class BagScreen extends StatefulWidget {
 
 class _BagScreenState extends State<BagScreen> {
   int quantity = 1;
+
   bool goingToReserve = false;
 
   bool isPickup = false;
@@ -104,11 +105,16 @@ class _BagScreenState extends State<BagScreen> {
   @override
   Widget build(BuildContext context) {
     final throttled = context
-            .watch<HomeCubit>()
+            .read<HomeCubit>()
             .state
             .throttlingReservation
             ?.isAfter(DateTime.now()) ??
         false;
+
+    final isLiked = context.watch<HomeCubit>().isLiked(widget.bag.id);
+    final maxQuantity =
+        context.watch<BagsQubit>().state.quantities[widget.bag.id.toString()] ??
+            0;
 
     return WillPopScope(
       onWillPop: () async {
@@ -133,10 +139,14 @@ class _BagScreenState extends State<BagScreen> {
             ),
             leading: AppBarButton(
               icon: Icons.arrow_back,
+              onPressed: Navigator.of(context).pop,
             ),
             actions: [
               AppBarButton(
-                icon: Icons.favorite_border,
+                icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                onPressed: () {
+                  context.read<HomeCubit>().toggleLiked(widget.bag);
+                },
               ),
               SizedBox(width: 8),
             ],
@@ -280,6 +290,7 @@ class _BagScreenState extends State<BagScreen> {
                                   MaterialStateProperty.all(Colors.white),
                             ),
                             onPressed: () {
+                              if (maxQuantity == 0) return;
                               setState(() {
                                 goingToReserve = true;
                               });
@@ -367,11 +378,14 @@ class _BagScreenState extends State<BagScreen> {
                                     width: 16,
                                   ),
                                   CircleAvatar(
-                                    backgroundColor: Colors.green.shade700,
+                                    backgroundColor: quantity >= maxQuantity
+                                        ? Colors.black12
+                                        : Colors.green.shade700,
                                     child: IconButton(
                                       onPressed: () {
                                         setState(() {
-                                          quantity++;
+                                          if (quantity < maxQuantity)
+                                            quantity++;
                                         });
                                       },
                                       icon: Icon(
@@ -469,9 +483,11 @@ class _BagScreenState extends State<BagScreen> {
 
 class AppBarButton extends StatelessWidget {
   final IconData icon;
+  final VoidCallback onPressed;
   const AppBarButton({
     Key? key,
     required this.icon,
+    required this.onPressed,
   });
 
   @override
@@ -483,7 +499,7 @@ class AppBarButton extends StatelessWidget {
         child: IconButton(
           color: Colors.black,
           onPressed: () {
-            Navigator.of(context).pop();
+            onPressed();
           },
           icon: Icon(icon),
         ),

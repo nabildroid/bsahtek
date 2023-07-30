@@ -189,13 +189,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       builder: (context, state) {
                         return InlineSuggestions(
                           onView: (index) {
-                            final spot = state.visibleBags[index];
-                            context
-                                .read<BagsQubit>()
-                                .moveCamera(CameraUpdate.newLatLng(LatLng(
-                                  spot.latitude,
-                                  spot.longitude,
-                                )));
+                            final cubit = context.read<BagsQubit>();
+                            if (cubit.state.visibleBags.isEmpty) return;
+                            final spot = cubit.state.visibleBags[index];
+
+                            cubit.moveCamera(CameraUpdate.newLatLng(LatLng(
+                              spot.latitude,
+                              spot.longitude,
+                            )));
                           },
                           suggestions: [
                             ...state.visibleBags,
