@@ -244,7 +244,7 @@ export default function Page(props: Props) {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 // todo this will make the old photos saved for ever!
-                                const url = await uploader(file, (Math.random() * 100000000).toString(), `seller/${props.params.id}/photo`);
+                                const url = await uploader(file, props.params.id + "-" + (Math.random() * 100000000).toString(), "bag/photo");
                                 setBagInfo(a => ({ ...a, photo: url }));
                             }}
                             type="file" className="absolute inset-0 opacity-0" />
