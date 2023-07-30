@@ -35,32 +35,35 @@ class InlineFilters extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               ...tags.map(
-                (tag) => Padding(
-                  padding: EdgeInsets.only(left: 16),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      elevation: 1,
-                      textStyle: TextStyle(
-                        color: Colors.green.shade900,
-                        fontWeight: FontWeight.bold,
+                (tag) {
+                  final selected = selectedTags.contains(tag);
+                  return Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        elevation: 1,
+                        textStyle: TextStyle(
+                          color: Colors.green.shade900,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        // if selected put a green border
+                        side: BorderSide(
+                          color: selected
+                              ? Colors.green.shade500
+                              : Colors.transparent,
+                          width: 2,
+                        ),
                       ),
-                      // if selected put a green border
-                      side: BorderSide(
-                        color: selectedTags.contains(tag)
-                            ? Colors.green.shade500
-                            : Colors.transparent,
-                        width: 2,
+                      onPressed: () {
+                        context.read<BagsQubit>().toggleTag(tag);
+                      },
+                      child: Text(
+                        "${selected ? "" : "Try: "}$tag",
                       ),
                     ),
-                    onPressed: () {
-                      context.read<BagsQubit>().toggleTag(tag);
-                    },
-                    child: Text(
-                      "try: $tag",
-                    ),
-                  ),
-                ),
+                  );
+                },
               )
             ],
           );

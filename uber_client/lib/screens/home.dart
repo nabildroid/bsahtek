@@ -193,8 +193,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         return InlineSuggestions(
                           onView: (index) {
                             final cubit = context.read<BagsQubit>();
-                            if (cubit.state.visibleBags.isEmpty) return;
-                            final spot = cubit.state.visibleBags[index];
+                            if (cubit.state.filtredBags.isEmpty) return;
+                            final spot = cubit.state.filtredBags[index];
 
                             cubit.moveCamera(CameraUpdate.newLatLng(LatLng(
                               spot.latitude,
@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             )));
                           },
                           suggestions: [
-                            ...state.visibleBags,
+                            ...state.filtredBags,
                           ]
                               .map(
                                 (e) => InlineSuggestion(
