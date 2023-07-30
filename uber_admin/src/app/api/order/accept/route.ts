@@ -67,29 +67,29 @@ export async function POST(request: Request) {
     .get();
   const data = query.data();
 
-  // if (!data) return new Response("Client not found");
-  // const clientToken = data.notiID;
+  if (!data) return new Response("Client not found");
+  const clientToken = data.notiID;
 
-  // await firebase.messaging().send({
-  //   token: clientToken,
-  //   fcmOptions: {
-  //     analyticsLabel: "orderAcceptedNotifyClient",
-  //   },
-  //   android: {
-  //     priority: "high",
-  //     ttl: 1000 * 60 * 10,
-  //     notification: {
-  //       body: `your order${order.quantity > 1 ? "s" : ""} ${
-  //         order.bagName
-  //       } has been accepted`,
-  //       title: "Order Accepted",
-  //     },
-  //   },
-  //   data: {
-  //     type: "order_accepted",
-  //     order: JSON.stringify(order),
-  //   },
-  // });
+  await firebase.messaging().send({
+    token: clientToken,
+    fcmOptions: {
+      analyticsLabel: "orderAcceptedNotifyClient",
+    },
+    android: {
+      priority: "high",
+      ttl: 1000 * 60 * 10,
+      notification: {
+        body: `your order${order.quantity > 1 ? "s" : ""} ${
+          order.bagName
+        } has been accepted`,
+        title: "Order Accepted",
+      },
+    },
+    data: {
+      type: "order_accepted",
+      order: JSON.stringify(order),
+    },
+  });
 
   // notify sellers Topic;
   if (!order.isPickup) {

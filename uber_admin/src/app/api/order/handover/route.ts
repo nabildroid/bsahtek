@@ -12,6 +12,7 @@ import {
   AcceptOrder,
   HandOverForAll,
   HandOverToClient,
+  IOrder,
   ITrack,
   StartDeliveryOrder,
 } from "@/utils/types";
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
   } else {
+    // set order to be delivered
     await firebase.firestore().collection("orders").doc(order.id).update({
       isDelivered: true,
       lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
@@ -53,10 +55,44 @@ export async function POST(request: Request) {
       { merge: true }
     );
 
-    // set order to be delivered
+    // send notification to the client, so he can
+    await notifyClient(order);
   }
 
   console.log(order);
 
   return new Response(JSON.stringify(order));
+}
+
+async function notifyClient(order: IOrder) {
+  const query = await firebase
+    .firestore()
+    .collection("clients")
+    .doc(order.clientID)
+    .get();
+  const data = query.data();
+
+  if (!data) return new Response("Client not found");
+  const clientToken = data.notiID;
+
+  await firebase.messaging().send({
+    token: clientToken,
+    fcmOptions: {
+      analyticsLabel: "orderAcceptedNotifyClient",
+    },
+    android: {
+      priority: "high",
+      ttl: 1000 * 60 * 10,
+      notification: {
+        body: `you help save ${order.bagName}`,
+        title: "Thank you",
+      },
+    },
+    data: {
+      type: "self_pickup",
+      order: JSON.stringify(order),
+      // if we can sign a hash for this unique (also time based hashed) so no one can fake it
+      orderID: order.id,
+    },
+  });
 }

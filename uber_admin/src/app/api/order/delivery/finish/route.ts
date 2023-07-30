@@ -48,6 +48,8 @@ export async function POST(request: Request) {
     .doc(tracking.orderID)
     .update(updateOrder);
 
+  await notifyClientEndDelivery(tracking.clientID, tracking.orderID);
+
   await cancelOrderExpiration(tracking.orderID);
 
   const today = new Date().toLocaleDateString();
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
   return new Response(JSON.stringify({}));
 }
 
-async function EndDelivery(clientID: string) {
+async function notifyClientEndDelivery(clientID: string, orderID: string) {
   const query = await firebase
     .firestore()
     .collection("clients")
@@ -90,6 +92,7 @@ async function EndDelivery(clientID: string) {
       },
       data: {
         click_action: "FLUTTER_NOTIFICATION_CLICK",
+        orderID: orderID,
         type: "delivery_end",
       },
     });
