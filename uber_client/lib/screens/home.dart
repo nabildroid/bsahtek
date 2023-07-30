@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,6 +9,7 @@ import 'package:uber_client/cubits/home_cubit.dart';
 import 'package:uber_client/screens/bag_screen.dart';
 import 'package:uber_client/screens/location_selector.dart';
 
+import '../repositories/notifications.dart';
 import '../widgets/home/orderConfirmedZone.dart';
 import '../widgets/home/inline_filters.dart';
 import '../widgets/home/inline_suggestion.dart';
@@ -128,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               return SuggestionCard(
                                 id: spot.id,
                                 title: spot.name,
-                                subtitle: "Bag 1",
+                                subtitle: spot.sellerAddress,
                                 chip: "Bag 1",
                                 discountPrice: spot.originalPrice.toString(),
                                 distance: (Geolocator.distanceBetween(
@@ -141,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     .toStringAsFixed(2),
                                 picture: spot.photo,
                                 price: spot.price.toString(),
-                                rating: "4.5",
+                                rating: spot.rating.toStringAsFixed(1),
                                 storeName: spot.sellerName,
                                 storePicture: spot.sellerPhoto,
                                 onTap: () => BagScreen.go(context, spot),

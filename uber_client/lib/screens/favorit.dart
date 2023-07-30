@@ -30,9 +30,9 @@ class FavoritScreen extends StatelessWidget {
                 .map((bag) => SuggestionCard(
                       id: bag.id,
                       title: bag.name,
-                      subtitle: "Bag 1",
+                      subtitle: bag.sellerAddress,
                       picture: bag.photo,
-                      rating: "4.4",
+                      rating: bag.rating.toStringAsFixed(1),
                       price: bag.originalPrice.toString(),
                       discountPrice: bag.price.toString(),
                       chip: bag.tags,

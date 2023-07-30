@@ -120,7 +120,7 @@ class AutoSuggestionView extends StatelessWidget {
                 aspectRatio: 16 / 14,
                 id: spot.id,
                 title: spot.name,
-                subtitle: "Bag 1",
+                subtitle: spot.sellerAddress,
                 chip: "Bag 1",
                 discountPrice: spot.originalPrice.toString(),
                 distance: (Geolocator.distanceBetween(
@@ -133,7 +133,7 @@ class AutoSuggestionView extends StatelessWidget {
                     .toStringAsFixed(2),
                 picture: spot.photo,
                 price: spot.price.toString(),
-                rating: "4.5",
+                rating: spot.rating.toStringAsFixed(1),
                 storeName: spot.sellerName,
                 storePicture: spot.sellerPhoto,
                 onTap: () => BagScreen.go(context, spot),
