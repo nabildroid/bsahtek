@@ -137,26 +137,28 @@ class BagsState extends Equatable {
   }
 
   BagsState addBags(List<Bag> newBag) {
+    final copy = List<Bag>.from(bags);
     for (var bag in newBag) {
-      if (bags.every((element) => element.id != bag.id)) {
-        bags.add(bag);
+      if (copy.every((element) => element.id != bag.id)) {
+        copy.add(bag);
       }
     }
 
     return copyWith(
-      bags: [...bags],
+      bags: copy,
     );
   }
 
   BagsState addSquares(List<MapSquare> squares) {
+    final copy = List<MapSquare>.from(this.squares);
     for (var square in squares) {
-      if (this.squares.every((element) => element.id != square.id)) {
-        this.squares.add(square);
+      if (copy.every((element) => element.id != square.id)) {
+        copy.add(square);
       }
     }
 
     return copyWith(
-      squares: [...this.squares],
+      squares: copy,
     );
   }
 
@@ -188,13 +190,13 @@ class BagsQubit extends Cubit<BagsState> {
 
   BagsQubit()
       : super(BagsState(
-          bags: [],
-          squares: [],
-          attachedCameras: [],
-          visibleBags: [],
-          visibleSquares: [],
-          selectedTags: [],
-          quantities: {},
+          bags: const [],
+          squares: const [],
+          attachedCameras: const [],
+          visibleBags: const [],
+          visibleSquares: const [],
+          selectedTags: const [],
+          quantities: const {},
           currentArea: Cache.currentArea,
         ));
 
@@ -331,7 +333,7 @@ class BagsQubit extends Cubit<BagsState> {
     final freshSpots = await _visiteSquares(visibleSquares);
 
     final visibleSpots = _checkVisibleSpots(
-      spots: [...state.visibleBags, ...freshSpots],
+      spots: [...state.bags, ...freshSpots],
       visibleSquares: visibleSquares,
       cameraPostion: cameraPosition,
       closeDistance: state.currentArea?.radius ?? 5,
@@ -422,7 +424,6 @@ class BagsQubit extends Cubit<BagsState> {
       }
     }
 
-    // todo don't forget to check for new ones then fetch them
     return visibles;
   }
 
