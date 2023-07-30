@@ -68,7 +68,7 @@ export default function Page(props: Props) {
                             onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const url = await uploader(file, deliverInfo.id, "deliver/photo");
+                                const url = await uploader(file, deliverInfo.id!, "deliver/photo");
                                 setDeliverInfo(a => ({ ...a, photo: url }));
                             }}
                             type="file" className="absolute inset-0 opacity-0" />
