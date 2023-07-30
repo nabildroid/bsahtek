@@ -83,15 +83,47 @@ abstract class Notifications {
     );
   }
 
+  static Future<void> scheduleRating(String productName, String orderID) async {
+    await _instance.createNotification(
+      content: NotificationContent(
+        id: 56,
+        channelKey: 'delivery',
+        locked: true,
+        criticalAlert: true,
+        wakeUpScreen: true,
+        showWhen: true,
+        fullScreenIntent: true,
+        notificationLayout: NotificationLayout.Default,
+        displayOnForeground: true,
+        displayOnBackground: true,
+        autoDismissible: true,
+        title: 'rate $productName!',
+        body: 'did you like $productName?',
+        payload: {
+          "type": "rate",
+          "orderID": orderID,
+          "bagName": productName,
+        },
+      ),
+      schedule: NotificationCalendar(
+        hour: 20,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+        repeats: false,
+      ),
+    );
+  }
+
   // clear
   static Future<void> clear() async {
     await _instance.cancelNotificationsByChannelKey("delivery");
   }
 
-  static onClick(Function(String type) callback) {
+  static onClick(Function(String type, dynamic payload) callback) {
     _instance.actionStream.listen((event) {
       if (event.payload?.containsKey("type") ?? false) {
-        callback(event.payload!["type"].toString());
+        callback(event.payload!["type"].toString(), event.payload!);
       }
     });
   }

@@ -182,4 +182,22 @@ class Server {
 
     return stream.cancel;
   }
+
+  Future<void> rate({
+    required String orderID,
+    required int rating,
+  }) async {
+    final response = await http.post(
+      "order/rate",
+      data: {
+        "orderID": orderID,
+        "rating": rating,
+        "clientID": auth.currentUser!.uid,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to rate");
+    }
+  }
 }

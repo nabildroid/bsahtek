@@ -43,9 +43,14 @@ abstract class Backgrounds {
       return true;
     }
 
-    if (type == "delivery_end") {
+    if (type == "delivery_end" || type == "self_pickup") {
       await Notifications.deliveryEnd();
+      await Notifications.scheduleRating(
+        Cache.runningOrder!.bagName,
+        Cache.runningOrder!.bagID,
+      );
       Cache.runningOrder = null;
+
       return true;
     }
 
@@ -55,13 +60,6 @@ abstract class Backgrounds {
 
       Cache.runningOrder = order;
       await Notifications.orderAccepted(order.isPickup);
-
-      return true;
-    }
-
-    if (message.data["type"] == "delivery_end") {
-      await Notifications.deliveryEnd();
-      Cache.runningOrder = null;
 
       return true;
     }

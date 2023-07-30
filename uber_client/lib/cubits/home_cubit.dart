@@ -17,6 +17,7 @@ import '../repositories/messages_remote.dart';
 import '../repositories/server.dart';
 import '../screens/running.dart';
 import '../utils/firebase.dart';
+import '../widgets/shared/ratingdialog.dart';
 
 class HomeState extends Equatable {
   Order? runningOrder;
@@ -130,7 +131,14 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void _subscribeToOnAppNotification() {
-    Notifications.onClick((type) async {
+    Notifications.onClick((type, payload) async {
+      if (type == 'rate') {
+        final orderID = payload["orderID"];
+        final bagName = payload["bagName"];
+        handleGoingToRate(orderID, bagName);
+        return;
+      }
+
       if (type == 'delivery') {
         focusOnRunningOrder();
 
@@ -187,6 +195,19 @@ class HomeCubit extends Cubit<HomeState> {
         subscribeToRunningOrder();
         return;
       }
+    });
+  }
+
+  void handleGoingToRate(String orderID, String bagName) {
+    useContext((ctx) {
+      showDialog(
+          context: ctx,
+          builder: (ctx) => RatingDialog(
+              title: bagName,
+              description: "how ${bagName} was",
+              onRated: (id) {
+                Server().rate(orderID: orderID, rating: id);
+              }));
     });
   }
 

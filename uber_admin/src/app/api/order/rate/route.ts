@@ -1,85 +1,51 @@
 import firebase from "@/app/api/repository/firebase";
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
+import * as Schema from "@/db/schema";
 import {
   AcceptOrder,
+  IOrder,
   ITrack,
   StartDeliveryOrder,
   Track,
   Tracking,
 } from "@/utils/types";
 import * as admin from "firebase-admin";
+import { z } from "zod";
+import db from "../../repository/db";
+import { eq, sql } from "drizzle-orm";
+
+const Props = z.object({
+  orderID: z.string(),
+  rating: z.number().max(5).min(1).int(),
+  clientID: z.string(),
+});
 
 export async function POST(request: Request) {
-  const tracking = Tracking.parse(await request.json());
+  const { orderID, rating, clientID } = Props.parse(await request.json());
 
-  const update = {
-    updatedAt: admin.firestore.FieldValue.serverTimestamp() as any as Date,
-    deliveryManID: tracking.deliveryManID, // todo check if belongs to him!
-    deliveryLocation: tracking.deliverLocation,
-    path: admin.firestore.FieldValue.arrayUnion(
-      tracking.deliverLocation
-    ) as any,
-  } as Partial<ITrack>;
+  console.log({ orderID, rating, clientID });
 
-  const distanceToClient = calculateDistance(
-    tracking.deliverLocation,
-    tracking.clientLocation
-  );
-  const distanceToSeller = calculateDistance(
-    tracking.deliverLocation,
-    tracking.sellerLocation
-  );
-
-  if (distanceToClient > 0.1 && distanceToClient < 1) {
-    update.toClient = true;
-
-    await EndDelivery(tracking.clientID);
-
-    // get client token
-  }
-
-  if (distanceToSeller > 0.1 && distanceToSeller < 1) {
-    update.toSeller = true;
-    console.log("notify Seller");
-  }
-
-  await firebase
+  const order = await firebase
     .firestore()
-    .collection("tracks")
-    .doc(tracking.id)
-    .update(update);
-
-  return new Response(JSON.stringify({}));
-}
-
-async function EndDelivery(clientID: string) {
-  const query = await firebase
-    .firestore()
-    .collection("clients")
-    .doc(clientID)
+    .collection("orders")
+    .doc(orderID)
     .get();
 
-  const data = query.data();
+  if (!order.exists) return new Response("No such order", { status: 404 });
 
-  if (data) {
-    const clientToken = data.notiID;
+  const data = order.data() as IOrder;
 
-    await firebase.messaging().send({
-      token: clientToken,
-      fcmOptions: {
-        analyticsLabel: "OrderArrived",
-      },
-      android: {
-        priority: "high",
-        ttl: 1000 * 60 * 10,
-        notification: {
-          body: `your order is almost there`,
-          title: "Ready to pick up",
-        },
-      },
-      data: {
-        type: "delivery_end",
-      },
+  if (data.clientID !== clientID)
+    return new Response("You are not allowed to rate this order", {
+      status: 403,
     });
-  }
+
+  await db
+    .update(Schema.bagsTable)
+    .set({
+      rating: sql`${Schema.bagsTable.rating} * .9  +  ${rating} * .1`,
+    })
+    .where(eq(Schema.bagsTable.id, Number(data.bagID)))
+    .execute();
+  return new Response("Rated successfully", { status: 200 });
 }
