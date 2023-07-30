@@ -7,7 +7,6 @@ import { cancelOrderExpiration } from "../../delivery/finish/route";
 // todo implement upstash request signature verification
 export async function POST(request: Request) {
   const message = OrderExpireTask.parse(await request.json());
-
   await cancelOrderExpiration(message.orderID);
 
   await admin
@@ -15,9 +14,9 @@ export async function POST(request: Request) {
     .collection("zones")
     .doc(message.zone)
     .update({
-      quantities: {
-        [message.bagID]: admin.firestore.FieldValue.increment(message.quantity),
-      },
+      ["quantities." + message.bagID]: admin.firestore.FieldValue.increment(
+        message.quantity
+      ),
     });
 
   // todo you can send notifications to the seller, or deliver guy, or the client

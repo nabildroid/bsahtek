@@ -131,11 +131,9 @@ async function scheduleExpires(experation: IOrderExpireTask) {
     "https://"
   );
 
-  return NextResponse.json(
-    await Tasks.create({
-      url: url + "?orderID=" + experation.orderID,
-      delayInSeconds: 60 * 2,
-      data: experation,
-    })
-  );
+  return await Tasks.create({
+    url: url + "?orderID=" + experation.orderID,
+    delayInSeconds: 60 * 60 * 3,
+    data: experation,
+  });
 }
