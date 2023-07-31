@@ -56,9 +56,5 @@ function NavButtons() {
             link="/deliver_requests"
         />
 
-        <NavButton
-            label="Issues"
-            link="/issues"
-        />
     </>
 }

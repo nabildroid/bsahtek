@@ -7,7 +7,7 @@ import AuthClient from "./auth";
 import { getIdToken } from "firebase/auth";
 import { IBag, IStats } from "@/types";
 import { InferModel } from "drizzle-orm";
-import { IAcceptSeller, IDeliver, ISeller } from "@/utils/types";
+import { IAcceptSeller, IDeliver, IOrder, ISeller } from "@/utils/types";
 
 const ENDPOINT = process.env.NODE_ENV === "production" ? "/api" : "/api";
 
@@ -48,6 +48,22 @@ export async function seller(sellerID: string) {
   return data as {
     bags: IBag[];
     seller: ISeller;
+  };
+}
+
+export async function sellerDetails(sellerID: string) {
+  const { data } = await Http.get(`/admin/sellers/${sellerID}/details`);
+  return data as {
+    orders: IOrder[];
+    seller: ISeller;
+  };
+}
+
+export async function deliverDetails(deliverID: string) {
+  const { data } = await Http.get(`/admin/delivers/${deliverID}/details`);
+  return data as {
+    orders: IOrder[];
+    deliver: ISeller;
   };
 }
 
