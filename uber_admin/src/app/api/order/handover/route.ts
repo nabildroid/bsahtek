@@ -21,9 +21,10 @@ import { cancelOrderExpiration } from "../delivery/finish/route";
 
 // i think only the seller is allowed to do this
 export async function POST(request: Request) {
-  if (await BlocForNot("seller", request)) return VerificationError();
-
   const order = HandOverForAll.parse(await request.json());
+
+  if (await BlocForNot("seller#" + order.sellerID, request))
+    return VerificationError();
 
   if (order.isPickup == false) {
     // set track to be toSeller = true

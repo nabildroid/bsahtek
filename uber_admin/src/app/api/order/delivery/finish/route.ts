@@ -21,6 +21,9 @@ export async function POST(request: Request) {
 
   const tracking = Tracking.parse(await request.json());
 
+  if (await BlocForNot("deliver#" + tracking.deliveryManID, request))
+    return VerificationError();
+
   const updateTrack = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp() as any as Date,
     deliveryLocation: tracking.deliverLocation,

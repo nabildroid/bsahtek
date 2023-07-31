@@ -18,9 +18,9 @@ import { NextResponse } from "next/server";
 // todo (Security) for sake of no-extra read we need to hach the orderID,acceptedDate,clientID,sellerID,deliverID
 
 export async function POST(request: Request) {
-  if (await BlocForNot("deliver", request)) return VerificationError();
-
   const tracking = Tracking.parse(await request.json());
+  if (await BlocForNot("deliver#" + tracking.deliveryManID, request))
+    return VerificationError();
 
   console.log(tracking);
 

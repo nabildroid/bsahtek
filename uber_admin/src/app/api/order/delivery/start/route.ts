@@ -7,9 +7,10 @@ import { AcceptOrder, ITrack, StartDeliveryOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
-  if (await BlocForNot("deliver", request)) return VerificationError();
-
   const order = StartDeliveryOrder.parse(await request.json());
+
+  if (await BlocForNot("deliver#" + order.deliveryManID, request))
+    return VerificationError();
 
   // send notification to client
   const query = await firebase

@@ -1,4 +1,7 @@
-import firebase from "@/app/api/repository/firebase";
+import firebase, {
+  BlocForNot,
+  VerificationError,
+} from "@/app/api/repository/firebase";
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
 import * as Schema from "@/db/schema";
 import {
@@ -21,6 +24,8 @@ const Props = z.object({
 });
 
 export async function POST(request: Request) {
+  if (await BlocForNot("", request)) return VerificationError();
+
   const { orderID, rating, clientID } = Props.parse(await request.json());
 
   console.log({ orderID, rating, clientID });

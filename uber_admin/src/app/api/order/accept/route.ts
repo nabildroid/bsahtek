@@ -9,9 +9,10 @@ import * as Tasks from "@/app/api/repository/tasks";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  if (await BlocForNot("seller", request)) return VerificationError();
-
   const order = AcceptOrder.parse(await request.json());
+
+  if (await BlocForNot("seller#" + order.sellerID, request))
+    return VerificationError();
 
   const sellerZone = calculateSquareCenter(
     order.sellerAddress.longitude,
