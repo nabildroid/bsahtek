@@ -25,16 +25,13 @@ export async function POST(request: Request) {
     .firestore()
     .collection("zones")
     .doc(`${sellerZone.x},${sellerZone.y}`)
-    .set(
-      {
-        quantities: {
-          [order.bagID]: admin.firestore.FieldValue.increment(
-            order.quantity * -1
-          ),
-        },
+    .update({
+      quantities: {
+        [order.bagID]: admin.firestore.FieldValue.increment(
+          order.quantity * -1
+        ),
       },
-      { merge: true }
-    );
+    });
 
   // set up cronjob to reset the quantities after order expiration
   await scheduleExpires({

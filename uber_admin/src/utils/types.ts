@@ -42,7 +42,7 @@ export const Order = z.object({
 
   clientID: z.string(),
   clientName: z.string(),
-  clientPhone: z.string().nonempty( ),
+  clientPhone: z.string().nonempty(),
   clientAddress: z.object({
     latitude: z.number(),
     longitude: z.number(),
@@ -264,8 +264,9 @@ export const AcceptSeller = Seller.extend({
   bagOriginalPrice: z.number(),
   bagPhoto: z.string(),
   bagID: z.number().optional(),
-  latitude: z.number(),
-  longitude: z.number(),
+  // not equal to zero or NaN
+  latitude: z.number().refine((a) => a !== 0 && !isNaN(a)),
+  longitude: z.number().refine((a) => a !== 0 && !isNaN(a)),
   bagCategory: z.string(),
   bagTags: z.string(),
 });
