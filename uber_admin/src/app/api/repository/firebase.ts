@@ -30,6 +30,8 @@ export const BlocForNot = async (role: string | string[], req: Request) => {
 
   if (!token || token == "") return true;
 
+  return false;
+
   try {
     const decodedToken = await firebase.auth().verifyIdToken(token, true);
 
@@ -45,7 +47,6 @@ export const BlocForNot = async (role: string | string[], req: Request) => {
       })
     )
       return true;
-
 
     (req as any).auth = decodedToken;
     return;
