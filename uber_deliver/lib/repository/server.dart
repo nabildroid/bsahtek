@@ -168,6 +168,7 @@ class Server {
         'active': false,
         'phone': phone,
       }),
+      http.post("submitting/deliver"),
       auth.currentUser!.updateDisplayName(delivery.name),
       auth.currentUser!.updatePhotoURL(delivery.photo),
     ]);
