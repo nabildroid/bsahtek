@@ -86,9 +86,9 @@ export default function Page() {
 
             <div className="grid sm:grid-cols-3 gap-8 grid-cols-1 px-2 sm:px-0 mt-2">
 
-                <Card title="Earning" value={today?.selled.toString() ?? "0"} />
-                <Card title="Orders" value={today?.orders.toString() ?? "0"} />
-                <Card title="Delivers Request" value={today?.deliversRequests.toString() ?? "0"} />
+                <Card title="Earning" value={today?.selled?.toString() ?? "0"} />
+                <Card title="Orders" value={today?.orders?.toString() ?? "0"} />
+                <Card title="Delivers Request" value={today?.deliversRequests?.toString() ?? "0"} />
             </div>
 
         </div>
