@@ -1,4 +1,7 @@
 import db from "@/app/api/repository/db";
+
+import * as admin from "firebase-admin";
+
 import { eq } from "drizzle-orm";
 import firebase, {
   BlocForNot,
@@ -8,6 +11,7 @@ import { AcceptSeller, ISeller, Seller } from "@/utils/types";
 import { NextResponse } from "next/server";
 import * as Schema from "@/db/schema";
 import { IBag } from "@/types";
+import { calculateSquareCenter } from "@/utils/coordination";
 
 export const dynamic = "force-dynamic";
 
@@ -105,10 +109,34 @@ export async function POST(request: Request, context: Context) {
       .set(bagData)
       .where(eq(Schema.bagsTable.id, demand.bagID))
       .execute();
+
     // update
   } else {
     // insert
-    await db.insert(Schema.bagsTable).values(bagData).execute();
+    const { insertId } = await db
+      .insert(Schema.bagsTable)
+      .values(bagData)
+      .execute();
+
+    const sellerZone = calculateSquareCenter(
+      demand.longitude,
+      demand.latitude,
+      30
+    );
+
+    // update the quantities
+    await firebase
+      .firestore()
+      .collection("zones")
+      .doc(`${sellerZone.x},${sellerZone.y}`)
+      .set(
+        {
+          quantities: {
+            [insertId]: admin.firestore.FieldValue.increment(0),
+          },
+        },
+        { merge: true }
+      );
   }
 
   try {

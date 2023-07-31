@@ -134,8 +134,13 @@ export default function Page(props: Props) {
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
                     <label className="text-sm font-bold px-2">Seller Location <sub>(use google map)</sub></label>
                     <input
-                        value={sellerInfo.address}
-                        onChange={(e) => setSellerInfo({ ...sellerInfo, address: e.target.value })}
+                        value={`${latlng.lat},${latlng.lng}`}
+                        onChange={(e) => {
+                            setLatlng({
+                                lat: parseFloat(e.target.value.split(",")[0] ?? 0) || 0,
+                                lng: parseFloat(e.target.value.split(",")[1] ?? 0) || 0,
+                            });
+                        }}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
                 </div>
 
