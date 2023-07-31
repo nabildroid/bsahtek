@@ -18,6 +18,7 @@ import {
 } from "@/utils/types";
 import * as admin from "firebase-admin";
 import { cancelOrderExpiration } from "../delivery/finish/route";
+import { updateStats } from "../route";
 
 // i think only the seller is allowed to do this
 export async function POST(request: Request) {
@@ -45,17 +46,9 @@ export async function POST(request: Request) {
     const today = new Date().toLocaleDateString();
     const statsRef = firebase.firestore().collection("uber").doc("stats");
 
-    await statsRef.set(
-      {
-        [`today.${today}.orders`]: admin.firestore.FieldValue.increment(1),
-        [`today.${today}.selled`]: admin.firestore.FieldValue.increment(
-          Number(order.bagPrice)
-        ),
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-
+    await updateStats({
+      selled: { increment: Number(order.bagPrice) },
+    });
     // send notification to the client, so he can
     await notifyClient(order);
   }

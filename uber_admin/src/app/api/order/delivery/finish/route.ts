@@ -11,14 +11,15 @@ import {
   Track,
   Tracking,
 } from "@/utils/types";
+import * as Schema from "@/db/schema";
 
 import * as Tasks from "@/app/api/repository/tasks";
 
 import * as admin from "firebase-admin";
+import { updateStats } from "../../route";
+import db from "@/app/api/repository/db";
 
 export async function POST(request: Request) {
-  if (await BlocForNot("deliver", request)) return VerificationError();
-
   const tracking = Tracking.parse(await request.json());
 
   if (await BlocForNot("deliver#" + tracking.deliveryManID, request))
@@ -55,14 +56,18 @@ export async function POST(request: Request) {
 
   await cancelOrderExpiration(tracking.orderID);
 
-  const today = new Date().toLocaleDateString();
-  const statsRef = firebase.firestore().collection("uber").doc("stats");
 
-  await statsRef.update({
-    [`today.${today}.orders`]: admin.firestore.FieldValue.increment(1),
-    [`today.${today}.delivered`]: admin.firestore.FieldValue.increment(1),
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-    // todo what about updating the price also
+  const query = await firebase
+    .firestore()
+    .collection("orders")
+    .doc(tracking.orderID)
+    .get();
+  const order = query.data() as IOrder;
+
+  await updateStats({
+    orders: "increment",
+    delivered: "increment",
+    selled: { increment: Number(order.bagPrice) },
   });
 
   return new Response(JSON.stringify({}));

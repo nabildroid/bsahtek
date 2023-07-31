@@ -6,6 +6,8 @@ import firebase, {
 } from "../repository/firebase";
 import { TypeOf, z } from "zod";
 import { seller } from "@/local_repository/server";
+import { IStats } from "@/types";
+import { ValueOf } from "next/dist/shared/lib/constants";
 
 /**
  * 
@@ -81,5 +83,45 @@ export async function POST(request: Request) {
     },
   });
 
+  await updateStats({
+    orders: "increment",
+  });
+
   return new Response(JSON.stringify(order));
+}
+
+export async function updateStats(
+  stats: Partial<{
+    [k in keyof ValueOf<IStats["today"]>]:
+      | number
+      | "increment"
+      | { increment: number };
+  }>
+) {
+  const today = new Date().toLocaleDateString();
+  const statsRef = firebase.firestore().collection("uber").doc("stats");
+
+  const realState = Object.entries(stats).reduce((acc, [key, value]) => {
+    if (value === "increment") {
+      acc[key] = admin.firestore.FieldValue.increment(1) as any;
+    } else if (typeof value === "object") {
+      acc[key] = admin.firestore.FieldValue.increment(value.increment) as any;
+    } else {
+      acc[key] = value;
+    }
+
+    return acc;
+  }, {} as any);
+
+  const data = {
+    today: {
+      [today]: {
+        ...realState,
+      },
+    },
+
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  await statsRef.set(data, { merge: true });
 }
