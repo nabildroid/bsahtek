@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uber_deliver/cubits/service_cubit.dart';
+import 'package:uber_deliver/screens/me/privacy.dart';
+import 'package:uber_deliver/screens/me/term.dart';
 
 import '../../cubits/app_cubit.dart';
+import 'fqa.dart';
 
 class MeScreen extends StatelessWidget {
   const MeScreen({super.key});
@@ -177,7 +180,35 @@ class MeScreen extends StatelessWidget {
                 title: Text(" Settings"),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => context.push("/me/settings"),
-              )
+              ),
+              SizedBox(height: 20),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text(" Settings"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => context.push("/me/settings"),
+              ),
+              ListTile(
+                title: Text("Term and Conditions"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => TermsAndConditionsPage()),
+                ),
+              ),
+              ListTile(
+                title: Text("Privacy Policy"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => PrivacyScreen()),
+                ),
+              ),
+              ListTile(
+                title: Text("FQA"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => FQAScreen()),
+                ),
+              ),
             ],
           ),
         ),

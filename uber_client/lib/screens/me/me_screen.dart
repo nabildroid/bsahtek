@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
+import 'package:uber_client/screens/me/privacy.dart';
+import 'package:uber_client/screens/me/term.dart';
 
 import '../../repositories/cache.dart';
+import 'fqa.dart';
 
 class MeScreen extends StatelessWidget {
   const MeScreen({super.key});
@@ -118,7 +121,7 @@ class MeScreen extends StatelessWidget {
                                       ),
                                       children: [
                                         TextSpan(
-                                          text: "\$${order.bagPrice}",
+                                          text: order.bagPrice + "dz",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.green.shade800,
@@ -180,7 +183,28 @@ class MeScreen extends StatelessWidget {
                 title: Text(" Settings"),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => context.push("/me/settings"),
-              )
+              ),
+              ListTile(
+                title: Text("Term and Conditions"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => TermsAndConditionsPage()),
+                ),
+              ),
+              ListTile(
+                title: Text("Privacy Policy"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => PrivacyScreen()),
+                ),
+              ),
+              ListTile(
+                title: Text("FQA"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => FQAScreen()),
+                ),
+              ),
             ],
           ),
         ),

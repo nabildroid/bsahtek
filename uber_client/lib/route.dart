@@ -8,6 +8,7 @@ import 'package:uber_client/screens/loading_to_home.dart';
 import 'package:uber_client/screens/me/account_setting_screen.dart';
 import 'package:uber_client/screens/me/me_screen.dart';
 import 'package:uber_client/screens/me/setting_screen.dart';
+import 'package:uber_client/screens/me/term.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 

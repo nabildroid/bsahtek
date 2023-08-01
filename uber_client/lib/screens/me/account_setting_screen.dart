@@ -35,6 +35,29 @@ class AccountSettingScreen extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => NameSetting())),
             ),
+            Label("App Infromations"),
+            ListTile(
+              title: Text("FQA"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(client.name),
+                  SizedBox(width: 16),
+                  Icon(Icons.arrow_forward_ios),
+                ],
+              ),
+            ),
+            ListTile(
+              title: Text("Terms and Conditions"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(client.name),
+                  SizedBox(width: 16),
+                  Icon(Icons.arrow_forward_ios),
+                ],
+              ),
+            ),
           ],
         ),
       ),
