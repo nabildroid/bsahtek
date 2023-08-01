@@ -96,23 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.delivery_dining),
-              label: "Deliveries",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: "Profile",
-            ),
-          ],
-        ),
         floatingActionButton: BlocBuilder<ServiceCubit, ServiceState>(
           builder: (ctx, state) {
             if (state.runningRequest != null) {

@@ -13,13 +13,10 @@ class RunningOrder extends StatefulWidget {
   final Order order;
   final int index;
 
-  final bool isPickup;
-
   static go(
     BuildContext context, {
     required Order order,
     required int index,
-    bool isPickup = false,
   }) =>
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -28,7 +25,6 @@ class RunningOrder extends StatefulWidget {
             child: RunningOrder(
               order: order,
               index: index,
-              isPickup: isPickup,
             ),
           ),
         ),
@@ -38,7 +34,6 @@ class RunningOrder extends StatefulWidget {
     Key? key,
     required this.order,
     required this.index,
-    this.isPickup = false,
   }) : super(key: key);
 
   @override
@@ -79,10 +74,11 @@ class _RunningOrderState extends State<RunningOrder> {
       widget.order.isDelivered == null && widget.order.acceptedAt != null;
 
   bool get isWaitingAndGoodToHandover =>
-      isWaiting && (widget.isPickup || widget.order.deliveryManID != null);
+      isWaiting &&
+      (widget.order.isPickup || widget.order.deliveryManID != null);
 
   void handleAccept() async {
-    if (widget.isPickup == false && !isWaiting) {
+    if (!isWaiting) {
       context.read<HomeCubit>().acceptOrder(widget.order);
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {

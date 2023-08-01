@@ -9,6 +9,7 @@ import 'package:uber_deliver/repository/gps.dart';
 import 'package:uber_deliver/repository/messages_remote.dart';
 import 'package:uber_deliver/repository/notifications.dart';
 import 'package:uber_deliver/repository/server.dart';
+import 'package:uber_deliver/route.dart';
 import 'package:uber_deliver/screens/loading_to_home.dart';
 import 'package:uber_deliver/screens/login.dart';
 
@@ -36,13 +37,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (ctx) => AppCubit()),
         BlocProvider(create: (ctx) => ServiceCubit()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: goRouter,
         title: 'Uber Deliver',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
-        home: LoadingToHomeScreen(),
       ),
     );
   }

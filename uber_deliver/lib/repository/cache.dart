@@ -13,7 +13,6 @@ abstract class Cache {
   static late SharedPreferences _instance;
   static Future<void> init() async {
     _instance = await SharedPreferences.getInstance();
-    await _instance.clear();
   }
 
   static bool get isFirstRun {
@@ -182,5 +181,10 @@ abstract class Cache {
     }
     await _instance.setStringList(
         'deliveredOrders', olders.map((e) => jsonEncode(e.toJson())).toList());
+  }
+
+  // clear
+  static Future<void> clear() async {
+    await _instance.clear();
   }
 }

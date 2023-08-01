@@ -44,7 +44,6 @@ class GpsRepository {
   }
 
   static Future<LatLng?> getLocation({bool goThrough = false}) async {
-    return LatLng(36.2233081, 4.5161926);
     if (goThrough == false) {
       final refusedToUseLocation = !await GpsRepository.isPermitted() &&
           !await GpsRepository.requestPermission();

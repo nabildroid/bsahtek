@@ -50,4 +50,23 @@ class AppCubit extends Cubit<AppState> {
 
     await Server().assignNotiIDtoSeller(notiID: fcmToken, sellerID: userID);
   }
+
+  Future<void> updateSeller(Seller seller) async {
+    await Future.wait([
+      Server.auth.currentUser!.updateDisplayName(seller.name),
+      Server.auth.currentUser!.updatePhotoURL(seller.photo),
+    ]);
+
+    Server.auth.currentUser!.reload();
+
+    emit(state.copyWith(seller: seller));
+    Cache.seller = seller;
+  }
+
+  Future<void> logOut() async {
+    await Server.auth.signOut();
+
+    Cache.clear(); // this will force the entire app to be clear!
+    emit(state.copyWith(seller: null));
+  }
 }

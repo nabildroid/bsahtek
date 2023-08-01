@@ -59,10 +59,18 @@ class Server {
   VoidCallback onUserChange(Function(Client?) listen,
       {bool forceFirst = false}) {
     bool forced = false;
+
+    // sometime it's called mutliple times (7times!), so we need to force it to be called once
+    bool isGood = false;
+
     final sub = auth.authStateChanges().listen((event) async {
       if (event == null) {
         listen(null);
       } else {
+        print("Auth changed" + Timestamp.now().toDate().toIso8601String());
+        if (isGood) return;
+        isGood = true;
+
         listen(Client(
           id: event.uid,
           name: event.displayName ?? "",

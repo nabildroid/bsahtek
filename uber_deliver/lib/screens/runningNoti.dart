@@ -189,12 +189,13 @@ class _RunningNotiScreenState extends State<RunningNotiScreen> {
                     deliveryToDuration:
                         widget.deliveryRequest.toClient.duration.inMinutes,
                     deliveryPrice: distanceToPrice(
-                      widget.deliveryRequest.toClient.distance / 1000,
-                    ),
+                          widget.deliveryRequest.toClient.distance / 1000,
+                        ) +
+                        0.0,
                     totalPrice: distanceToPrice(
                           widget.deliveryRequest.toClient.distance / 1000,
                         ) +
-                        int.parse(widget.deliveryRequest.order.bagPrice),
+                        double.parse(widget.deliveryRequest.order.bagPrice),
                   )),
             )
           ],
@@ -211,9 +212,9 @@ class DeliveryRequestPanel extends StatelessWidget {
   final int deliveryToDuration;
   final int deliveryToDistance;
 
-  final int deliveryPrice;
+  final double deliveryPrice;
 
-  final int totalPrice;
+  final double totalPrice;
 
   final VoidCallback accept;
 

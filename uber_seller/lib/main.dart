@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:receive_intent/receive_intent.dart';
 import 'package:uber_seller/repository/cache.dart';
 import 'package:uber_seller/repository/server.dart';
+import 'package:uber_seller/router.dart';
 import 'package:uber_seller/screens/Loading_to_home.dart';
 import 'package:uber_seller/screens/running_order.dart';
 
@@ -100,12 +101,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (ctx) => AppCubit()),
         BlocProvider(create: (ctx) => HomeCubit()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: goRouter,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
-        home: LoadingToHomeScreen(),
       ),
     );
   }

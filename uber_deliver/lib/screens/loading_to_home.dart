@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uber_deliver/cubits/app_cubit.dart';
 import 'package:uber_deliver/models/delivery_man.dart';
 import 'package:uber_deliver/repository/cache.dart';
@@ -33,7 +34,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
     if (isAlreadyActivated) {
       await context.read<AppCubit>().setUser(Cache.deliveryMan!);
       await Server().setupTokenization();
-      Navigator.of(context).pushReplacement(HomeScreen.go());
+      context.go("/home");
     } else {
       // either it doesn't exist or it's not activated, both cases we need to login
       // the login need to pop it self after success login, or tokenRefreched is Activated
@@ -45,7 +46,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
 
       await Server().setupTokenization(alreadyInited: true);
       await context.read<AppCubit>().setUser(delivery);
-      Navigator.of(context).pushReplacement(HomeScreen.go());
+      context.go("/home");
     }
   }
 

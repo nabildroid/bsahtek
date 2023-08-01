@@ -234,4 +234,8 @@ class Order {
 
     return false;
   }
+
+  bool get inProgress {
+    return isDelivered != true && expired == false;
+  }
 }

@@ -1,3 +1,5 @@
+import 'order.dart';
+
 class Bag {
   final int id;
   final String name;
@@ -16,6 +18,7 @@ class Bag {
   final bool isPromoted;
   final double originalPrice;
   final double price;
+  final double rating;
 
   Bag({
     required this.id,
@@ -35,6 +38,7 @@ class Bag {
     required this.isPromoted,
     required this.originalPrice,
     required this.price,
+    required this.rating,
   });
 
   String get idd => '$longitude,$latitude';
@@ -58,6 +62,7 @@ class Bag {
       isPromoted: json['isPromoted'],
       originalPrice: double.parse(json['originalPrice'].toString()),
       price: double.parse(json['price'].toString()),
+      rating: double.parse((json['rating'] ?? 4).toString()),
     );
   }
 
@@ -80,6 +85,7 @@ class Bag {
       'isPromoted': isPromoted,
       'originalPrice': originalPrice,
       'price': price,
+      'rating': rating,
     };
   }
 }

@@ -174,18 +174,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             );
           })),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
     ));
   }
 
@@ -296,7 +284,7 @@ class BagPreview extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            bag.description,
+                            bag.sellerAddress,
                             style: TextStyle(
                               fontSize: 16,
                             ),
@@ -304,7 +292,7 @@ class BagPreview extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              "\$${bag.originalPrice}",
+                              "${bag.originalPrice}dz",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,
@@ -319,7 +307,7 @@ class BagPreview extends StatelessWidget {
                                 color: Colors.green.shade800,
                               ),
                               Text(
-                                "4.5",
+                                bag.rating.toString(),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -340,7 +328,7 @@ class BagPreview extends StatelessWidget {
                               ),
                               Spacer(),
                               Text(
-                                "\$${bag.price}",
+                                "${bag.price}dz",
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.green.shade800,
@@ -371,7 +359,7 @@ class OrderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget trailing = Text(
-      "+ ${order.bagPrice}\$",
+      "+ ${order.bagPrice}dz",
       style:
           TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold),
     );

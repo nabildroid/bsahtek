@@ -101,10 +101,16 @@ class Server {
   VoidCallback onUserChange(Function(Seller?) listen,
       {bool forceFirst = false}) {
     bool forced = false;
+    // sometime it's called mutliple times (7times!), so we need to force it to be called once
+    bool isGood = false;
     final sub = auth.authStateChanges().listen((event) async {
       if (event == null) {
         listen(null);
       } else {
+        print("Auth changed" + Timestamp.now().toDate().toIso8601String());
+        if (isGood) return;
+        isGood = true;
+
         // calling getIdTokenResult will force authStateChanges to be called again
         final idToken = await event.getIdTokenResult(
           forced == false && forceFirst,
@@ -137,9 +143,10 @@ class Server {
     required void Function(List<Model.Order>) onChange,
   }) async {
     final sellerID = auth.currentUser!.uid;
-    final query = firestore.collection("orders");
-    // .where("sellerID", isEqualTo: sellerID)
-    // .where("updatedAt", isGreaterThan:  Timestamp.fromDate(lastUpdate));
+    final query = firestore
+        .collection("orders")
+        .where("sellerID", isEqualTo: sellerID)
+        .where("lastUpdate", isGreaterThan: Timestamp.fromDate(lastUpdated));
     // todo add condition to prevent push Noti to interfer with this!
 
     final stream = query.snapshots().listen((event) {
@@ -184,12 +191,15 @@ class Server {
     for (var zone in zones) {
       if (zone.quantities.containsKey(bagID)) {
         final ref = firestore.collection("zones").doc(zone.id);
-        await ref.update({
+        await ref.set({
           "quantities": {
-            bagID:
-                quantity.abs() == 1 ? FieldValue.increment(quantity) : quantity,
+            bagID: quantity == 0
+                ? 0
+                : quantity.abs() == 1
+                    ? FieldValue.increment(quantity)
+                    : quantity,
           }
-        });
+        }, SetOptions(merge: true));
       }
     }
   }

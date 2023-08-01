@@ -191,7 +191,6 @@ class HomeCubit extends Cubit<HomeState> {
               ctx,
               order: order,
               index: 1,
-              isPickup: true,
             ));
         timer.cancel();
       } catch (e) {
@@ -257,7 +256,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     final quantity = state.quantity;
 
-    await Server().addQuantity(zones, id, all ? -quantity : -1);
+    await Server().addQuantity(zones, id, all ? 0 : -1);
     emit(state.copyWith(quantity: state.quantity + (all ? -quantity : -1)));
   }
 }

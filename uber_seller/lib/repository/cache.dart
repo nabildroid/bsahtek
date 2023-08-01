@@ -64,7 +64,7 @@ class Cache {
   static DateTime get lastUpdatedPrevOrders {
     final olders = prevOrders;
     if (olders.isEmpty) {
-      return DateTime.now();
+      return DateTime(2001);
     }
     final t = olders
         .map((e) => e.lastUpdate)

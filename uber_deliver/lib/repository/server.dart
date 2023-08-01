@@ -31,8 +31,6 @@ class Server {
 
     auth = FirebaseAuth.instance;
     storage = FirebaseStorage.instance;
-
-    await auth.signOut();
   }
 
   Server();

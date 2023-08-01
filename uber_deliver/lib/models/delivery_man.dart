@@ -33,4 +33,18 @@ class DeliveryMan {
       'photo': photo,
     };
   }
+
+  // copy
+  DeliveryMan copyWith({
+    String? name,
+    String? photo,
+  }) {
+    return DeliveryMan(
+      name: name ?? this.name,
+      photo: photo ?? this.photo,
+      id: id,
+      phone: phone,
+      isActive: isActive,
+    );
+  }
 }

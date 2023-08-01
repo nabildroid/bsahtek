@@ -55,4 +55,17 @@ class Seller {
       isActive: isActive,
     );
   }
+
+  Seller copyWith({
+    String? name,
+    String? photo,
+  }) {
+    return Seller(
+      name: name ?? this.name,
+      photo: photo ?? this.photo,
+      id: id,
+      phone: phone,
+      isActive: isActive,
+    );
+  }
 }

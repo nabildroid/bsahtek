@@ -254,7 +254,7 @@ class _BagScreenState extends State<BagScreen> {
                           ),
                           ListTile(
                             leading: Icon(Icons.star),
-                            title: Text("4.6"),
+                            title: Text(widget.bag.rating.toStringAsFixed(1)),
                             horizontalTitleGap: 0,
                             visualDensity: VisualDensity.compact,
                           ),

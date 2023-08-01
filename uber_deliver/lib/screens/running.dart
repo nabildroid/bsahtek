@@ -140,7 +140,7 @@ class _RunningScreenState extends State<RunningScreen> {
     final totalPrice = distanceToPrice(
           widget.deliveryRequest.toSeller.distance / 1000,
         ) +
-        int.parse(widget.deliveryRequest.order.bagPrice);
+        double.parse(widget.deliveryRequest.order.bagPrice);
 
     return WillPopScope(
       onWillPop: () {
