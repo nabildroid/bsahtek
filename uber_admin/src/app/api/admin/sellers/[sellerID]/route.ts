@@ -92,7 +92,6 @@ export async function POST(request: Request, context: Context) {
     wilaya: demand.wilaya,
     isPromoted: false,
     originalPrice: demand.bagOriginalPrice,
-    rating: 0,
     sellerAddress: demand.address,
     sellerName: demand.name,
     sellerPhone: demand.phone,
