@@ -38,7 +38,10 @@ export const Order = z.object({
   id: z.string(),
   quantity: z.number().min(1).max(10),
   lastUpdate: z.string().transform((a) => new Date(a)),
-  createdAt: z.string().transform((a) => new Date(a)),
+  createdAt: z.string().transform((a) => {
+    console.log(a, new Date(a));
+    return new Date(a);
+  }),
 
   clientID: z.string(),
   clientName: z.string(),
