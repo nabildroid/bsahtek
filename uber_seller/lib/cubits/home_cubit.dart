@@ -14,6 +14,7 @@ import '../model/order.dart';
 import '../repository/cache.dart';
 import '../repository/messages_remote.dart';
 import '../screens/running_order.dart';
+import '../utils/utils.dart';
 
 class HomeState extends Equatable {
   final List<Bag> bags;
@@ -40,7 +41,8 @@ class HomeState extends Equatable {
     List<Bag>? bags,
   }) {
     return HomeState(
-      runningOrders: runningOrders ?? this.runningOrders,
+      runningOrders: Utils.removeDeplication(
+          runningOrders ?? this.runningOrders, (element) => element.id),
       prevOrders: prevOrders ?? this.prevOrders,
       quantity: quantity ?? this.quantity,
       bags: bags ?? this.bags,
@@ -49,9 +51,11 @@ class HomeState extends Equatable {
 
   HomeState pushRunningOrder(Order order) {
     final list = [...runningOrders, order];
+
     list.sort((a, b) => a.lastUpdate.compareTo(b.lastUpdate));
 
-    return copyWith(runningOrders: list);
+    return copyWith(
+        runningOrders: Utils.removeDeplication(list, (element) => element.id));
   }
 
   @override

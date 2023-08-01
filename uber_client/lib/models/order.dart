@@ -82,9 +82,9 @@ class Order {
       'bagImage': bagImage,
       'bagPrice': bagPrice,
       'bagDescription': bagDescription,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
       'quantity': quantity,
-      'lastUpdate': lastUpdate.toIso8601String(),
+      'lastUpdate': lastUpdate.toUtc().toIso8601String(),
       'reportId': reportId,
       'clientTown': clientTown,
       'isDelivered': isDelivered,
@@ -103,7 +103,7 @@ class Order {
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
-      'acceptedAt': acceptedAt?.toIso8601String(),
+      'acceptedAt': acceptedAt?.toUtc().toIso8601String(),
       'isPickup': isPickup,
     };
   }
@@ -198,5 +198,9 @@ class Order {
 
   bool get inProgress {
     return isDelivered != true && expired == false;
+  }
+
+  bool get isItRunning {
+    return isDelivered != true && expired == false && deliveryManID != null;
   }
 }

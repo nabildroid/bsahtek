@@ -123,6 +123,14 @@ class _RunningScreenState extends State<RunningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.order.expired) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        exit();
+      });
+
+      return Container();
+    }
+
     return WillPopScope(
       onWillPop: () async {
         context.read<HomeCubit>().unFocusOnRunning();

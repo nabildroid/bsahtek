@@ -106,19 +106,13 @@ class HomeCubit extends Cubit<HomeState> {
     if (inited) return;
     inited = true;
 
-    if (Cache.runningOrder != null && Cache.runningOrder!.expired == false) {
-      emit(state.copyWith()..runningOrder = Cache.runningOrder);
-
-      if (Cache.runningOrder != null) {
-        subscribeToRunningOrder();
-      }
-    }
-
     RemoteMessages().setUpBackgroundMessageHandler();
     _subscribeToOnAppNotification();
-    syncPrevOrders();
 
-    if (Cache.runningOrder != null && Cache.runningOrder!.expired == false) {
+    if (Cache.runningOrder?.isItRunning == true) {
+      emit(state.copyWith()..runningOrder = Cache.runningOrder);
+
+      subscribeToRunningOrder();
       final running = Cache.runningOrder!;
       if (running.isPickup) {
         await Notifications.orderAccepted(true);
@@ -130,6 +124,8 @@ class HomeCubit extends Cubit<HomeState> {
       Cache.runningOrder = null;
       await Notifications.clear();
     }
+
+    syncPrevOrders();
   }
 
   void _subscribeToOnAppNotification() {
