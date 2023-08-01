@@ -1,3 +1,4 @@
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -39,10 +40,10 @@ class OrderConfirmedZone extends StatelessWidget {
               children: [
                 IconButton(
                     onPressed: () {
-                      // AndroidIntent(
-                      //   action: 'action_view',
-                      //   data: 'tel:$phone',
-                      // ).launch();
+                      AndroidIntent(
+                        action: 'action_view',
+                        data: 'tel:$phone',
+                      ).launch();
                     },
                     icon: Icon(
                       Icons.phone,
@@ -50,10 +51,10 @@ class OrderConfirmedZone extends StatelessWidget {
                     )),
                 IconButton(
                     onPressed: () {
-                      // AndroidIntent(
-                      //   action: 'action_view',
-                      //   data: 'geo:${address.latitude},${address.longitude}',
-                      // ).launch();
+                      AndroidIntent(
+                        action: 'action_view',
+                        data: 'geo:${address.latitude},${address.longitude}',
+                      ).launch();
                     },
                     icon: Icon(
                       Icons.location_searching_outlined,

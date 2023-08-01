@@ -200,20 +200,6 @@ class _RunningScreenState extends State<RunningScreen> {
               ),
             ),
             Align(
-              alignment: Alignment(.9, -.9),
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.blueGrey.shade900,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  exit();
-                },
-                icon: Icon(Icons.stop),
-                label: Text("Stop (test)"),
-              ),
-            ),
-            Align(
               alignment: Alignment.bottomCenter,
               child: Hero(
                 tag: "running",

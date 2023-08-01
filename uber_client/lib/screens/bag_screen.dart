@@ -332,12 +332,18 @@ class _BagScreenState extends State<BagScreen> {
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            widget.bag.sellerName + "\n" + widget.bag.name,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                          FittedBox(
+                            child: Text(
+                              widget.bag.sellerName +
+                                  "\n" +
+                                  (widget.bag.name == widget.bag.sellerName
+                                      ? ""
+                                      : widget.bag.name),
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
                             ),
                           ),
                           Divider(height: 32),

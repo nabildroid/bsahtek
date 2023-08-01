@@ -107,6 +107,7 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                   ),
                   title: Text(
                     suggestion.title,
+                    maxLines: 1,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -114,6 +115,7 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                   ),
                   subtitle: Text(
                     suggestion.subtitle,
+                    maxLines: 1,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 14,

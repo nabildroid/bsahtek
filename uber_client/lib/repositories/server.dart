@@ -129,10 +129,14 @@ class Server {
   }
 
   Future<List<Bag>> getBagsInCell(int x, int y) async {
-    final response = await http.get("map/$x,$y,30");
-    final data = response.data["foods"] as List<dynamic>;
+    try {
+      final response = await http.get("map/$x,$y,30");
+      final data = response.data["foods"] as List<dynamic>;
 
-    return data.map((e) => Bag.fromJson(e)).toList();
+      return data.map((e) => Bag.fromJson(e)).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   VoidCallback listenToZone(

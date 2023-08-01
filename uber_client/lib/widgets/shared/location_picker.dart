@@ -52,12 +52,16 @@ class LocationPicker extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        currentArea!.name,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.green.shade800),
+                      FittedBox(
+                        child: Text(
+                          currentArea.name.length > 20
+                              ? currentArea.name.substring(20)
+                              : currentArea.name,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.green.shade800),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
