@@ -267,9 +267,17 @@ export default function Page(props: Props) {
                         value={bagInfo.tags}
                         onChange={(e) => setBagInfo({ ...bagInfo, tags: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name">
-                        <option value="valA">valA</option>
-                        <option value="valB">valB</option>
-                        <option value="valC">valC</option>
+                        <option value="Bakerires">Bakerires</option>
+                        <option value="Pastires">Pastires</option>
+                        <option value="Patisserie">Patisserie</option>
+                        <option value="Patries">Patries</option>
+                        <option value="Fast Food">Fast Food</option>
+                        <option value="Market">Market</option>
+                        <option value="Flowers">Flowers</option>
+                        <option value="Donuts">Donuts</option>
+                        <option value="Indian Food">Indian Food</option>
+                        <option value="Japanese Food">Japanese Food</option>
+
 
                     </select>
 
