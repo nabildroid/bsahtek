@@ -29,7 +29,7 @@ export const bagsTable = mysqlTable("bags", {
   county: varchar("county", { length: 50 }).notNull(),
   latitude: double("latitude").notNull(),
   longitude: double("longitude").notNull(),
-  rating: double("rating").notNull().default(4),
+  rating: double("rating").default(4.0).notNull(),
   isPromoted: boolean("is_promoted").default(false),
   originalPrice: double("original_price").notNull(),
   price: double("price").notNull(),
