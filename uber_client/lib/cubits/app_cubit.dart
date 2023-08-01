@@ -67,9 +67,9 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> logOut() async {
+    await Cache.clear(); // this will force the entire app to be clear!
     await Server.auth.signOut();
 
-    Cache.clear(); // this will force the entire app to be clear!
     emit(state.copyWith(client: null));
   }
 }

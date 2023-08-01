@@ -4,11 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'package:uber_client/cubits/app_cubit.dart';
 import 'package:uber_client/cubits/home_cubit.dart';
 
+import '../../repositories/cache.dart';
+
 class MeScreen extends StatelessWidget {
   const MeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final a = Cache.lastUpdatePrevOrders;
+
     final prevOrders = context.watch<HomeCubit>().state.prevOrders;
     prevOrders.sort((a, b) => b.lastUpdate.compareTo(a.lastUpdate));
 

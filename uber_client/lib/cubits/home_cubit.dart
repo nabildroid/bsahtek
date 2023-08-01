@@ -62,7 +62,7 @@ class HomeState extends Equatable {
         runningOrder?.id ?? "runningOrders",
         focusOnRunningOrder,
         liked.map((e) => e.id).toList(),
-        prevOrders.map((e) => e.id).toList(),
+        prevOrders.map((e) => e.id + e.lastUpdate.toIso8601String()).toList(),
         throttlingReservation,
       ];
 }
@@ -227,9 +227,9 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> orderBag(Order order) async {
-    if (state.throttlingReservation?.isAfter(DateTime.now()) ?? false) {
-      return;
-    }
+    // if (state.throttlingReservation?.isAfter(DateTime.now()) ?? false) {
+    //   return;
+    // }
 
     final throttling =
         DateTime.now().add(Constants.pauseReservingAfterReservation);
@@ -296,12 +296,12 @@ class HomeCubit extends Cubit<HomeState> {
     }
 
     tobeDisposed["prevOrders"]?.call();
-    tobeDisposed["prevOrders"] =
-        Server().listenToPrevOrders(Cache.lastUpdatePrevOrders, (changes) {
+    tobeDisposed["prevOrders"] = Server()
+        .listenToPrevOrders(Cache.lastUpdatePrevOrders, (changes) async {
       // if non of the orders has an active order then sync and dispose, otherwise keep listening
       // but what about pusing an order
 
-      final allPrevOrders = [...state.prevOrders];
+      final allPrevOrders = List<Order>.from(state.prevOrders);
 
       // check by id, if the changes contains an order that is already in the list then replace it
       for (var change in changes) {
@@ -315,7 +315,7 @@ class HomeCubit extends Cubit<HomeState> {
       }
 
       emit(state.copyWith(prevOrders: allPrevOrders));
-      Cache.prevOrders = allPrevOrders;
+      await Cache.setPrevOrders(allPrevOrders);
 
       if (allPrevOrders.any((element) => element.inProgress)) return;
 

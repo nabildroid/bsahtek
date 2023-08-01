@@ -40,7 +40,7 @@ class Cache {
     }
   }
 
-  static void clear() async {
+  static Future<void> clear() async {
     await _instance.clear();
   }
 
@@ -105,7 +105,7 @@ class Cache {
     return data.map((e) => Order.fromJson(jsonDecode(e))).toList();
   }
 
-  static set prevOrders(List<Order> bags) {
+  static Future<void> setPrevOrders(List<Order> bags) async {
     if (bags.isEmpty) {
       _instance.remove("prevOrders");
     } else {
