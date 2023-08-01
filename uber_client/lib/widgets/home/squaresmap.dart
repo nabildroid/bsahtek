@@ -68,6 +68,8 @@ class _SquaresMapState extends State<SquaresMap> {
 
   // need to be here
   onCameraStopMoving(CameraPosition position, BagsQubit bagsQubit) async {
+    if (position.zoom < 9 || position.zoom > 18) return;
+
     final bounds = await mapController.getVisibleRegion();
     await bagsQubit.updateMapVisibilty(position.target, bounds);
 
@@ -103,7 +105,7 @@ class _SquaresMapState extends State<SquaresMap> {
 
   // convert spots to marks and group Marks if needed
   convertSpotsToMarks(BuildContext context) async {
-    final visibleSpots = context.read<BagsQubit>().state.visibleBags;
+    final visibleSpots = context.read<BagsQubit>().state.filtredBags;
     final quantities = context.read<BagsQubit>().state.quantities;
 
     final citizens = Utils.groupSpots(visibleSpots, (a, b) {
@@ -113,7 +115,7 @@ class _SquaresMapState extends State<SquaresMap> {
       final latRatio = latDiff / scaleRatio.latitude;
       final lonRatio = lonDiff / scaleRatio.longitude;
 
-      if (latRatio < 0.04 && lonRatio < 0.05) return true;
+      if (latRatio < 0.07 && lonRatio < 0.07) return true;
       return false;
     });
 
@@ -147,16 +149,16 @@ class _SquaresMapState extends State<SquaresMap> {
     }
 
     // check if the markers changed or not
-    final pureRendersMarkers =
-        markers.where((element) => !element.hidden).toList();
+    // final pureRendersMarkers =
+    //     markers.where((element) => !element.hidden).toList();
 
-    final noChange = pureRendersMarkers.length == tempMarkers.length &&
-        pureRendersMarkers
-            .every((element) => tempMarkers.any((n) => n.id == element.id));
+    // // final noChange = pureRendersMarkers.length == tempMarkers.length &&
+    // //     pureRendersMarkers
+    // //         .every((element) => tempMarkers.any((n) => n.id == element.id));
 
-    final toBeRemoved = pureRendersMarkers
-        .where((element) => tempMarkers.every((n) => n.id != element.id))
-        .toList();
+    // // final toBeRemoved = pureRendersMarkers
+    // //     .where((element) => tempMarkers.every((n) => n.id != element.id))
+    // //     .toList();
 
     setMarkers(tempMarkers);
   }
@@ -170,7 +172,9 @@ class _SquaresMapState extends State<SquaresMap> {
 
     return BlocListener<BagsQubit, BagsState>(
       listenWhen: (old, n) =>
-          old.visibleBags != n.visibleBags || old.quantities != n.quantities,
+          old.visibleBags != n.visibleBags ||
+          old.quantities != n.quantities ||
+          old.filtredBags.length != n.filtredBags.length,
       listener: (context, state) async {
         convertSpotsToMarks(context);
       },

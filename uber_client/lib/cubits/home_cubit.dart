@@ -106,10 +106,12 @@ class HomeCubit extends Cubit<HomeState> {
     if (inited) return;
     inited = true;
 
-    emit(state.copyWith()..runningOrder = Cache.runningOrder);
+    if (Cache.runningOrder != null && Cache.runningOrder!.expired == false) {
+      emit(state.copyWith()..runningOrder = Cache.runningOrder);
 
-    if (Cache.runningOrder != null) {
-      subscribeToRunningOrder();
+      if (Cache.runningOrder != null) {
+        subscribeToRunningOrder();
+      }
     }
 
     RemoteMessages().setUpBackgroundMessageHandler();
@@ -319,7 +321,7 @@ class HomeCubit extends Cubit<HomeState> {
 
       if (allPrevOrders.any((element) => element.inProgress)) return;
 
-      tobeDisposed["prevOrders"]?.call();
+      // tobeDisposed["prevOrders"]?.call(); // todo, this is dirty fix, we need this line
     });
   }
 

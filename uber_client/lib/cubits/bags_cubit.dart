@@ -11,6 +11,7 @@ import 'package:uber_client/models/autosuggestion.dart';
 import 'package:uber_client/models/mapSquare.dart';
 import 'package:uber_client/repositories/geocoding.dart';
 import 'package:uber_client/repositories/gps.dart';
+import 'package:uber_client/utils/utils.dart';
 
 import '../models/bag.dart';
 import '../repositories/cache.dart';
@@ -71,7 +72,7 @@ class BagsState extends Equatable {
     final tags = <String>[];
 
     for (var bag in bags) {
-      if (!tags.contains(bag.tags)) {
+      if (!tags.contains(bag.tags) && bag.tags.trim() != "") {
         tags.add(bag.tags);
       }
     }
@@ -287,8 +288,12 @@ class BagsQubit extends Cubit<BagsState> {
         squares.where((a) => state.squares.every((b) => b.id != a.id)).toList();
 
     final bags = <Bag>[];
-    for (final square in freshSquares) {
-      bags.addAll(await _fetchSquare(square));
+
+    final fetchedSquares =
+        await Future.wait(freshSquares.map((e) => _fetchSquare(e)).toList());
+
+    for (final items in fetchedSquares) {
+      bags.addAll(items);
     }
 
     return bags;
@@ -356,7 +361,11 @@ class BagsQubit extends Cubit<BagsState> {
     int maxDistance = 20,
   }) {
     print("checking visible spots");
-    final visibleSpots = spots.where((spot) {
+
+    final uniqueSpots =
+        List<Bag>.from(Utils.removeDeplication(spots, (item) => item.id));
+
+    final visibleSpots = uniqueSpots.where((spot) {
       print("checking visible spots");
 
       final spotPosition = LatLng(spot.latitude, spot.longitude);

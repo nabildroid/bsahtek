@@ -73,9 +73,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
             if (state.runningOrder?.isPickup == true) {
-              return const OrderConfirmedZone(
-                address: "address",
-                phone: "phone",
+              return OrderConfirmedZone(
+                address: state.runningOrder!.sellerAddress!,
+                phone: state.runningOrder!.sellerPhone!,
               );
             } else if (state.runningOrder?.deliveryManID != null) {
               return OrderTrackZone(

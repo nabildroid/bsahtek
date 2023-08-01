@@ -234,7 +234,7 @@ class _BagScreenState extends State<BagScreen> {
                             trailing: Column(
                               children: [
                                 Text(
-                                  "\$" + widget.bag.originalPrice.toString(),
+                                  widget.bag.originalPrice.toString() + "dz",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
@@ -242,7 +242,7 @@ class _BagScreenState extends State<BagScreen> {
                                   ),
                                 ),
                                 Text(
-                                  "\$" + widget.bag.price.toString(),
+                                  widget.bag.price.toString() + "dz",
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.green.shade800,
@@ -424,9 +424,8 @@ class _BagScreenState extends State<BagScreen> {
                           ListTile(
                             title: Text("Total"),
                             trailing: Text(
-                              "\$" +
-                                  (widget.bag.price * quantity)
-                                      .toStringAsFixed(2),
+                              (widget.bag.price * quantity).toStringAsFixed(2) +
+                                  "dz",
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.green.shade800,

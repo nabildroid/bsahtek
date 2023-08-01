@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +55,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   label: "Recommended for you",
                   filter: (bag, distance, quantity) =>
                       quantity > 3 || distance < 2,
+                  random: true,
+                  max: 5,
                 ),
                 AutoSuggestionView(
                   label: "Save before end",
@@ -75,12 +79,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
 class AutoSuggestionView extends StatelessWidget {
   final String label;
+  final bool random;
+  final int max;
   final bool Function(Bag bag, double distance, int quantity) filter;
 
   const AutoSuggestionView({
     super.key,
     required this.label,
     required this.filter,
+    this.random = false,
+    this.max = 10000,
   });
 
   @override
@@ -89,7 +97,7 @@ class AutoSuggestionView extends StatelessWidget {
 
     final bags = cubit.visibleBags;
 
-    final filtredBags = bags.where((bag) {
+    var filtredBags = bags.where((bag) {
       final distance = Geolocator.distanceBetween(
             bag.latitude,
             bag.longitude,
@@ -103,7 +111,10 @@ class AutoSuggestionView extends StatelessWidget {
       return filter(bag, distance, quantity);
     }).toList();
 
-    if (filtredBags.isEmpty) return const SizedBox.shrink();
+    if (filtredBags.length < 2) return const SizedBox.shrink();
+
+    if (random) filtredBags.shuffle();
+    filtredBags = filtredBags.sublist(0, min(max, filtredBags.length));
 
     return Column(
       mainAxisSize: MainAxisSize.min,

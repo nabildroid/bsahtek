@@ -150,16 +150,17 @@ class SuggestionCard extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            Text(
-                              subtitle,
-                              style: TextStyle(
-                                fontSize: 16,
+                            if (title.length < 25)
+                              Text(
+                                subtitle,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                "\$$price",
+                                price + "dz",
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey,
@@ -195,7 +196,7 @@ class SuggestionCard extends StatelessWidget {
                                 ),
                                 Spacer(),
                                 Text(
-                                  "\$$discountPrice",
+                                  discountPrice + "dz",
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.green.shade800,

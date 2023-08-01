@@ -32,6 +32,12 @@ class MapMark {
         roof = 10;
       } else if (n < 100) {
         roof = 50;
+      } else if (n < 200) {
+        roof = 100;
+      } else if (n < 500) {
+        roof = 400;
+      } else if (n < 100) {
+        roof = 500;
       }
     }
 

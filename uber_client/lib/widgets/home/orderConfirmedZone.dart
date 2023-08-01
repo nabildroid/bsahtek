@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class OrderConfirmedZone extends StatelessWidget {
   final String phone;
-  final String address;
+  final LatLng address;
 
   const OrderConfirmedZone({
     Key? key,
@@ -37,13 +38,23 @@ class OrderConfirmedZone extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // AndroidIntent(
+                      //   action: 'action_view',
+                      //   data: 'tel:$phone',
+                      // ).launch();
+                    },
                     icon: Icon(
                       Icons.phone,
                       color: Colors.white,
                     )),
                 IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // AndroidIntent(
+                      //   action: 'action_view',
+                      //   data: 'geo:${address.latitude},${address.longitude}',
+                      // ).launch();
+                    },
                     icon: Icon(
                       Icons.location_searching_outlined,
                       color: Colors.white,
