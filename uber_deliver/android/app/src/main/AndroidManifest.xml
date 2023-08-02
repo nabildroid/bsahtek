@@ -15,7 +15,7 @@
 
 
    <application
-        android:label="uber_deliver"
+        android:label="Bsahtak Deliver"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

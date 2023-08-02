@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     
    <application
-        android:label="uber_client"
+        android:label="Bsahtak"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
 

@@ -19,11 +19,10 @@
 
 
    <application
-        android:label="uber_seller"
+        android:label="Bsahtak Seller"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         
-
 
         <activity
             android:name=".MainActivity"
