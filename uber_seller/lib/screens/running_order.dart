@@ -66,9 +66,7 @@ class _RunningOrderState extends State<RunningOrder> {
     super.initState();
   }
 
-  bool get isOld =>
-      widget.order.isDelivered == true ||
-      DateTime.now().difference(widget.order.createdAt).inMinutes > 10;
+  bool get isOld => widget.order.isDelivered == true || widget.order.expired;
 
   bool get isWaiting =>
       widget.order.isDelivered == null && widget.order.acceptedAt != null;
@@ -100,7 +98,8 @@ class _RunningOrderState extends State<RunningOrder> {
   Widget build(BuildContext context) {
     final quantityLeft = context.watch<HomeCubit>().state.quantity;
 
-    final stillQuantityLeft = quantityLeft >= widget.order.quantity;
+    final stillQuantityLeft = quantityLeft >= widget.order.quantity ||
+        widget.order.acceptedAt != null;
 
     final height = MediaQuery.of(context).size.height - 1 * 60;
     return SafeArea(

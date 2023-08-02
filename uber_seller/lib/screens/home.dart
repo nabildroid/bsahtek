@@ -38,9 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
-    if (appLifecycleState == AppLifecycleState.resumed) {
-      context.read<HomeCubit>().handlePendingRunningOrders();
-    }
+    if (appLifecycleState == AppLifecycleState.resumed) {}
     super.didChangeAppLifecycleState(appLifecycleState);
   }
 
@@ -367,11 +365,9 @@ class OrderTile extends StatelessWidget {
     IconData icon = Icons.playlist_add_check_circle_outlined;
 
     if (order.isDelivered != true) {
-      final isRunning = order.acceptedAt == null &&
-          DateTime.now().difference(order.createdAt).inMinutes < 10;
+      final isRunning = order.acceptedAt == null && order.inProgress;
 
-      final isWaiting = order.acceptedAt != null &&
-          DateTime.now().difference(order.acceptedAt!).inHours < 5;
+      final isWaiting = order.acceptedAt != null && order.inProgress;
 
       if (isWaiting) {
         trailing = Icon(

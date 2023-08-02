@@ -162,7 +162,8 @@ class HomeCubit extends Cubit<HomeState> {
     RemoteMessages().listenToMessages((event) async {
       if (!event.data.containsKey("type")) return;
 
-      if (event.data["type"] == "delivery_end") {
+      if (event.data["type"] == "delivery_end" ||
+          event.data["type"] == "self_pickup") {
         await Backgrounds.firebaseMessagingBackgroundHandler(event);
         emit(state.killRunningOrder());
         return;
@@ -314,6 +315,19 @@ class HomeCubit extends Cubit<HomeState> {
 
       emit(state.copyWith(prevOrders: allPrevOrders));
       await Cache.setPrevOrders(allPrevOrders);
+
+      final needToRunAgain = allPrevOrders.indexWhere((element) =>
+          element.inProgress && (element.isPickup || element.isItRunning));
+      if (needToRunAgain != -1 && state.runningOrder == null) {
+        final order = allPrevOrders[needToRunAgain];
+
+        emit(state.copyWith()..runningOrder = order);
+        Cache.runningOrder = order;
+        // for selfpickup we don't need to go to running screen
+        if (order.isItRunning) {
+          useContext((ctx) => RunningScreen.go(order));
+        }
+      }
 
       if (allPrevOrders.any((element) => element.inProgress)) return;
 

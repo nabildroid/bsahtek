@@ -37,9 +37,21 @@ class Cache {
   }
 
   static Future<void> pushRunningOrder(Order order) async {
+    // get running orders then add the new one and save it and remove duplicates
+    final runningOrdersJson = _instance.getStringList('runningOrders') ?? [];
+    // remove duplicates
+    runningOrdersJson.removeWhere(
+        (element) => Order.fromJson(jsonDecode(element)).id == order.id);
+    runningOrdersJson.add(jsonEncode(order.toJson()));
+
+    await _instance.setStringList('runningOrders', runningOrdersJson);
+  }
+
+  static Future<void> popRunningOrder(String id) async {
     // get running orders then add the new one and save it
     final runningOrdersJson = _instance.getStringList('runningOrders') ?? [];
-    runningOrdersJson.add(jsonEncode(order.toJson()));
+    runningOrdersJson
+        .removeWhere((element) => Order.fromJson(jsonDecode(element)).id == id);
     await _instance.setStringList('runningOrders', runningOrdersJson);
   }
 

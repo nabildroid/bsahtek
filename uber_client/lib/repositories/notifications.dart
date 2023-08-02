@@ -109,6 +109,9 @@ abstract class Notifications {
         hour: 20,
         minute: 0,
         second: 0,
+        weekday: DateTime.now().hour > 20
+            ? DateTime.now().weekday + 1
+            : DateTime.now().weekday,
         millisecond: 0,
         repeats: false,
       ),

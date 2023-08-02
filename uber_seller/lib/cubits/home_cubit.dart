@@ -169,7 +169,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void _subscribeToOnAppNotification() {
-    RemoteMessages().listenToMessages((event) {
+    RemoteMessages().listenToMessages((event) async {
       if (!event.data.containsKey("type")) return;
 
       if (event.data["type"] == "delivery_need_to_pickup") {
@@ -178,7 +178,9 @@ class HomeCubit extends Cubit<HomeState> {
         final order = Order.fromJson(jsonDecode(event.data["order"]));
         if (order.expired) return;
         emit(state.pushRunningOrder(order));
-        useContext((ctx) => RunningOrder.go(ctx, order: order, index: 1));
+        await Cache.pushRunningOrder(order);
+
+        handlePendingRunningOrders();
       }
     });
   }
@@ -210,9 +212,15 @@ class HomeCubit extends Cubit<HomeState> {
 
     // filter older than 1 min
     final now = DateTime.now();
-    final filteredOrders = orders.where((element) => !element.expired).toList();
+    final filteredOrders = orders
+        .where(
+          (element) => element.createdAt
+              .isAfter(now.subtract(const Duration(minutes: 1))),
+        )
+        .toList();
 
     emit(state.copyWith(runningOrders: filteredOrders));
+
     for (var i = 0; i < filteredOrders.length; i++) {
       final order = filteredOrders[i];
 
@@ -239,13 +247,16 @@ class HomeCubit extends Cubit<HomeState> {
       final acceptedOrder = order.accept(seller, bag);
       await Server().acceptOrder(acceptedOrder);
 
+      final newRunningOrders = state.runningOrders
+          .where((element) => element.id != order.id)
+          .toList();
       emit(
         state.copyWith(
-          quantity: state.quantity - order.quantity,
-          runningOrders:
-              state.runningOrders.where((element) => element != order).toList(),
-        ),
+            quantity: state.quantity - order.quantity,
+            runningOrders: newRunningOrders),
       );
+
+      await Cache.popRunningOrder(order.id);
     });
   }
 
