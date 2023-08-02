@@ -253,18 +253,19 @@ class HomeCubit extends Cubit<HomeState> {
     if (state.bags.isEmpty) return;
     final id = state.bags.first.id.toString();
     final zones = Cache.zones;
-    await Server().addQuantity(zones, id, 1);
+    await Server().addQuantity(zones, id, state.quantity + 1);
     emit(state.copyWith(quantity: state.quantity + 1));
   }
 
   void removeQuantity(bool all) async {
+    if (state.quantity == 0) return;
     if (state.bags.isEmpty) return;
     final id = state.bags.first.id.toString();
     final zones = Cache.zones;
 
     final quantity = state.quantity;
 
-    await Server().addQuantity(zones, id, all ? 0 : -1);
+    await Server().addQuantity(zones, id, all ? 0 : state.quantity - 1);
     emit(state.copyWith(quantity: state.quantity + (all ? -quantity : -1)));
   }
 }

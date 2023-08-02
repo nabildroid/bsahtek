@@ -38,13 +38,14 @@ void main() async {
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  Cache.init();
+  await Cache.init();
 
   final order = Order.fromJson(jsonDecode(message.data["order"]));
 
   if (order.expired) {
     return;
   }
+
   await Cache.pushRunningOrder(order);
 
   if (false) {

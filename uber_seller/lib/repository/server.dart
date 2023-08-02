@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -187,21 +188,26 @@ class Server {
     // update the user account!
   }
 
+  Timer? debounce1;
+
   Future<void> addQuantity(List<Zone> zones, String bagID, int quantity) async {
-    for (var zone in zones) {
-      if (zone.quantities.containsKey(bagID)) {
-        final ref = firestore.collection("zones").doc(zone.id);
-        await ref.set({
-          "quantities": {
-            bagID: quantity == 0
-                ? 0
-                : quantity.abs() == 1
-                    ? FieldValue.increment(quantity)
-                    : quantity,
-          }
-        }, SetOptions(merge: true));
+    if (debounce1 != null && debounce1!.isActive) debounce1!.cancel();
+    debounce1 = Timer(const Duration(seconds: 1), () async {
+      for (var zone in zones) {
+        if (zone.quantities.containsKey(bagID)) {
+          final ref = firestore.collection("zones").doc(zone.id);
+          await ref.set({
+            "quantities": {
+              bagID: quantity == 0
+                  ? 0
+                  : quantity.abs() == 1
+                      ? FieldValue.increment(quantity)
+                      : quantity,
+            }
+          }, SetOptions(merge: true));
+        }
       }
-    }
+    });
   }
 
   Future<String> getCityName(LatLng location) async {

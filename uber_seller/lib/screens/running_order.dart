@@ -86,6 +86,7 @@ class _RunningOrderState extends State<RunningOrder> {
       });
     } else {
       context.read<HomeCubit>().handOver(widget.order);
+
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
         Navigator.of(context).pop();
@@ -97,6 +98,10 @@ class _RunningOrderState extends State<RunningOrder> {
 
   @override
   Widget build(BuildContext context) {
+    final quantityLeft = context.watch<HomeCubit>().state.quantity;
+
+    final stillQuantityLeft = quantityLeft >= widget.order.quantity;
+
     final height = MediaQuery.of(context).size.height - 1 * 60;
     return SafeArea(
       child: Align(
@@ -239,7 +244,15 @@ class _RunningOrderState extends State<RunningOrder> {
                   ),
                 ],
 
-                if (isOld == false &&
+                if (!stillQuantityLeft) ...[
+                  Text(
+                    'Out of stock',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
+
+                if (stillQuantityLeft &&
+                    isOld == false &&
                     (!isWaiting || isWaitingAndGoodToHandover)) ...[
                   Row(
                     children: [
