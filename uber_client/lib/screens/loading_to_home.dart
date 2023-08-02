@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_client/models/client.dart';
+import 'package:bsahtak/models/client.dart';
 
 import '../cubits/app_cubit.dart';
 import '../repositories/cache.dart';

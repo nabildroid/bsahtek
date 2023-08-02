@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
 
 class LocationPicker extends StatelessWidget {
   final VoidCallback onTap;

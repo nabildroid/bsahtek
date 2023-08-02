@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:uber_client/models/client.dart';
+import 'package:bsahtak/models/client.dart';
 
 import '../repositories/cache.dart';
 import '../repositories/messages_remote.dart';

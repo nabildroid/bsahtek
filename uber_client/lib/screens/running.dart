@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/repositories/direction.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
+import 'package:bsahtak/repositories/direction.dart';
 
 import '../models/order.dart';
 import '../models/tracking.dart';

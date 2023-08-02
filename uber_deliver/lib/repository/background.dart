@@ -7,9 +7,9 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/cubits/service_cubit.dart';
-import 'package:uber_deliver/repository/gps.dart';
-import 'package:uber_deliver/repository/server.dart';
+import 'package:deliver/cubits/service_cubit.dart';
+import 'package:deliver/repository/gps.dart';
+import 'package:deliver/repository/server.dart';
 
 import '../main.dart';
 import '../models/delivery_request.dart';

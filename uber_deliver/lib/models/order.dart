@@ -1,5 +1,5 @@
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/models/track.dart';
+import 'package:deliver/models/track.dart';
 
 import '../utils/constants.dart';
 import 'delivery_man.dart';

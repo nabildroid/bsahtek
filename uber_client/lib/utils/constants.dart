@@ -1,5 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
 
 abstract class Constants {
   static const defaultArea = Area(

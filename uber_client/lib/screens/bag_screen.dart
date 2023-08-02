@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/models/bag.dart';
-import 'package:uber_client/repositories/orders_remote.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
+import 'package:bsahtak/models/bag.dart';
+import 'package:bsahtak/repositories/orders_remote.dart';
 
 import '../cubits/app_cubit.dart';
 import '../repositories/gps.dart';
@@ -105,12 +105,7 @@ class _BagScreenState extends State<BagScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final throttled = context
-            .read<HomeCubit>()
-            .state
-            .throttlingReservation
-            ?.isAfter(DateTime.now()) ??
-        false;
+    final throttled = false;
 
     final isLiked = context.watch<HomeCubit>().isLiked(widget.bag.id);
 

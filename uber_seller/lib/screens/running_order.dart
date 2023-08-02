@@ -4,8 +4,8 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_seller/cubits/home_cubit.dart';
-import 'package:uber_seller/repository/server.dart';
+import 'package:store/cubits/home_cubit.dart';
+import 'package:store/repository/server.dart';
 
 import '../model/order.dart';
 

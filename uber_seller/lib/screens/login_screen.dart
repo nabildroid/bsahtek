@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool codeError = false;
 
-  final phoneController = TextEditingController(text: "798398545");
+  final phoneController = TextEditingController(text: "");
   final otpController = TextEditingController(text: "111111");
 
   VoidCallback stopListening = () {};

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/screens/filters.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/screens/filters.dart';
 
 class InlineFilters extends StatelessWidget {
   const InlineFilters({

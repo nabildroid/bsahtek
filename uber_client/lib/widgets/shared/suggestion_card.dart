@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
 
 class SuggestionCard extends StatelessWidget {
   // todo why not accepting the entire bag as a parameter?

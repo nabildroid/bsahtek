@@ -8,8 +8,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/models/delivery_man.dart';
-import 'package:uber_deliver/repository/cache.dart';
+import 'package:deliver/models/delivery_man.dart';
+import 'package:deliver/repository/cache.dart';
 import 'package:dio/dio.dart';
 
 import '../models/deliverySubmit.dart';
@@ -22,7 +22,7 @@ class Server {
   static late FirebaseAuth auth;
   static late FirebaseStorage storage;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "http://192.168.0.105:3000/api/",
+    baseUrl: "https://wastnothin.vercel.app/api/",
   ));
 
   static Future<void> init() async {

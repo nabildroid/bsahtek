@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_seller/screens/me/privacy.dart';
-import 'package:uber_seller/screens/me/term.dart';
+import 'package:store/screens/me/privacy.dart';
+import 'package:store/screens/me/term.dart';
 
 import '../../cubits/app_cubit.dart';
 import '../../cubits/home_cubit.dart';

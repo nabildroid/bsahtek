@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_client/cubits/app_cubit.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/screens/me/privacy.dart';
-import 'package:uber_client/screens/me/term.dart';
+import 'package:bsahtak/cubits/app_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
+import 'package:bsahtak/screens/me/privacy.dart';
+import 'package:bsahtak/screens/me/term.dart';
 
 import '../../repositories/cache.dart';
 import 'fqa.dart';

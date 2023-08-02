@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/cubits/app_cubit.dart';
-import 'package:uber_deliver/cubits/service_cubit.dart';
-import 'package:uber_deliver/repository/server.dart';
+import 'package:deliver/cubits/app_cubit.dart';
+import 'package:deliver/cubits/service_cubit.dart';
+import 'package:deliver/repository/server.dart';
 
 import '../models/delivery_man.dart';
 import '../models/delivery_request.dart';

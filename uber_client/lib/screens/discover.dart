@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/widgets/shared/location_picker.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/widgets/shared/location_picker.dart';
 
 import '../cubits/home_cubit.dart';
 import '../models/bag.dart';

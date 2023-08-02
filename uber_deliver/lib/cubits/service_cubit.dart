@@ -6,12 +6,12 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:uber_deliver/repository/background.dart';
-import 'package:uber_deliver/repository/gps.dart';
-import 'package:uber_deliver/repository/messages_remote.dart';
-import 'package:uber_deliver/repository/notifications.dart';
-import 'package:uber_deliver/screens/running.dart';
-import 'package:uber_deliver/screens/runningNoti.dart';
+import 'package:deliver/repository/background.dart';
+import 'package:deliver/repository/gps.dart';
+import 'package:deliver/repository/messages_remote.dart';
+import 'package:deliver/repository/notifications.dart';
+import 'package:deliver/screens/running.dart';
+import 'package:deliver/screens/runningNoti.dart';
 
 import '../models/delivery_request.dart';
 import '../models/order.dart';

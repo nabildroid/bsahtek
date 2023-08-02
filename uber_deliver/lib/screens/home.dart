@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_deliver/cubits/app_cubit.dart';
-import 'package:uber_deliver/cubits/service_cubit.dart';
-import 'package:uber_deliver/repository/direction.dart';
-import 'package:uber_deliver/screens/delivered_screen.dart';
-import 'package:uber_deliver/screens/login.dart';
-import 'package:uber_deliver/screens/running.dart';
-import 'package:uber_deliver/screens/runningNoti.dart';
+import 'package:deliver/cubits/app_cubit.dart';
+import 'package:deliver/cubits/service_cubit.dart';
+import 'package:deliver/repository/direction.dart';
+import 'package:deliver/screens/delivered_screen.dart';
+import 'package:deliver/screens/login.dart';
+import 'package:deliver/screens/running.dart';
+import 'package:deliver/screens/runningNoti.dart';
 
 import '../models/order.dart';
 
@@ -230,7 +230,7 @@ class Card extends StatelessWidget {
                     children: [
                       RichText(
                         text: TextSpan(
-                          text: "DILDEAL",
+                          text: "BSAHTAK",
                           children: [
                             TextSpan(
                               text: "#$id",

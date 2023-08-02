@@ -1,8 +1,8 @@
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_seller/cubits/app_cubit.dart';
-import 'package:uber_seller/screens/running_order.dart';
+import 'package:store/cubits/app_cubit.dart';
+import 'package:store/screens/running_order.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../cubits/home_cubit.dart';

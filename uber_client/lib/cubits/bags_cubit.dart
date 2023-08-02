@@ -7,11 +7,11 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/models/autosuggestion.dart';
-import 'package:uber_client/models/mapSquare.dart';
-import 'package:uber_client/repositories/geocoding.dart';
-import 'package:uber_client/repositories/gps.dart';
-import 'package:uber_client/utils/utils.dart';
+import 'package:bsahtak/models/autosuggestion.dart';
+import 'package:bsahtak/models/mapSquare.dart';
+import 'package:bsahtak/repositories/geocoding.dart';
+import 'package:bsahtak/repositories/gps.dart';
+import 'package:bsahtak/utils/utils.dart';
 
 import '../models/bag.dart';
 import '../repositories/cache.dart';

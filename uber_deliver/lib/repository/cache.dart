@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uber_deliver/models/delivery_man.dart';
-import 'package:uber_deliver/repository/direction.dart';
+import 'package:deliver/models/delivery_man.dart';
+import 'package:deliver/repository/direction.dart';
 
 import '../models/delivery_request.dart';
 import '../models/order.dart';

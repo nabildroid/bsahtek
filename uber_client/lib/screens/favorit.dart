@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/widgets/shared/suggestion_card.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
+import 'package:bsahtak/widgets/shared/suggestion_card.dart';
 
 import 'bag_screen.dart';
 

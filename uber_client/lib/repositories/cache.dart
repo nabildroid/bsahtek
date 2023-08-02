@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uber_client/utils/constants.dart';
+import 'package:bsahtak/utils/constants.dart';
 
 import '../cubits/bags_cubit.dart';
 import '../models/bag.dart';

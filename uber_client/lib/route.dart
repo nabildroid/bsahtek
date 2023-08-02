@@ -1,14 +1,14 @@
 // private navigators
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_client/screens/discover.dart';
-import 'package:uber_client/screens/favorit.dart';
-import 'package:uber_client/screens/home.dart';
-import 'package:uber_client/screens/loading_to_home.dart';
-import 'package:uber_client/screens/me/account_setting_screen.dart';
-import 'package:uber_client/screens/me/me_screen.dart';
-import 'package:uber_client/screens/me/setting_screen.dart';
-import 'package:uber_client/screens/me/term.dart';
+import 'package:bsahtak/screens/discover.dart';
+import 'package:bsahtak/screens/favorit.dart';
+import 'package:bsahtak/screens/home.dart';
+import 'package:bsahtak/screens/loading_to_home.dart';
+import 'package:bsahtak/screens/me/account_setting_screen.dart';
+import 'package:bsahtak/screens/me/me_screen.dart';
+import 'package:bsahtak/screens/me/setting_screen.dart';
+import 'package:bsahtak/screens/me/term.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 

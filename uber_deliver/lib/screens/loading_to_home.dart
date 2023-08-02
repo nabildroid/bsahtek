@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_deliver/cubits/app_cubit.dart';
-import 'package:uber_deliver/models/delivery_man.dart';
-import 'package:uber_deliver/repository/cache.dart';
-import 'package:uber_deliver/repository/server.dart';
+import 'package:deliver/cubits/app_cubit.dart';
+import 'package:deliver/models/delivery_man.dart';
+import 'package:deliver/repository/cache.dart';
+import 'package:deliver/repository/server.dart';
 
 import 'home.dart';
 import 'login.dart';

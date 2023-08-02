@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:uber_deliver/repository/cache.dart';
-import 'package:uber_deliver/repository/messages_remote.dart';
+import 'package:deliver/repository/cache.dart';
+import 'package:deliver/repository/messages_remote.dart';
 
 import '../models/delivery_man.dart';
 import '../repository/server.dart';

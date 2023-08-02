@@ -1,5 +1,5 @@
-import 'package:uber_deliver/models/order.dart';
-import 'package:uber_deliver/repository/direction.dart';
+import 'package:deliver/models/order.dart';
+import 'package:deliver/repository/direction.dart';
 
 class DeliveryRequest {
   final Order order;

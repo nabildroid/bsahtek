@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:uber_client/repositories/backgrounds.dart';
+import 'package:bsahtak/repositories/backgrounds.dart';
 
 class RemoteMessages {
   final _firebaseMessages = FirebaseMessaging.instance;

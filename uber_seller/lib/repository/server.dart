@@ -8,7 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uber_seller/model/bag.dart';
+import 'package:store/model/bag.dart';
 
 import '../model/seller.dart';
 import '../model/order.dart' as Model;
@@ -22,7 +22,7 @@ class Server {
 
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "http://192.168.0.105:3000/api/",
+    baseUrl: "https://wastnothin.vercel.app/api/",
   ));
 
   static Future<void> init() async {

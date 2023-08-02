@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uber_deliver/cubits/service_cubit.dart';
-import 'package:uber_deliver/screens/me/privacy.dart';
-import 'package:uber_deliver/screens/me/term.dart';
+import 'package:deliver/cubits/service_cubit.dart';
+import 'package:deliver/screens/me/privacy.dart';
+import 'package:deliver/screens/me/term.dart';
 
 import '../../cubits/app_cubit.dart';
 import 'fqa.dart';

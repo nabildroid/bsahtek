@@ -8,11 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:receive_intent/receive_intent.dart';
-import 'package:uber_seller/repository/cache.dart';
-import 'package:uber_seller/repository/server.dart';
-import 'package:uber_seller/router.dart';
-import 'package:uber_seller/screens/Loading_to_home.dart';
-import 'package:uber_seller/screens/running_order.dart';
+import 'package:store/repository/cache.dart';
+import 'package:store/repository/server.dart';
+import 'package:store/router.dart';
+import 'package:store/screens/Loading_to_home.dart';
+import 'package:store/screens/running_order.dart';
 
 import 'cubits/app_cubit.dart';
 import 'cubits/home_cubit.dart';

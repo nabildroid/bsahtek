@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:uber_deliver/models/delivery_man.dart';
-import 'package:uber_deliver/repository/server.dart';
+import 'package:deliver/models/delivery_man.dart';
+import 'package:deliver/repository/server.dart';
 
 import '../models/deliverySubmit.dart';
 
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool codeError = false;
 
-  final phoneController = TextEditingController(text: "798398545");
+  final phoneController = TextEditingController(text: "");
   final otpController = TextEditingController(text: "111111");
 
   VoidCallback stopListening = () {};

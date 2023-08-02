@@ -5,8 +5,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/repositories/backgrounds.dart';
-import 'package:uber_client/utils/constants.dart';
+import 'package:bsahtak/repositories/backgrounds.dart';
+import 'package:bsahtak/utils/constants.dart';
 
 import '../models/bag.dart';
 import '../models/client.dart';

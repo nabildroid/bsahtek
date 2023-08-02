@@ -1,5 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/models/client.dart';
+import 'package:bsahtak/models/client.dart';
 
 import 'order.dart';
 

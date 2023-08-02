@@ -1,5 +1,5 @@
-import 'package:uber_seller/model/bag.dart';
-import 'package:uber_seller/model/seller.dart';
+import 'package:store/model/bag.dart';
+import 'package:store/model/seller.dart';
 
 import '../utils/constants.dart';
 

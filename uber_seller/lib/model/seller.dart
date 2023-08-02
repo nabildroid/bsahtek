@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uber_seller/model/bag.dart';
+import 'package:store/model/bag.dart';
 
 class LatLng {
   final double latitude;

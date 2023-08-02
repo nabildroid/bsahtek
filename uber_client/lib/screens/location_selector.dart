@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/models/mapSquare.dart';
-import 'package:uber_client/repositories/geocoding.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/models/mapSquare.dart';
+import 'package:bsahtak/repositories/geocoding.dart';
 
 class LocationSelector extends StatefulWidget {
   static go(BuildContext context) {

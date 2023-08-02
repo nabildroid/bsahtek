@@ -1,5 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/utils/constants.dart';
+import 'package:bsahtak/utils/constants.dart';
 
 class Order {
   final String id;

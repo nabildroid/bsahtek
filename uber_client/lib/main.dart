@@ -1,15 +1,14 @@
+import 'package:bsahtak/repositories/cache.dart';
+import 'package:bsahtak/repositories/messages_remote.dart';
+import 'package:bsahtak/repositories/server.dart';
+import 'package:bsahtak/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uber_client/cubits/app_cubit.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/repositories/cache.dart';
-import 'package:uber_client/repositories/messages_remote.dart';
-import 'package:uber_client/repositories/server.dart';
-import 'package:uber_client/route.dart';
-import 'package:uber_client/screens/loading_to_home.dart';
 
+import 'cubits/app_cubit.dart';
+import 'cubits/bags_cubit.dart';
+import 'cubits/home_cubit.dart';
 import 'repositories/notifications.dart';
 
 void main() async {
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         routerConfig: goRouter,
         debugShowCheckedModeBanner: false,
-        title: 'DILDEAL',
+        title: 'Bsahtak',
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),

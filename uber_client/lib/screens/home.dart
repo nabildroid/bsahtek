@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uber_client/cubits/bags_cubit.dart';
-import 'package:uber_client/cubits/home_cubit.dart';
-import 'package:uber_client/screens/bag_screen.dart';
-import 'package:uber_client/screens/location_selector.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
+import 'package:bsahtak/screens/bag_screen.dart';
+import 'package:bsahtak/screens/location_selector.dart';
 
 import '../repositories/notifications.dart';
 import '../widgets/home/orderConfirmedZone.dart';
