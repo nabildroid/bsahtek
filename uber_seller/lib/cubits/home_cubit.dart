@@ -226,8 +226,11 @@ class HomeCubit extends Cubit<HomeState> {
 
   void acceptOrder(Order order) async {
     if (order.expired) return;
-    final bag = state.bags
-        .firstWhere((element) => element.id.toString() == order.bagID);
+    final bagIndex = state.bags
+        .indexWhere((element) => element.id.toString() == order.bagID);
+    if (bagIndex == -1) return;
+
+    final bag = state.bags[bagIndex];
 
     // todo i don't love this pattern
     useContext((ctx) async {
@@ -238,9 +241,10 @@ class HomeCubit extends Cubit<HomeState> {
 
       emit(
         state.copyWith(
-            runningOrders: state.runningOrders
-                .where((element) => element != order)
-                .toList()),
+          quantity: state.quantity - order.quantity,
+          runningOrders:
+              state.runningOrders.where((element) => element != order).toList(),
+        ),
       );
     });
   }

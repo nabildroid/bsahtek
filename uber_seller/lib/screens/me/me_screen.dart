@@ -180,13 +180,6 @@ class MeScreen extends StatelessWidget {
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => context.push("/me/settings"),
               ),
-              SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text(" Settings"),
-                trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () => context.push("/me/settings"),
-              ),
               ListTile(
                 title: Text("Term and Conditions"),
                 trailing: Icon(Icons.arrow_forward_ios),
