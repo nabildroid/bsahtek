@@ -92,7 +92,7 @@ function DropDown(params: { id: string }) {
         <div id="dropdownDots" className={`absolute top-10 left-10 z-10  bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600 ${!isOpen ? "hidden" : ""}`}>
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
                 <li>
-                    <Link className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" href={`/seller_request/${params.id}/assign`}>Edit</Link>
+                    <Link className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" href={`/seller_requests/${params.id}/assign`}>Edit</Link>
 
                 </li>
 
