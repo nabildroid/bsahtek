@@ -47,6 +47,14 @@
           }
         },
         {
+          "client_id": "1090457346712-ql4t1m6os6nfekettogsmegjgnf0s5qu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "444c343e595513f6fda8ce054b522c9382dfe4df"
+          }
+        },
+        {
           "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
           "client_type": 3
         }
