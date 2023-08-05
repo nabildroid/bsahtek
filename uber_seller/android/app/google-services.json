@@ -23,6 +23,38 @@
           }
         },
         {
+          "client_id": "1090457346712-aaaqsb1i0o50j19v3ugo9760sbg282fa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "55d45adb09b2d62507b9ac363ef308d8c2232557"
+          }
+        },
+        {
+          "client_id": "1090457346712-iuap65e096q8kbqo174dlq8voovb7qto.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "90d7da957cc0c7825910f6868ff05df3d205db22"
+          }
+        },
+        {
+          "client_id": "1090457346712-ja41oj0pe5i80nq82dtq3c3a6ussfkrf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "17e75be943523ce06498b4096189c606fc7cf325"
+          }
+        },
+        {
+          "client_id": "1090457346712-ql4t1m6os6nfekettogsmegjgnf0s5qu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_client",
+            "certificate_hash": "444c343e595513f6fda8ce054b522c9382dfe4df"
+          }
+        },
+        {
           "client_id": "1090457346712-336ph5tmk57j4l2na51m5nrpobhc2u44.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -88,6 +120,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1090457346712-1i4r00mohlq76m83hgdb65j1e3kg8e56.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "444c343e595513f6fda8ce054b522c9382dfe4df"
+          }
+        },
+        {
+          "client_id": "1090457346712-42cl7g01rdlvuk7nfc3a4tc1hov1rn2r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "55d45adb09b2d62507b9ac363ef308d8c2232557"
+          }
+        },
         {
           "client_id": "1090457346712-qm61di60lttu6uoev16v5pve2015hl7k.apps.googleusercontent.com",
           "client_type": 1,
