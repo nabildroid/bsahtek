@@ -137,6 +137,14 @@
           }
         },
         {
+          "client_id": "1090457346712-50hb6i4iuevfoevrpftbpbiog2q1v4os.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "77355e583bad9ba67c2006e8aac7615ecf508539"
+          }
+        },
+        {
           "client_id": "1090457346712-qm61di60lttu6uoev16v5pve2015hl7k.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
