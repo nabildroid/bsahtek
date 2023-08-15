@@ -27,7 +27,7 @@ class ViewMode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Container(

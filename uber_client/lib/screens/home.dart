@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 20),
+                      SizedBox(height: 16),
                       LocationPicker(
                         onTap: () {
                           showDialog(
@@ -172,15 +172,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             builder: (ctx) => LocationSelector(),
                           );
                         },
+                        bottomBar: ViewMode(
+                          leftLabel: "List",
+                          rightLabel: "Map",
+                          leftSelected: !isMap,
+                          onClick: (isLeft) => setState(() => isMap = !isLeft),
+                        ),
                       ),
-                      SizedBox(height: 10),
-                      ViewMode(
-                        leftLabel: "List",
-                        rightLabel: "Map",
-                        leftSelected: !isMap,
-                        onClick: (isLeft) => setState(() => isMap = !isLeft),
-                      ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 8),
                       InlineFilters(),
                     ],
                   ),

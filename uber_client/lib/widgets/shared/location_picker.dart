@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 
+import '../home/view_mode.dart';
+
 class LocationPicker extends StatelessWidget {
   final VoidCallback onTap;
   final bool isTransparent;
+  final Widget? bottomBar;
   const LocationPicker({
     super.key,
     required this.onTap,
     this.isTransparent = false,
+    this.bottomBar,
   });
 
   @override
@@ -41,41 +45,49 @@ class LocationPicker extends StatelessWidget {
                     ]
                   : null,
             ),
-            child: Row(children: [
-              const Icon(
-                Icons.location_pin,
-                color: Colors.green,
-              ),
-              const SizedBox(width: 8),
-              if (currentArea != null)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                        child: Text(
-                          currentArea.name.length > 20
-                              ? currentArea.name.substring(20)
-                              : currentArea.name,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.green.shade800),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "within ${currentArea!.radius} km",
-                        style: TextStyle(color: Colors.green.shade600),
-                      ),
-                    ],
+            child: Column(
+              children: [
+                Row(children: [
+                  const Icon(
+                    Icons.location_pin,
+                    color: Colors.green,
                   ),
-                ),
-              const Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Colors.green,
-              ),
-            ]),
+                  const SizedBox(width: 8),
+                  if (currentArea != null)
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FittedBox(
+                            child: Text(
+                              currentArea.name.length > 20
+                                  ? currentArea.name.substring(20)
+                                  : currentArea.name,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.green.shade800),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "within ${currentArea!.radius} km",
+                            style: TextStyle(color: Colors.green.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const Icon(
+                    Icons.keyboard_arrow_down_outlined,
+                    color: Colors.green,
+                  ),
+                ]),
+                if (bottomBar != null) ...[
+                  SizedBox(height: 8),
+                  bottomBar!,
+                ]
+              ],
+            ),
           ),
         ),
       ),

@@ -41,25 +41,19 @@ class InlineFilters extends StatelessWidget {
                     padding: EdgeInsets.only(left: 16),
                     child: TextButton(
                       style: TextButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        elevation: 1,
-                        textStyle: TextStyle(
-                          color: Colors.green.shade900,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        // if selected put a green border
-                        side: BorderSide(
-                          color: selected
-                              ? Colors.green.shade500
-                              : Colors.transparent,
-                          width: 2,
-                        ),
+                        backgroundColor:
+                            selected ? Colors.green.shade800 : Colors.white,
+                        elevation: .5,
                       ),
                       onPressed: () {
                         context.read<BagsQubit>().toggleTag(tag);
                       },
                       child: Text(
                         "${selected ? "" : "Try: "}$tag",
+                        style: TextStyle(
+                          color: selected ? Colors.white : Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   );
