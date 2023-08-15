@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:bsahtak/screens/bag_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -221,6 +222,15 @@ class _SquaresMapState extends State<SquaresMap> {
                 icon: e.icon,
                 consumeTapEvents: false,
                 draggable: false,
+                onTap: () {
+                  if (e.id.startsWith("Group")) return;
+                  final allBags = context.read<BagsQubit>().state.bags;
+                  final index = allBags
+                      .indexWhere((element) => element.id.toString() == e.id);
+                  if (index != -1) {
+                    BagScreen.go(context, allBags[index]);
+                  }
+                },
 
                 visible: !e.hidden,
                 // visible: Random().nextBool(),

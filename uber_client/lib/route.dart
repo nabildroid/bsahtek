@@ -30,6 +30,7 @@ final goRouter = GoRouter(
       },
       branches: [
         StatefulShellBranch(
+          initialLocation: "/discover",
           routes: [
             // top route inside branch
             GoRoute(
@@ -106,7 +107,7 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
   void _goBranch(int index) {
     navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index != navigationShell.currentIndex,
     );
   }
 
