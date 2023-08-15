@@ -41,6 +41,7 @@ final goRouter = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          initialLocation: "/home",
           routes: [
             // top route inside branch
             GoRoute(
@@ -64,6 +65,7 @@ final goRouter = GoRouter(
         ),
         // todo add more branch for my orders (success or expired!)
         StatefulShellBranch(
+          initialLocation: "/me",
           routes: [
             // top route inside branch
             GoRoute(

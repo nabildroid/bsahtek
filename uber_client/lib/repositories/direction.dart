@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:bsahtak/repositories/gps.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
-import 'package:http/http.dart' as Http;
 import 'package:latlong2/latlong.dart';
+
+import 'geocoding.dart';
 
 class Direction {
   final List<LatLng> points;
@@ -35,12 +38,12 @@ class Direction {
 
 abstract class DirectionRepository {
   static Future<Direction> direction(LatLng a, LatLng b) async {
-    final uri = Uri.parse(
-        "http://router.project-osrm.org/route/v1/driving/${a.longitude},${a.latitude};${b.longitude},${b.latitude}");
+    final uri =
+        "http://router.project-osrm.org/route/v1/driving/${a.longitude},${a.latitude};${b.longitude},${b.latitude}";
 
-    final response = await Http.get(uri);
+    final response = await Dio().get(uri);
 
-    final data = jsonDecode(response.body);
+    final data = response.data;
 
     final points =
         decodePolyline(data["routes"][0]["geometry"]) as List<List<num>>;
@@ -51,31 +54,6 @@ abstract class DirectionRepository {
       distance: data["routes"][0]["distance"] + 0.0,
       duration: Duration(seconds: data["routes"][0]["duration"].toInt()),
     );
-  }
-
-  static Future<String> getCityName(LatLng location) async {
-    final response = await Http.get(
-      Uri.parse(
-          "https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}"),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final address = json["address"];
-      String city;
-      if (address.containsKey("town")) {
-        city = address["town"];
-      } else if (address.containsKey("county")) {
-        city = address["county"];
-      } else if (address.containsKey("village")) {
-        city = address["village"];
-      } else {
-        city = "";
-      }
-      return city;
-    } else {
-      return "";
-    }
   }
 
   static Offset roundToSquareCenter(double x, double y, int squareSpace) {

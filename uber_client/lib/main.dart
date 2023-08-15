@@ -14,6 +14,11 @@ import 'repositories/notifications.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   await Cache.init();
   await Server.init();
   await Notifications.createChannels();
@@ -28,11 +33,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => BagsQubit()),
