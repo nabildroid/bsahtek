@@ -328,7 +328,7 @@ class _LocationSelectorState extends State<LocationSelector> {
                   ),
                   TextButton.icon(
                     onPressed: () {
-                      context.read<BagsQubit>().init();
+                      context.read<BagsQubit>().init(context);
                     },
                     icon: Icon(Icons.location_on_outlined),
                     label: Text("Use my current location"),

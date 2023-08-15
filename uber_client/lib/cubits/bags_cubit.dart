@@ -201,12 +201,12 @@ class BagsQubit extends Cubit<BagsState> {
           currentArea: Cache.currentArea,
         ));
 
-  Future<void> init() async {
+  Future<void> init(BuildContext context) async {
     print("hello world");
 
     // get cached location and set it right away without fetching any data!
     final gpsLocation =
-        (await GpsRepository.getLocation() ?? Cache.currentArea?.center);
+        (await GpsRepository.getLocation(context) ?? Cache.currentArea?.center);
     // since we have a fall back when the gps is null, we can use it, so the bellow code is not needed
     if (gpsLocation == null) return _fetchHot("alger");
 

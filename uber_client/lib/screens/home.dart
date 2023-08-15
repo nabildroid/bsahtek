@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     context.read<HomeCubit>().init(); // not sure if this pattern is good
-    context.read<BagsQubit>().init(); // not sure if this pattern is good
+    context.read<BagsQubit>().init(context); // not sure if this pattern is good
 
     WidgetsBinding.instance.addObserver(this);
 

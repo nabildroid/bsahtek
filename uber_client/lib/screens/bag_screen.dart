@@ -55,7 +55,7 @@ class _BagScreenState extends State<BagScreen> {
     setState(() => isLoading = true);
     final homeCubit = context.read<HomeCubit>();
     final appCubit = context.read<AppCubit>();
-    final location = await GpsRepository.getLocation();
+    final location = await GpsRepository.getLocation(context);
 
     if (location == null) {
       setState(() => isLoading = false);
