@@ -343,7 +343,7 @@ class _BagScreenState extends State<BagScreen> {
                           ),
                           Divider(height: 32),
                           Text(
-                            "Select Quanitity",
+                            "Select Quantity",
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
