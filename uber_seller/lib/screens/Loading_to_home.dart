@@ -20,9 +20,15 @@ class LoadingToHomeScreen extends StatefulWidget {
 }
 
 class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
+  bool loaded = false;
+
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      loaded = true;
+    });
 
     // post frame to avoid the error of pushReplacement while the widget is building
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -37,6 +43,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
       await Server().setupTokenization();
       context.go("/home");
     } else {
+      await Future.delayed(Duration(milliseconds: 1500));
       // either it doesn't exist or it's not activated, both cases we need to login
       // the login need to pop it self after success login, or tokenRefreched is Activated
       // login handle it all
@@ -53,9 +60,31 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
+    return Scaffold(
+      body: AnimatedScale(
+        duration: Duration(seconds: 1),
+        scale: loaded == false ? 2 : 1,
+        curve: Curves.easeInExpo,
+        child: AnimatedOpacity(
+          duration: Duration(seconds: 1),
+          curve: Curves.easeInExpo,
+          opacity: loaded == false ? 0 : 1,
+          child: Center(
+            child: Hero(
+              tag: "Logo",
+              child: SizedBox(
+                width: 150,
+                child: ColorFiltered(
+                  colorFilter:
+                      ColorFilter.mode(Colors.green, BlendMode.srcATop),
+                  child: Image.network(
+                    'https://wastnothin.vercel.app/static/logo.png',
+                  ), //
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

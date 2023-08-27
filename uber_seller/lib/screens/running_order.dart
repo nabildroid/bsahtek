@@ -179,7 +179,7 @@ class _RunningOrderState extends State<RunningOrder> {
                     Icons.production_quantity_limits,
                     color: Colors.green,
                   ),
-                  subtitle: Text("quanitity"),
+                  subtitle: Text("quantity"),
                   title: Text(
                     widget.order.quantity.toString(),
                     style: Theme.of(context)
@@ -283,25 +283,25 @@ class _RunningOrderState extends State<RunningOrder> {
                       ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.red.shade300,
-                      iconColor: Colors.white,
-                    ),
-                    onPressed: handleReport,
-                    icon: const Icon(
-                      Icons.report,
-                    ),
-                    label: const Text(
-                      'Report Abusing',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(
+                  //   height: 16,
+                  // ),
+                  // TextButton.icon(
+                  //   style: TextButton.styleFrom(
+                  //     backgroundColor: Colors.red.shade300,
+                  //     iconColor: Colors.white,
+                  //   ),
+                  //   onPressed: handleReport,
+                  //   icon: const Icon(
+                  //     Icons.report,
+                  //   ),
+                  //   label: const Text(
+                  //     'Report Abusing',
+                  //     style: TextStyle(
+                  //       color: Colors.white,
+                  //     ),
+                  //   ),
+                  // ),
                 ]
               ],
             ),
