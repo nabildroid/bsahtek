@@ -42,7 +42,7 @@ export default function Layout(props: Props) {
                     <div className="p-2">
                         {/* add price:56$, store name:.., location, phonenumber  */}
                         <h2 className="text-lg font-bold">{bag.sellerName}</h2>
-                        <p className="text-sm text-gray-500">{bag.name} <b>{bag.price}$</b> <span>{bag.sellerPhone}</span></p>
+                        <p className="text-sm text-gray-500">{bag.name} <b>{bag.price}dz</b> <span>{bag.sellerPhone}</span></p>
                     </div>
 
                 </div>

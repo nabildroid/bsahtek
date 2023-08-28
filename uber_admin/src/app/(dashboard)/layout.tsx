@@ -40,6 +40,10 @@ function NavButtons() {
     return <>
         <NavButton label="Home" link="/" />
         <NavButton
+            label="Clients"
+            link="/clients"
+        />
+        <NavButton
             label="Sellers"
             link="/sellers"
         />
