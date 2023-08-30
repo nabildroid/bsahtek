@@ -88,7 +88,7 @@ export default function Page() {
 
                 <Card title="Earning" value={today?.selled?.toString() ?? "0"} />
                 <Card title="Orders" value={today?.orders?.toString() ?? "0"} />
-                <Card title="Delivers Request" value={today?.deliversRequests?.toString() ?? "0"} />
+                <Card title="Client Request" value={today?.newClients?.toString() ?? "0"} />
             </div>
 
         </div>
