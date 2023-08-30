@@ -11,6 +11,7 @@ import 'package:bsahtak/models/bag.dart';
 import 'package:bsahtak/repositories/orders_remote.dart';
 
 import '../cubits/app_cubit.dart';
+import '../models/clientSubmit.dart';
 import '../repositories/gps.dart';
 import '../repositories/server.dart';
 
@@ -36,20 +37,80 @@ class BagScreen extends StatefulWidget {
   State<BagScreen> createState() => _BagScreenState();
 }
 
+// todo refactor this to cubit
 class _BagScreenState extends State<BagScreen> {
-  int quantity = 1;
-
   bool goingToReserve = false;
+  int quantity = 1;
+  bool isPickup = true;
+  bool isLoading = false;
+  bool isReserved = false;
 
-  bool isPickup = false;
+  bool goingToActivateAccount = false;
+  final _formKey = GlobalKey<FormState>();
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  final email = TextEditingController();
+  final address = TextEditingController();
+
+  void _formatPhoneNumber() {
+    final unformattedText = phone.text.replaceAll(RegExp(r'\s'), '');
+
+    var formated = "";
+
+    for (var i = 0; i < unformattedText.length; i++) {
+      if (i == 3 || i == 5 || i == 7) formated += " ";
+      formated += unformattedText[i];
+    }
+
+    phone.value = phone.value.copyWith(
+      text: formated,
+      selection: TextSelection.collapsed(offset: formated.length),
+    );
+  }
 
   final _controller = ScrollController();
-
   double photoHeight = 0;
   double ratio = 0;
 
-  bool isLoading = false;
-  bool isReserved = false;
+  void activateAccount() async {
+    if (_formKey.currentState?.validate() != true) return;
+
+    setState(() {
+      goingToActivateAccount = false;
+    });
+    // send request to api
+    final appCubit = context.read<AppCubit>();
+    final homeCubit = context.read<HomeCubit>();
+    final location = await GpsRepository.getLocation(context);
+    // validate inputs
+
+    final newOrder = widget.bag.toOrder(
+      appCubit.state.client!.copyWith(name: name.text).copyWith(
+            phone: phone.text,
+          ),
+      quantity: quantity,
+      isPickup: isPickup,
+      location: location!, // todo this is unsafe
+    );
+
+    await Server().submitClient(
+        appCubit.state.client!.id,
+        ClientSubmit(
+          name: name.text,
+          phone: phone.text,
+          email: email.text == "" ? null : email.text,
+          address: address.text,
+          requestedOrder: newOrder,
+        ));
+
+    homeCubit.addNotActiveOrder(newOrder);
+
+    setState(() => {isLoading = false, isReserved = true});
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() => goingToReserve = false);
+      context.go("/me");
+    });
+  }
 
   void reserveNow() async {
     setState(() => isLoading = true);
@@ -59,6 +120,13 @@ class _BagScreenState extends State<BagScreen> {
 
     if (location == null) {
       setState(() => isLoading = false);
+      // todo add alert to inform user that he should enable gps
+      return;
+    }
+
+    if (appCubit.state.client!.isActive == false) {
+      setState(() => goingToActivateAccount = true);
+
       return;
     }
 
@@ -83,12 +151,17 @@ class _BagScreenState extends State<BagScreen> {
       location: location,
     );
 
-    await homeCubit.orderBag(newOrder);
-    setState(() => {isLoading = false, isReserved = true});
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() => goingToReserve = false);
-      context.go("/me");
-    });
+    try {
+      await homeCubit.orderBag(newOrder);
+
+      setState(() => {isLoading = false, isReserved = true});
+      Future.delayed(Duration(seconds: 3), () {
+        setState(() => goingToReserve = false);
+        context.go("/me");
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -101,6 +174,8 @@ class _BagScreenState extends State<BagScreen> {
         ratio = Curves.easeInOutExpo.transform(ratio);
       });
     });
+
+    phone.addListener(_formatPhoneNumber);
   }
 
   @override
@@ -124,6 +199,13 @@ class _BagScreenState extends State<BagScreen> {
 
     return WillPopScope(
       onWillPop: () async {
+        if (goingToActivateAccount) {
+          setState(() {
+            goingToActivateAccount = false;
+            isLoading = false;
+          });
+          return false;
+        }
         if (goingToReserve) {
           setState(() {
             goingToReserve = false;
@@ -255,7 +337,8 @@ class _BagScreenState extends State<BagScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 20),
+                                    vertical: 8.0, horizontal: 20)
+                                .copyWith(),
                             child: Text(
                               "Description",
                               style: TextStyle(
@@ -265,7 +348,10 @@ class _BagScreenState extends State<BagScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20)
+                                .copyWith(
+                              bottom: photoHeight * .6,
+                            ),
                             child: Text(widget.bag.description),
                           ),
                         ],
@@ -274,7 +360,7 @@ class _BagScreenState extends State<BagScreen> {
                   ],
                 ),
               ),
-              if (context.watch<HomeCubit>().state.runningOrder == null)
+              if (context.watch<HomeCubit>().state.runningOrder == null || true)
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -308,16 +394,19 @@ class _BagScreenState extends State<BagScreen> {
                     ),
                   ),
                 ),
-              if (goingToReserve)
+              if (goingToReserve || goingToActivateAccount)
                 Positioned.fill(
                     child: Container(
                   color: Colors.black38,
                   alignment: Alignment.bottomCenter,
-                  child: FractionallySizedBox(
-                    heightFactor: .6,
+                  child: AnimatedFractionallySizedBox(
+                    duration: Duration(milliseconds: 450),
+                    curve: Curves.easeInOutExpo,
+                    heightFactor: goingToActivateAccount ? 0.8 : .6,
                     child: Container(
                       width: double.infinity,
                       padding: EdgeInsets.all(16),
+                      height: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.only(
@@ -325,170 +414,306 @@ class _BagScreenState extends State<BagScreen> {
                           topRight: Radius.circular(32),
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          FittedBox(
-                            child: Text(
-                              widget.bag.sellerName +
-                                  "\n" +
-                                  (widget.bag.name == widget.bag.sellerName
-                                      ? ""
-                                      : widget.bag.name),
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          Divider(height: 32),
-                          Text(
-                            "Select Quantity",
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.green.shade900),
-                          ),
-                          SizedBox(height: 8),
-                          Expanded(
-                            child: Center(
-                              child: Row(
-                                // create 2 icon button in cirlceAvarat and in center number of quantity
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: quantity < 2
-                                        ? Colors.black12
-                                        : Colors.green.shade700,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          if (quantity > 1) {
-                                            quantity--;
+                      child: goingToActivateAccount
+                          ? SingleChildScrollView(
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "Let's active your Account",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      // input field with dark background and rounded corners
+                                      SizedBox(height: 16),
+                                      TextFormField(
+                                        controller: name,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.grey.shade200,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          hintText: "Name",
+                                        ),
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.isEmpty ||
+                                              value.length < 3) {
+                                            return 'Please correct Name';
                                           }
-                                        });
-                                      },
-                                      icon: Icon(
-                                        Icons.remove,
-                                        color: Colors.white,
+                                          return null;
+                                        },
                                       ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 16,
-                                  ),
-                                  Text(
-                                    quantity.toString(),
+
+                                      SizedBox(height: 16),
+                                      TextFormField(
+                                        controller: phone,
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          prefix: Text("+213 "),
+                                          fillColor: Colors.grey.shade200,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          hintText: "phone",
+                                        ),
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.isEmpty ||
+                                              value.length != 9 + 3) {
+                                            return 'Please correct Phone number';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+
+                                      SizedBox(height: 16),
+                                      TextFormField(
+                                        controller: email,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.grey.shade200,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          hintText: "Email",
+                                        ),
+                                        validator: (value) {
+                                          if (value == null) return null;
+                                          if (value.isNotEmpty &&
+                                              !value.contains("@")) {
+                                            return 'Please correct Email';
+                                          }
+
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 16),
+                                      TextFormField(
+                                        controller: address,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.grey.shade200,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          hintText: "Address",
+                                        ),
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.isEmpty ||
+                                              value.length < 5) {
+                                            return 'Please correct Address, otherwise you may not receive your order';
+                                          }
+
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 16),
+                                      ElevatedButton(
+                                        child: Text("Activate"),
+                                        onPressed: activateAccount,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Colors.green.shade700,
+                                          elevation: 0,
+                                          minimumSize:
+                                              Size(double.infinity, 50),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                FittedBox(
+                                  child: Text(
+                                    widget.bag.sellerName +
+                                        "\n" +
+                                        (widget.bag.name ==
+                                                widget.bag.sellerName
+                                            ? ""
+                                            : widget.bag.name),
                                     style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: "monospace",
-                                      color: Colors.green.shade900,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: 16,
-                                  ),
-                                  CircleAvatar(
-                                    backgroundColor: quantity >= maxQuantity
-                                        ? Colors.black12
-                                        : Colors.green.shade700,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          if (quantity < maxQuantity)
-                                            quantity++;
-                                        });
-                                      },
-                                      icon: Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // isPickup
-                            ),
-                          ),
-                          ListTile(
-                            title: Text("Pickup"),
-                            trailing: Switch(
-                              value: isPickup,
-                              onChanged: (value) {
-                                setState(() {
-                                  isPickup = value;
-                                });
-                              },
-                            ),
-                          ),
-                          ListTile(
-                            title: Text("Total"),
-                            trailing: Text(
-                              (widget.bag.price * quantity).toStringAsFixed(2) +
-                                  "dz",
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.green.shade800,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextButton(
-                                  style: ButtonStyle(
-                                    backgroundColor: distance > 50
-                                        ? MaterialStateProperty.all(
-                                            Colors.grey.shade600)
-                                        : MaterialStateProperty.all(
-                                            Colors.green.shade700),
-                                    shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(100),
-                                      ),
-                                    ),
-                                    foregroundColor:
-                                        MaterialStateProperty.all(Colors.white),
-                                  ),
-                                  onPressed: distance > 50 ||
-                                          throttled ||
-                                          isLoading ||
-                                          isReserved
-                                      ? () {}
-                                      : reserveNow,
-                                  child: AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 300),
-                                    child: isLoading ||
-                                            (throttled && !isReserved)
-                                        ? SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : isReserved
-                                            ? Icon(
-                                                Icons.check,
-                                                color: Colors.white,
-                                              )
-                                            : distance > 50
-                                                ? Text("Too Far")
-                                                : Text(
-                                                    "Reserve Now",
-                                                    key:
-                                                        ValueKey("Reserve Now"),
-                                                  ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                Divider(height: 32),
+                                Text(
+                                  "Select Quantity",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green.shade900),
+                                ),
+                                SizedBox(height: 8),
+                                Expanded(
+                                  child: Center(
+                                    child: Row(
+                                      // create 2 icon button in cirlceAvarat and in center number of quantity
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor: quantity < 2
+                                              ? Colors.black12
+                                              : Colors.green.shade700,
+                                          child: IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                if (quantity > 1) {
+                                                  quantity--;
+                                                }
+                                              });
+                                            },
+                                            icon: Icon(
+                                              Icons.remove,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 16,
+                                        ),
+                                        Text(
+                                          quantity.toString(),
+                                          style: TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: "monospace",
+                                            color: Colors.green.shade900,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 16,
+                                        ),
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              quantity >= maxQuantity
+                                                  ? Colors.black12
+                                                  : Colors.green.shade700,
+                                          child: IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                if (quantity < maxQuantity)
+                                                  quantity++;
+                                              });
+                                            },
+                                            icon: Icon(
+                                              Icons.add,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    // isPickup
+                                  ),
+                                ),
+                                ListTile(
+                                  title: Text("Pickup"),
+                                  trailing: Switch(
+                                    value: isPickup,
+                                    onChanged: (value) {
+                                      // todo for now we don't need this
+                                      // setState(() {
+                                      //   isPickup = value;
+                                      // });
+                                    },
+                                  ),
+                                ),
+                                ListTile(
+                                  title: Text("Total"),
+                                  trailing: Text(
+                                    (widget.bag.price * quantity)
+                                            .toStringAsFixed(2) +
+                                        "dz",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.green.shade800,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        style: ButtonStyle(
+                                          backgroundColor: distance > 50
+                                              ? MaterialStateProperty.all(
+                                                  Colors.grey.shade600)
+                                              : MaterialStateProperty.all(
+                                                  Colors.green.shade700),
+                                          shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                          ),
+                                          foregroundColor:
+                                              MaterialStateProperty.all(
+                                                  Colors.white),
+                                        ),
+                                        onPressed: distance > 50 ||
+                                                throttled ||
+                                                isLoading ||
+                                                isReserved
+                                            ? () {}
+                                            : reserveNow,
+                                        child: AnimatedSwitcher(
+                                          duration: Duration(milliseconds: 300),
+                                          child: isLoading ||
+                                                  (throttled && !isReserved)
+                                              ? SizedBox(
+                                                  height: 24,
+                                                  width: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                              : isReserved
+                                                  ? Icon(
+                                                      Icons.check,
+                                                      color: Colors.white,
+                                                    )
+                                                  : distance > 50
+                                                      ? Text("Too Far")
+                                                      : Text(
+                                                          "Reserve Now",
+                                                          key: ValueKey(
+                                                              "Reserve Now"),
+                                                        ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 ))

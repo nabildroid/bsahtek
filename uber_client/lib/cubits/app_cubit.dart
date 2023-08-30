@@ -36,6 +36,11 @@ class AppCubit extends Cubit<AppState> {
   Future<void> setUser(Client user) async {
     emit(state.copyWith(client: user));
     Cache.client = user;
+
+    if (user.isActive == false || user.phone.isEmpty) {
+      keepRecheckingUser(forceFirst: false);
+    }
+
     await deliveryManExists(user);
   }
 
@@ -52,6 +57,40 @@ class AppCubit extends Cubit<AppState> {
       clientID: userID,
       notiID: fcmToken,
     );
+  }
+
+  VoidCallback? userChecker;
+  VoidCallback? userChanger;
+
+  void keepRecheckingUser({forceFirst = true}) {
+    userChanger?.call();
+    userChecker?.call();
+
+    void checker(Timer? timer) {
+      userChanger = Server().onUserChange(
+        (client) {
+          userChanger?.call();
+
+          if (client == null) {
+            timer?.cancel();
+            return null;
+          }
+
+          if (client.isActive) {
+            Cache.client = client;
+            emit(state.copyWith(client: client));
+            timer?.cancel();
+          }
+        },
+        forceFirst: true,
+      );
+    }
+
+    final t = Timer.periodic(Duration(minutes: 3), checker);
+    if (forceFirst) {
+      checker(t);
+    }
+    userChecker = t.cancel;
   }
 
   Future<void> updateClient(Client client) async {

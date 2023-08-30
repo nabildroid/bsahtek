@@ -18,4 +18,6 @@ abstract class Constants {
   static const needSelfPickupBeforeExpired = Duration(hours: 1);
 
   static const pauseReservingAfterReservation = Duration(minutes: 3);
+
+  static const notActiveOrderID = "stuff-going-to-accept-or-delete";
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bsahtak/models/clientSubmit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -71,12 +72,21 @@ class Server {
         if (isGood) return;
         isGood = true;
 
+        final idToken = await event.getIdTokenResult(
+          forced == false && forceFirst,
+        ); //todo this call cause the listener to fire again, why not return empty and later if isGood return the good client!
+
+        injectToken(idToken.token!);
+        final role = idToken.claims?["role"] ?? "";
+        forced = true;
+
         listen(Client(
           id: event.uid,
           name: event.displayName ?? "",
-          phone: event.phoneNumber ?? "",
+          phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
           photo: event.photoURL ??
               "https://api.dicebear.com/6.x/identicon/svg?seed=${event.phoneNumber}",
+          isActive: role == "client",
         ));
       }
     });
@@ -97,7 +107,6 @@ class Server {
     final data = order.toJson() as Map<String, dynamic>;
     data.remove("id");
     data.remove("sellerPhone");
-    data.remove("sellerAddress");
 
     final response = await http.post(
       "order",
@@ -211,5 +220,19 @@ class Server {
     if (response.statusCode != 200) {
       throw Exception("Failed to rate");
     }
+  }
+
+  Future<void> submitClient(String clientID, ClientSubmit client) async {
+    await Future.wait([
+      firestore.collection('clients').doc(clientID).set({
+        ...client.toJson(),
+        'active': false,
+      }, SetOptions(merge: true)),
+      http.post("submitting/client"),
+      auth.currentUser!.updateDisplayName(client.name),
+    ]);
+
+    auth.currentUser!.reload();
+    // update the user account!
   }
 }

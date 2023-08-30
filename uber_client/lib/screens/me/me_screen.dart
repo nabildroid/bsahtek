@@ -7,6 +7,7 @@ import 'package:bsahtak/screens/me/privacy.dart';
 import 'package:bsahtak/screens/me/term.dart';
 
 import '../../repositories/cache.dart';
+import '../../utils/constants.dart';
 import 'fqa.dart';
 
 class MeScreen extends StatelessWidget {
@@ -151,13 +152,15 @@ class MeScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        order.expired
-                                            ? "EXPIRED"
-                                            : order.inProgress
-                                                ? "IN PROGRESS"
-                                                : order.isPickup
-                                                    ? "PICKUP"
-                                                    : "DELIVERED",
+                                        order.id == Constants.notActiveOrderID
+                                            ? "PENDING"
+                                            : order.expired
+                                                ? "EXPIRED"
+                                                : order.inProgress
+                                                    ? "IN PROGRESS"
+                                                    : order.isPickup
+                                                        ? "PICKUP"
+                                                        : "DELIVERED",
                                         style: TextStyle(
                                           color: order.expired
                                               ? Colors.red.shade600

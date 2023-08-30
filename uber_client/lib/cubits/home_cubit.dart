@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
+import 'package:bsahtak/cubits/app_cubit.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:bsahtak/repositories/backgrounds.dart';
 import 'package:bsahtak/utils/constants.dart';
@@ -289,7 +291,9 @@ class HomeCubit extends Cubit<HomeState> {
   void syncPrevOrders({bool force = false}) {
     if (!force &&
         Cache.prevOrders.isNotEmpty &&
-        Cache.prevOrders.every((element) => !element.inProgress)) {
+        Cache.prevOrders.every((element) => !element.inProgress) &&
+        Cache.prevOrders
+            .every((element) => element.id != Constants.notActiveOrderID)) {
       // already in synced, assuming the app is used only one device
       return;
     }
@@ -313,18 +317,33 @@ class HomeCubit extends Cubit<HomeState> {
         }
       }
 
+      // remove pending orders if there is many orders!
+      if (allPrevOrders.length > 1) {
+        final startLength = allPrevOrders.length;
+        allPrevOrders
+            .removeWhere((element) => element.id == Constants.notActiveOrderID);
+
+        final pendingWasThere = startLength != allPrevOrders.length;
+        if (pendingWasThere) {
+          useContext((context) {
+            context.read<AppCubit>().keepRecheckingUser();
+          });
+        }
+      }
+
       emit(state.copyWith(prevOrders: allPrevOrders));
       await Cache.setPrevOrders(allPrevOrders);
 
-      final needToRunAgain = allPrevOrders.indexWhere((element) =>
-          element.inProgress && (element.isPickup || element.isItRunning));
+      final needToRunAgain =
+          allPrevOrders.indexWhere((element) => element.isItRunning);
       if (needToRunAgain != -1 && state.runningOrder == null) {
         final order = allPrevOrders[needToRunAgain];
 
         emit(state.copyWith()..runningOrder = order);
         Cache.runningOrder = order;
+
         // for selfpickup we don't need to go to running screen
-        if (order.isItRunning) {
+        if (order.isPickup == false) {
           useContext((ctx) => RunningScreen.go(order));
         }
       }
@@ -333,6 +352,18 @@ class HomeCubit extends Cubit<HomeState> {
 
       // tobeDisposed["prevOrders"]?.call(); // todo, this is dirty fix, we need this line
     });
+  }
+
+  void addNotActiveOrder(Order order) {
+    if (order.id != Constants.notActiveOrderID) {
+      throw Error.safeToString(
+          "only not activated account orders are accepted aas notActiveOrder");
+    }
+
+    Cache.setPrevOrders([order]);
+    emit(state.copyWith(prevOrders: [order]));
+
+    syncPrevOrders();
   }
 
   Future<String?> showEnterYourNameDialog() {

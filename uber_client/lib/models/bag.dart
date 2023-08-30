@@ -1,3 +1,4 @@
+import 'package:bsahtak/utils/constants.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:bsahtak/models/client.dart';
 
@@ -99,7 +100,7 @@ class Bag {
     required LatLng location,
   }) {
     return Order(
-      id: "order-going-to-be-ignored",
+      id: Constants.notActiveOrderID,
       sellerID: sellerID,
       clientID: client.id,
       clientName: client.name,
