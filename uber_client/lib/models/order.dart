@@ -196,11 +196,13 @@ class Order {
     return false;
   }
 
+  // waiting for the seller to accept
   bool get inProgress {
     return isDelivered != true && expired == false;
   }
 
+  // is accepted by seller
   bool get isItRunning {
-    return isDelivered != true && expired == false && deliveryManID != null;
+    return isDelivered != true && expired == false && sellerPhone != null;
   }
 }
