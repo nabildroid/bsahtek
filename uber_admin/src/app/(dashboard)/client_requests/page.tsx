@@ -36,7 +36,7 @@ export default function Page() {
 
                 <div className="flex-1">
                     <h1 className="font-bold text-sm text-black">{request.name}</h1>
-                    <p className="text-stone-800">{request.country} {request.address} {" "}
+                    <p className="text-stone-800">{request.address} {" "}
                         <a href={`tel:+213${request.phone.replaceAll(" ", "")}`} className="underline decoration-stone-800" >0{request.phone}</a>
                     </p>
                 </div>
