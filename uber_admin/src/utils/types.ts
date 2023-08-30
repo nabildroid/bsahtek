@@ -45,7 +45,13 @@ export const Order = z.object({
 
   clientID: z.string(),
   clientName: z.string(),
-  clientPhone: z.string().nonempty(),
+  clientPhone: z
+    .string()
+    .nonempty()
+    .transform((p) => {
+      if (p.startsWith("+213")) return p;
+      else return "+213" + p.replaceAll(" ", "");
+    }),
   clientAddress: z.object({
     latitude: z.number(),
     longitude: z.number(),
@@ -162,8 +168,9 @@ export const NewOrder = Order.extend({}).omit({
 
   sellerName: true,
   sellerPhone: true,
-  sellerAddress: true,
 });
+
+export type INewOrder = z.infer<typeof NewOrder>;
 
 // todo add photo url refine
 export const NewFood = z.object({
@@ -259,6 +266,19 @@ export const Deliver = z.object({
   active: z.boolean().default(false),
 });
 
+export const Client = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  phone: z.string(),
+  address: z.string(),
+  photo: z.string(),
+  email: z.string().optional().nullable(),
+
+  active: z.boolean().default(false),
+
+  requestedOrder: NewOrder,
+});
+
 export const AcceptSeller = Seller.extend({
   active: z.literal(true),
   bagName: z.string(),
@@ -278,6 +298,7 @@ export type IAcceptSeller = z.infer<typeof AcceptSeller>;
 
 export type ISeller = z.infer<typeof Seller>;
 export type IDeliver = z.infer<typeof Deliver>;
+export type IClient = z.infer<typeof Client>;
 
 export const OrderExpireTask = z.object({
   orderID: z.string(),

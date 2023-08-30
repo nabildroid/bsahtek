@@ -41,7 +41,7 @@ function NavButtons() {
         <NavButton label="Home" link="/" />
         <NavButton
             label="Clients"
-            link="/clients"
+            link="/client_requests"
         />
         <NavButton
             label="Sellers"

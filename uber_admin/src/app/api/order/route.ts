@@ -1,4 +1,4 @@
-import { IOrder, NewOrder, Order } from "@/utils/types";
+import { INewOrder, IOrder, ISeller, NewOrder, Order } from "@/utils/types";
 import * as admin from "firebase-admin";
 import firebase, {
   BlocForNot,
@@ -31,16 +31,25 @@ export async function POST(request: Request) {
   if (await BlocForNot("", request)) return VerificationError();
 
   const newOrder = NewOrder.parse(await request.json());
+
+  const order = await addOrder(newOrder);
+  return new Response(JSON.stringify(order));
+}
+
+export async function addOrder(newOrder: INewOrder) {
   const query = await firebase
     .firestore()
     .collection("sellers")
     .doc(newOrder.sellerID)
     .get();
-  const data = query.data();
+  const seller = {
+    ...query.data(),
+    id: query.id,
+  } as ISeller;
   console.log(newOrder);
 
-  if (!data) return new Response("Seller not found");
-  const sellerToken = data.notiID;
+  if (!seller) throw Error("Seller not found");
+  const sellerToken = (seller as any).notiID;
 
   console.log("whent through");
 
@@ -49,8 +58,9 @@ export async function POST(request: Request) {
     .collection("orders")
     .add({
       ...newOrder,
-      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      // you must not put the name, or phone of the seller, that happens only when the seller accept the order!
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
+    } as IOrder);
 
   const order = {
     id,
@@ -59,37 +69,40 @@ export async function POST(request: Request) {
 
   console.log(order);
 
-  await firebase.messaging().send({
-    token: sellerToken,
-    fcmOptions: {
-      analyticsLabel: "newOrder",
-    },
-    android: {
-      priority: "high",
-      ttl: 1000 * 60 * 10,
-      notification: {
-        imageUrl: order.bagImage,
-        body: `${order.clientName} requested a ${
-          order.quantity == 1 ? "one" : order.quantity
-        } ${order.bagName}`,
-        title: `new Request from ${order.clientName}`,
+  try {
+    await firebase.messaging().send({
+      token: sellerToken,
+      fcmOptions: {
+        analyticsLabel: "newOrder",
       },
-    },
+      android: {
+        priority: "high",
+        ttl: 1000 * 60 * 10,
+        notification: {
+          imageUrl: order.bagImage,
+          body: `${order.clientName} requested a ${
+            order.quantity == 1 ? "one" : order.quantity
+          } ${order.bagName}`,
+          title: `new Request from ${order.clientName}`,
+        },
+      },
 
-    data: {
-      order: JSON.stringify(order),
-      click_action: "FLUTTER_NOTIFICATION_CLICK",
-      type: "new_order",
-    },
-  });
+      data: {
+        order: JSON.stringify(order),
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+        type: "new_order",
+      },
+    });
+  } catch (e) {
+    console.log("seller doesn't exists");
+  }
 
   await updateStats({
     orders: "increment",
   });
 
-  return new Response(JSON.stringify(order));
+  return order;
 }
-
 export async function updateStats(
   stats: Partial<{
     [k in keyof ValueOf<IStats["today"]>]:
