@@ -19,7 +19,7 @@ class Client {
       name: json['name'],
       phone: json['phone'],
       photo: json['photo'],
-      isActive: json['isActive'],
+      isActive: json['isActive'] ?? false,
     );
   }
 
