@@ -4,8 +4,8 @@ import { userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import * as Server from "@/local_repository/server";
-import { ResponsiveContainer, Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { cn } from "@/lib/utils";
+import { ResponsiveContainer, Area, AreaChart, CartesianGrid, XAxis, Tooltip } from "recharts";
+import { cn, convertDatesToMonthStats } from "@/lib/utils";
 import { useQuery } from "react-query";
 import { IStats } from "@/types";
 import { ValueOf } from "next/dist/shared/lib/constants";
@@ -14,31 +14,11 @@ import { ValueOf } from "next/dist/shared/lib/constants";
 
 function fillMounthHistory(data: { orders: number, date: Date }[]) {
 
-    for (let i = 0; i < 30; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
+    const dates = [] as Date[];
 
-        const index = data.findIndex((a: any) => {
-            const date2 = new Date(a.date);
-            return date2.getDate() === date.getDate();
-        });
+    data.forEach(d => dates.push(...Array(d.orders).fill("").map(() => d.date)));
 
-        if (index === -1) {
-            data.push({
-                orders: 0,
-                date: date,
-            });
-        }
-    }
-
-    return data.sort((a, b) => {
-        const date1 = new Date(a.date);
-        const date2 = new Date(b.date);
-
-        return date1.getDate() - date2.getDate();
-    });
-
-    return data;
+    return convertDatesToMonthStats(dates);
 }
 
 
@@ -94,7 +74,7 @@ export default function Page() {
         </div>
         <div className="mt-12 py-3 bg-white shadow-md border-t-2 border-stone-200">
             <div className=" max-w-2xl w-full mx-auto">
-                <h2 className="text-black font-bold text-sm mb-2">Orders in this mounth</h2>
+                <h2 className="text-black font-bold text-sm mb-2 px-2">Orders in this mounth</h2>
 
                 <Chart data={
                     fillMounthHistory(
@@ -102,11 +82,8 @@ export default function Page() {
                             orders: value.orders,
                             date: new Date(key),
                         }))
-                    ).map((x, i) => ({
-                        x: x.date.getDate().toString(),
-                        y: x.orders,
-                    }))
-                } />
+                    )}
+                />
 
             </div>
         </div>
@@ -133,7 +110,10 @@ function Chart(props: Props) {
         <div style={{ width: '100%', height: 250 }}>
             <ResponsiveContainer>
                 <AreaChart
-                    data={props.data}
+                    data={props.data.map(d => ({
+                        ...d,
+                        orders: d.y,
+                    }))}
                     margin={{
                         left: 16,
                         right: 16,
@@ -147,12 +127,26 @@ function Chart(props: Props) {
                         </linearGradient>
                     </defs>
 
-                    <XAxis tickSize={15} dataKey="x" interval={0} />
+                    <Tooltip
+                    
+
+                        contentStyle={{ backgroundColor: "#1f2937", color: "#fff" ,
+                        accentColor:"#ddd",
+                        }} />
+                    <CartesianGrid strokeDasharray="8 8" />
+
+
+                    <XAxis dataKey="x"
+                        interval={3}
+                        tickSize={2}
+                        fontSize={12}
+                        rotate={12}
+                    />
                     <CartesianGrid strokeDasharray="8 8" opacity={0.15} />
                     <Area
                         type="natural"
                         strokeWidth={2}
-                        dataKey="y"
+                        dataKey="orders"
                         fill='url(#colorUv)'
                         stroke="#000"
                         fillOpacity={1}
