@@ -21,14 +21,16 @@ export default function Page() {
 
             <div className="flex-1">
                 <h1 className="font-bold text-sm text-black">{request.storeName}</h1>
-                <p className="text-stone-800">{request.country}, {request.address}  {request.phone}</p>
+                <p className="text-stone-800">{request.country}, {request.address}  {' '}
+                    <a href={`tel:+213${request.phone.replaceAll(" ", "")}`} className="underline decoration-stone-800" >0{request.phone}</a>
+                </p>
             </div>
 
             <div className="space-x-1 text-sm">
                 <Link href={`/seller_requests/${request.id}/assign`} className="px-2 py-1 rounded-md bg-black text-white">
                     Review
                 </Link>
-                
+
             </div>
 
         </div>)}

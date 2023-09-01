@@ -125,6 +125,8 @@ class Server {
         listen(Seller.fromUser(
           event,
           role == "seller",
+        ).copyWith(
+          phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
         ));
       }
     });
@@ -172,13 +174,12 @@ class Server {
     return stream.cancel;
   }
 
-  Future<void> submitSeller(
-      String sellerID, String phone, SellerSubmit seller) async {
+  Future<void> submitSeller(String sellerID, SellerSubmit seller) async {
     await Future.wait([
       firestore.collection('sellers').doc(sellerID).set({
         ...seller.toJson(),
         'active': false,
-        'phone': phone,
+        'phone': seller.phone,
       }),
       http.post("submitting/seller"),
       auth.currentUser!.updateDisplayName(seller.name),

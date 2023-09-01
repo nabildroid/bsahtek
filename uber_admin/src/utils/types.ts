@@ -243,7 +243,13 @@ export const Tracking = Track.omit({
 export const Seller = z.object({
   id: z.string().optional(),
   name: z.string(),
-  phone: z.string(),
+  phone: z
+    .string()
+    .nonempty()
+    .transform((p) => {
+      if (p.startsWith("+213")) return p;
+      else return "+213" + p.replaceAll(" ", "");
+    }),
   address: z.string(),
   wilaya: z.string(),
   country: z.string(),

@@ -18,6 +18,7 @@ class SellerSubmit {
   final String storeType;
   final String storeName;
   final String storeAddress;
+  final String phone;
   final String photo;
   final bool active;
 
@@ -29,6 +30,7 @@ class SellerSubmit {
     required this.storeType,
     required this.storeName,
     required this.storeAddress,
+    required this.phone,
     required this.photo,
     this.active = false,
   });
@@ -42,6 +44,7 @@ class SellerSubmit {
       'storeType': storeType,
       'storeName': storeName,
       'storeAddress': storeAddress,
+      'phone': phone,
       'photo': photo,
       'active': active,
     };

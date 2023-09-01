@@ -65,6 +65,10 @@ export async function POST(request: Request, context: Context) {
   if (sellerID !== demand.id)
     return new Response("Bad Request", { status: 400 });
 
+  await firebase.auth().updateUser(sellerID, {
+    phoneNumber: demand.phone,
+  });
+
   const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);
   await sellerRef.update({
     active: true,

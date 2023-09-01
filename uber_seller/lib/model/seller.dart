@@ -59,12 +59,13 @@ class Seller {
   Seller copyWith({
     String? name,
     String? photo,
+    String? phone,
   }) {
     return Seller(
       name: name ?? this.name,
       photo: photo ?? this.photo,
       id: id,
-      phone: phone,
+      phone: phone ?? this.phone,
       isActive: isActive,
     );
   }
