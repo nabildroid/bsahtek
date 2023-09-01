@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bsahtak/models/client.dart';
@@ -46,13 +47,23 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
     final isAlreadyLogin = Cache.client != null;
     if (isAlreadyLogin) {
       await context.read<AppCubit>().setUser(Cache.client!);
-      await Server().setupTokenization();
-      context.go("/home");
+      try {
+        await Server().setupTokenization();
+        context.go("/home");
+      } catch (e) {
+        context.read<AppCubit>().logOut();
+        context.replace("/loading");
+      }
     } else {
       await Future.delayed(Duration(milliseconds: 1500));
       final client = await Navigator.of(context).push(
         LoginScreen.go(),
-      ) as Client;
+      ) as Client?;
+
+      if (client == null) {
+        SystemNavigator.pop();
+        return;
+      }
 
       await Server().setupTokenization(alreadyInited: true);
       await context.read<AppCubit>().setUser(client);
