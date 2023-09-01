@@ -1,4 +1,5 @@
 // private navigators
+import 'package:bsahtak/screens/offline.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bsahtak/screens/discover.dart';
@@ -21,6 +22,12 @@ final goRouter = GoRouter(
       path: '/loading',
       pageBuilder: (context, state) => const NoTransitionPage(
         child: LoadingToHomeScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/offline',
+      pageBuilder: (context, state) => const NoTransitionPage(
+        child: OfflineScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(

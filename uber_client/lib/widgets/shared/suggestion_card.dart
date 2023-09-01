@@ -12,7 +12,7 @@ class SuggestionCard extends StatelessWidget {
   final String price;
   final String discountPrice;
 
-  final String chip;
+  final String? chip;
   final String distance;
 
   final String storeName;
@@ -32,7 +32,7 @@ class SuggestionCard extends StatelessWidget {
     required this.rating,
     required this.price,
     required this.discountPrice,
-    required this.chip,
+    this.chip,
     required this.distance,
     required this.storeName,
     required this.storePicture,
@@ -91,13 +91,19 @@ class SuggestionCard extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      // Chip(
-                                      //   label: Text(
-                                      //     chip,
-                                      //     style: TextStyle(color: Colors.white),
-                                      //   ),
-                                      //   backgroundColor: Colors.black,
-                                      // ),
+                                      if (chip != null)
+                                        Chip(
+                                          label: Text(
+                                            chip!,
+                                            style: TextStyle(
+                                              color: Colors.green.shade900,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          backgroundColor:
+                                              Colors.yellow.shade100,
+                                        ),
                                       Spacer(),
                                       IconButton(
                                         onPressed: onFavoriteTap,

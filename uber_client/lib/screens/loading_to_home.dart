@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -36,6 +37,12 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
   }
 
   void init() async {
+    final isOnline = await Connectivity().checkConnectivity();
+    if (isOnline == ConnectivityResult.none) {
+      context.replace("/offline");
+      return;
+    }
+
     final isAlreadyLogin = Cache.client != null;
     if (isAlreadyLogin) {
       await context.read<AppCubit>().setUser(Cache.client!);

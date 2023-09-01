@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/src/rendering/sliver_multi_box_adaptor.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
@@ -12,6 +13,7 @@ import '../cubits/home_cubit.dart';
 import '../models/bag.dart';
 import '../widgets/shared/suggestion_card.dart';
 import 'bag_screen.dart';
+import 'filters.dart';
 import 'location_selector.dart';
 
 class DiscoverScreen extends StatefulWidget {
@@ -22,9 +24,39 @@ class DiscoverScreen extends StatefulWidget {
 }
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
+  final searchNode = FocusNode();
+  final search = TextEditingController();
+
+  bool doSearch = false;
+
+  @override
+  void initState() {
+    searchNode.addListener(() {
+      setState(() {});
+    });
+
+    super.initState();
+  }
+
+  List<Bag> getSearchResults() {
+    final cubit = context.watch<BagsQubit>().state;
+
+    final bags = cubit.visibleBags;
+
+    var filtredBags = bags.where((bag) {
+      return bag.name.toLowerCase().contains(search.text) ||
+          bag.description.toLowerCase().contains(search.text) ||
+          bag.sellerName.toLowerCase().contains(search.text) ||
+          bag.tags.toLowerCase().contains(search.text);
+    }).toList();
+
+    return filtredBags;
+  }
+
   @override
   Widget build(BuildContext context) {
     final tags = context.watch<BagsQubit>().state.availableTags;
+    final currentFilter = context.watch<HomeCubit>().state.filter;
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -32,44 +64,179 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             SliverAppBar(
               backgroundColor: Colors.white,
               elevation: 3,
-              expandedHeight: 100,
+              expandedHeight: 130,
               flexibleSpace: Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: LocationPicker(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => LocationSelector(),
-                    );
-                  },
-                  isTransparent: true,
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    LocationPicker(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => LocationSelector(),
+                        );
+                      },
+                      isTransparent: true,
+                    ),
+                    SizedBox(
+                      height: 40,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: TextField(
+                              controller: search,
+                              focusNode: searchNode,
+                              onSubmitted: (value) {
+                                setState(() {
+                                  doSearch = value.length > 2;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Search",
+                                contentPadding: EdgeInsets.all(0),
+                                prefixIcon: Icon(Icons.search),
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.grey,
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            )),
+                            SizedBox(width: 8),
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: SizedBox(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (ctx) => Filters());
+                                  },
+                                  child: Icon(
+                                    Icons.settings,
+                                    color: currentFilter != null
+                                        ? Colors.white
+                                        : Colors.green.shade900,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: Colors.grey,
+                                      width: 1,
+                                    ),
+                                    backgroundColor: currentFilter != null
+                                        ? Colors.green.shade500
+                                        : Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: EdgeInsets.all(0),
+                                  ),
+                                ),
+                                height: double.infinity,
+                              ),
+                            ),
+                            if (searchNode.hasFocus || doSearch)
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    doSearch = false;
+                                    searchNode.unfocus();
+                                    search.text = "";
+                                  });
+                                },
+                                child: Text("cancel"),
+                              )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
               floating: true,
-              collapsedHeight: 100,
+              collapsedHeight: 130,
               snap: true,
             ),
-            SliverList(
-              delegate: SliverChildListDelegate([
-                AutoSuggestionView(
-                  label: "Recommended for you",
-                  filter: (bag, distance, quantity) =>
-                      quantity > 3 || distance < 2,
-                  random: true,
-                  max: 5,
-                ),
-                AutoSuggestionView(
-                  label: "Save before end",
-                  filter: (bag, distance, quantity) => quantity < 2,
-                ),
-                ...tags.map(
-                  (e) => AutoSuggestionView(
-                    label: e,
-                    filter: (bag, distance, quantity) => bag.tags.contains(e),
-                  ),
-                )
-              ]),
-            )
+            doSearch == true
+                ? SliverList(
+                    key: Key("search"),
+                    delegate: SliverChildListDelegate([
+                      ...getSearchResults().map((spot) {
+                        final cubit = context.watch<BagsQubit>().state;
+
+                        final quantity =
+                            cubit.quantities[spot.id.toString()] ?? 0;
+                        if (currentFilter?.check(spot, quantity) == false) {
+                          return SizedBox.shrink();
+                        }
+
+                        return SuggestionCard(
+                          aspectRatio: 16 / 12,
+                          id: spot.id,
+                          title: spot.name,
+                          subtitle: spot.sellerAddress,
+                          chip: quantity < 5
+                              ? quantity != 0
+                                  ? "$quantity restant"
+                                  : null
+                              : null,
+                          discountPrice: spot.originalPrice.toString(),
+                          distance: (Geolocator.distanceBetween(
+                                    spot.latitude,
+                                    spot.longitude,
+                                    cubit.currentLocation!.latitude,
+                                    cubit.currentLocation!.longitude,
+                                  ) /
+                                  1000)
+                              .toStringAsFixed(2),
+                          picture: spot.photo,
+                          price: spot.price.toString(),
+                          rating: spot.rating.toStringAsFixed(1),
+                          storeName: spot.sellerName,
+                          storePicture: spot.sellerPhoto,
+                          onTap: () => BagScreen.go(context, spot),
+                          onFavoriteTap: () =>
+                              context.read<HomeCubit>().toggleLiked(spot),
+                        );
+                      })
+                    ]),
+                  )
+                : SliverList(
+                    delegate: SliverChildListDelegate([
+                      AutoSuggestionView(
+                        label: "Recommended for you",
+                        description: "Bags we think you'll love.",
+                        secondFilter: (b, d, q) =>
+                            currentFilter?.check(b, q) ?? true,
+                        filter: (bag, distance, quantity) =>
+                            quantity > 3 || distance < 2,
+                        max: 5,
+                      ),
+                      AutoSuggestionView(
+                        label: "Save before end",
+                        secondFilter: (b, d, q) =>
+                            currentFilter?.check(b, q) ?? true,
+                        description:
+                            "Bags won't be on sale for long.. but there's still a chance to save them!",
+                        filter: (bag, distance, quantity) => quantity < 2,
+                      ),
+                      ...tags.map(
+                        (e) => AutoSuggestionView(
+                          label: e,
+                          secondFilter: (b, d, q) =>
+                              currentFilter?.check(b, q) ?? true,
+                          filter: (bag, distance, quantity) =>
+                              bag.tags.contains(e),
+                        ),
+                      )
+                    ]),
+                  )
           ],
         ),
       ),
@@ -79,15 +246,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
 class AutoSuggestionView extends StatelessWidget {
   final String label;
-  final bool random;
+  final String? description;
   final int max;
   final bool Function(Bag bag, double distance, int quantity) filter;
+  final bool Function(Bag bag, double distance, int quantity)? secondFilter;
 
   const AutoSuggestionView({
     super.key,
     required this.label,
+    this.description,
     required this.filter,
-    this.random = false,
+    this.secondFilter,
     this.max = 10000,
   });
 
@@ -108,18 +277,83 @@ class AutoSuggestionView extends StatelessWidget {
 
       final quantity = cubit.quantities[bag.id.toString()] ?? 0;
       if (quantity == 0) return false;
+
+      if (secondFilter != null && !secondFilter!(bag, distance, quantity))
+        return false;
+
       return filter(bag, distance, quantity);
     }).toList();
 
     if (filtredBags.length < 2) return const SizedBox.shrink();
 
-    if (random) filtredBags.shuffle();
+    // if (random) filtredBags.shuffle();
     filtredBags = filtredBags.sublist(0, min(max, filtredBags.length));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Label(label),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Label(label),
+            TextButton(
+              child: Text("See All"),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => Scaffold(
+                      appBar: AppBar(
+                        backgroundColor: Colors.white,
+                        title: Text(label),
+                        elevation: 0,
+                        foregroundColor: Colors.black87,
+                      ),
+                      body: ListView.builder(
+                        padding: EdgeInsets.only(top: 12),
+                        clipBehavior: Clip.none,
+                        itemBuilder: (ctx, index) {
+                          final spot = filtredBags[index];
+                          final quantity =
+                              cubit.quantities[spot.id.toString()] ?? 0;
+                          return SuggestionCard(
+                            aspectRatio: 16 / 12,
+                            id: spot.id,
+                            title: spot.name,
+                            subtitle: spot.sellerAddress,
+                            chip: quantity < 5
+                                ? quantity != 0
+                                    ? "$quantity restant"
+                                    : null
+                                : null,
+                            discountPrice: spot.originalPrice.toString(),
+                            distance: (Geolocator.distanceBetween(
+                                      spot.latitude,
+                                      spot.longitude,
+                                      cubit.currentLocation!.latitude,
+                                      cubit.currentLocation!.longitude,
+                                    ) /
+                                    1000)
+                                .toStringAsFixed(2),
+                            picture: spot.photo,
+                            price: spot.price.toString(),
+                            rating: spot.rating.toStringAsFixed(1),
+                            storeName: spot.sellerName,
+                            storePicture: spot.sellerPhoto,
+                            onTap: () => BagScreen.go(context, spot),
+                            onFavoriteTap: () =>
+                                context.read<HomeCubit>().toggleLiked(spot),
+                          );
+                        },
+                        itemCount: filtredBags.length,
+                      ),
+                      // body: ListView.
+                    ),
+                  ),
+                );
+              },
+            )
+          ],
+        ),
         SizedBox(
           height: 240,
           child: ListView.builder(
@@ -127,12 +361,18 @@ class AutoSuggestionView extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemBuilder: (ctx, index) {
               final spot = filtredBags[index];
+              final quantity = cubit.quantities[spot.id.toString()] ?? 0;
+
               return SuggestionCard(
                 aspectRatio: 16 / 14,
                 id: spot.id,
                 title: spot.name,
                 subtitle: spot.sellerAddress,
-                chip: "Bag 1",
+                chip: quantity < 5
+                    ? quantity != 0
+                        ? "$quantity restant"
+                        : null
+                    : null,
                 discountPrice: spot.originalPrice.toString(),
                 distance: (Geolocator.distanceBetween(
                           spot.latitude,

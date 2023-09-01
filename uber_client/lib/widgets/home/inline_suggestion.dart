@@ -95,15 +95,41 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                 ),
                 ListTile(
                   onTap: suggestion.onTap,
-                  leading: Hero(
-                    tag: "Bag-Seller-Photo${suggestion.id}",
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(suggestion.image),
+                  leading: SizedBox(
+                    height: 45,
+                    width: 45,
+                    child: Stack(
+                      children: [
+                        Hero(
+                          tag: "Bag-Seller-Photo${suggestion.id}",
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(suggestion.image),
+                          ),
+                        ),
+                        if (suggestion.quantity < 5)
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: CircleAvatar(
+                              radius: 10,
+                              backgroundColor: suggestion.quantity < 1
+                                  ? Colors.grey.shade200
+                                  : Colors.yellow.shade200,
+                              child: Center(
+                                child: Text(
+                                  suggestion.quantity < 1
+                                      ? "-"
+                                      : suggestion.quantity.toString(),
+                                  style: TextStyle(
+                                    color: Colors.green.shade900,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  trailing: Chip(
-                    label: Text(suggestion.quantity.toString()),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 1),
                   ),
                   title: Text(
                     suggestion.title,

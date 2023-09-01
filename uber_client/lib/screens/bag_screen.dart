@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -303,38 +304,98 @@ class _BagScreenState extends State<BagScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.shopping_bag_outlined,
+                                            color: Colors.green.shade900,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            widget.bag.name,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            color: Colors.green.shade900,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            widget.bag.rating
+                                                .toStringAsFixed(1),
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    widget.bag.originalPrice.toString() + "dz",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                      fontFamily: "monospace",
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  Text(
+                                    widget.bag.price.toString() + "dz",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.green.shade800,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Divider(),
                           ListTile(
-                            visualDensity: VisualDensity.compact,
-                            leading: Icon(Icons.shopping_bag_outlined),
-                            title: Text(widget.bag.name),
-                            horizontalTitleGap: 0,
-                            trailing: Column(
-                              children: [
-                                Text(
-                                  widget.bag.originalPrice.toString() + "dz",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                ),
-                                Text(
-                                  widget.bag.price.toString() + "dz",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.green.shade800,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            leading: Icon(
+                              Icons.location_on,
+                              color: Colors.green.shade900,
                             ),
+                            title: Text(widget.bag.sellerAddress),
+                            subtitle: Text("see seller address on google map"),
+                            trailing: Icon(Icons.chevron_right),
+                            onTap: () {
+                              AndroidIntent(
+                                action: 'action_view',
+                                data:
+                                    'geo:${widget.bag.latitude},${widget.bag.longitude}',
+                              ).launch();
+                            },
                           ),
-                          ListTile(
-                            leading: Icon(Icons.star),
-                            title: Text(widget.bag.rating.toStringAsFixed(1)),
-                            horizontalTitleGap: 0,
-                            visualDensity: VisualDensity.compact,
-                          ),
+                          Divider(),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                     vertical: 8.0, horizontal: 20)
@@ -372,7 +433,9 @@ class _BagScreenState extends State<BagScreen> {
                           child: TextButton(
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(
-                                  Colors.green.shade700),
+                                  maxQuantity > 0
+                                      ? Colors.green.shade700
+                                      : Colors.grey),
                               shape: MaterialStateProperty.all(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(100),
@@ -387,7 +450,8 @@ class _BagScreenState extends State<BagScreen> {
                                 goingToReserve = true;
                               });
                             },
-                            child: Text("Order"),
+                            child: Text(
+                                maxQuantity > 0 ? "Order" : "nothing today"),
                           ),
                         ),
                       ],
@@ -554,96 +618,92 @@ class _BagScreenState extends State<BagScreen> {
                                             ? ""
                                             : widget.bag.name),
                                     style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.black87,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Divider(height: 32),
                                 Text(
-                                  "Select Quantity",
+                                  "Select quantity",
                                   style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.green.shade900),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green.shade900,
+                                  ),
                                 ),
-                                SizedBox(height: 8),
-                                Expanded(
-                                  child: Center(
-                                    child: Row(
-                                      // create 2 icon button in cirlceAvarat and in center number of quantity
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: quantity < 2
-                                              ? Colors.black12
-                                              : Colors.green.shade700,
-                                          child: IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                if (quantity > 1) {
-                                                  quantity--;
-                                                }
-                                              });
-                                            },
-                                            icon: Icon(
-                                              Icons.remove,
-                                              color: Colors.white,
-                                            ),
-                                          ),
+                                SizedBox(height: 16),
+                                Row(
+                                  // create 2 icon button in cirlceAvarat and in center number of quantity
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: quantity < 2
+                                          ? Colors.black12
+                                          : Colors.green.shade700,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (quantity > 1) {
+                                              quantity--;
+                                            }
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.remove,
+                                          color: Colors.white,
                                         ),
-                                        SizedBox(
-                                          width: 16,
-                                        ),
-                                        Text(
-                                          quantity.toString(),
-                                          style: TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "monospace",
-                                            color: Colors.green.shade900,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 16,
-                                        ),
-                                        CircleAvatar(
-                                          backgroundColor:
-                                              quantity >= maxQuantity
-                                                  ? Colors.black12
-                                                  : Colors.green.shade700,
-                                          child: IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                if (quantity < maxQuantity)
-                                                  quantity++;
-                                              });
-                                            },
-                                            icon: Icon(
-                                              Icons.add,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                    // isPickup
-                                  ),
+                                    SizedBox(
+                                      width: 16,
+                                    ),
+                                    Text(
+                                      quantity.toString(),
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: "monospace",
+                                        color: Colors.green.shade900,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 16,
+                                    ),
+                                    CircleAvatar(
+                                      backgroundColor: quantity >= maxQuantity
+                                          ? Colors.black12
+                                          : Colors.green.shade700,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (quantity < maxQuantity)
+                                              quantity++;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                ListTile(
-                                  title: Text("Pickup"),
-                                  trailing: Switch(
-                                    value: isPickup,
-                                    onChanged: (value) {
-                                      // todo for now we don't need this
-                                      // setState(() {
-                                      //   isPickup = value;
-                                      // });
-                                    },
-                                  ),
-                                ),
+                                Spacer(),
+                                // ListTile(
+                                //   title: Text("Pickup"),
+                                //   trailing: Switch(
+                                //     value: isPickup,
+                                //     onChanged: (value) {
+                                //       // todo for now we don't need this
+                                //       // setState(() {
+                                //       //   isPickup = value;
+                                //       // });
+                                //     },
+                                //   ),
+                                // ),
                                 ListTile(
                                   title: Text("Total"),
                                   trailing: Text(
@@ -654,6 +714,7 @@ class _BagScreenState extends State<BagScreen> {
                                       fontSize: 18,
                                       color: Colors.green.shade800,
                                       fontWeight: FontWeight.bold,
+                                      fontFamily: "monospace",
                                     ),
                                   ),
                                 ),

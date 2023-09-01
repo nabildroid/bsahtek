@@ -29,64 +29,67 @@ class LocationPicker extends StatelessWidget {
           duration: Duration(seconds: 1),
           curve: Curves.easeInExpo,
           opacity: currentArea == null ? 0 : 1,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: !isTransparent ? Colors.white : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: !isTransparent
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      )
-                    ]
-                  : null,
-            ),
-            child: Column(
-              children: [
-                Row(children: [
-                  const Icon(
-                    Icons.location_pin,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  if (currentArea != null)
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FittedBox(
-                            child: Text(
-                              currentArea.name.length > 20
-                                  ? currentArea.name.substring(20)
-                                  : currentArea.name,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.green.shade800),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "within ${currentArea!.radius} km",
-                            style: TextStyle(color: Colors.green.shade600),
-                          ),
-                        ],
-                      ),
+          child: Hero(
+            tag: "LocationPicker",
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: !isTransparent ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: !isTransparent
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
+                    : null,
+              ),
+              child: Column(
+                children: [
+                  Row(children: [
+                    const Icon(
+                      Icons.location_pin,
+                      color: Colors.green,
                     ),
-                  const Icon(
-                    Icons.keyboard_arrow_down_outlined,
-                    color: Colors.green,
-                  ),
-                ]),
-                if (bottomBar != null) ...[
-                  SizedBox(height: 8),
-                  bottomBar!,
-                ]
-              ],
+                    const SizedBox(width: 8),
+                    if (currentArea != null)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              child: Text(
+                                currentArea.name.length > 20
+                                    ? currentArea.name.substring(20)
+                                    : currentArea.name,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.green.shade800),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "within ${currentArea!.radius} km",
+                              style: TextStyle(color: Colors.green.shade600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const Icon(
+                      Icons.keyboard_arrow_down_outlined,
+                      color: Colors.green,
+                    ),
+                  ]),
+                  if (bottomBar != null) ...[
+                    SizedBox(height: 8),
+                    bottomBar!,
+                  ]
+                ],
+              ),
             ),
           ),
         ),

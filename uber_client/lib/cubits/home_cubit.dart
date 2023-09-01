@@ -12,6 +12,7 @@ import 'package:bsahtak/utils/constants.dart';
 
 import '../models/bag.dart';
 import '../models/client.dart';
+import '../models/filter.dart';
 import '../repositories/notifications.dart';
 import '../models/order.dart';
 import '../repositories/cache.dart';
@@ -30,12 +31,15 @@ class HomeState extends Equatable {
 
   final DateTime? throttlingReservation;
 
+  Filter? filter;
+
   HomeState({
     this.runningOrder,
     this.focusOnRunningOrder = false,
     required this.liked,
     required this.prevOrders,
     this.throttlingReservation,
+    this.filter,
   });
 
   HomeState copyWith({
@@ -66,6 +70,7 @@ class HomeState extends Equatable {
         liked.map((e) => e.id).toList(),
         prevOrders.map((e) => e.id + e.lastUpdate.toIso8601String()).toList(),
         throttlingReservation,
+        filter,
       ];
 }
 
@@ -394,5 +399,9 @@ class HomeCubit extends Cubit<HomeState> {
         ],
       ),
     );
+  }
+
+  void setFilter(Filter? filter) {
+    emit(state.copyWith()..filter = filter);
   }
 }
