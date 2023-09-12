@@ -1,11 +1,13 @@
 "use client"
 
+
 import { userAtomAsync } from "@/state";
 import Icons from "@/svgs";
 import { useAtom } from "jotai";
 import * as Server from "@/local_repository/server";
 import { useQuery } from "react-query"
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 type Props = {
@@ -28,11 +30,11 @@ export default function Layout(props: Props) {
 
                 <div className="p-2" >
 
-                    <img src={bag.photo} className="object-cover w-full rounded-lg h-16" />
+                <Image alt="bag photo" width={400} height={180} loading="lazy" src={bag.photo} className="object-cover w-full rounded-lg h-16" />
 
                     <div className="-mt-16">
                         <div className="flex items-center p-2 relative">
-                            <img src={bag.sellerPhoto} className="w-10 h-10 rounded-full object-cover ring ring-white" />
+                            <Image alt="sellerPhoto" width={50} height={50} loading="lazy" src={bag.sellerPhoto} className="w-10 h-10 rounded-full object-cover ring ring-white" />
 
                             <div className="flex-1" />
                             <DropDown id={bag.sellerID} />

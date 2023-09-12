@@ -14,6 +14,7 @@ export default function Page() {
     const [user] = useAtom(userAtomAsync);
     const { data, refetch } = useQuery(["client_requests"], Server.clientRequests, {
         suspense: true,
+        refetchInterval: 1000 * 60
     });
 
     async function accept(demand: IClient) {
