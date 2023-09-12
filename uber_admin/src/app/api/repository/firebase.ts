@@ -19,31 +19,25 @@ export const VerificationError = (msg: string = "Not Allowed") =>
   new Response(msg, { status: 401 });
 // create express middleware to verify firebase token from cookie
 
-export const BlocForNot = async (role: string | string[], req: Request) => {
+export const BlocForNot = async (roles: string | string[], req: Request) => {
   const AuthToken = (req.headers as any).get("authorization")?.split(" ")[1];
 
-  const token = AuthToken || "";
+  // if (process.env.NODE_ENV == "development") return false;
 
-  // console.log({ token });
-
-  if (process.env.NODE_ENV == "development") return false;
-
-  if (!token || token == "") return true;
-
-  return false;
+  if (!AuthToken || AuthToken == "") return true;
 
   try {
-    const decodedToken = await firebase.auth().verifyIdToken(token, true);
+    const decodedToken = await firebase.auth().verifyIdToken(AuthToken, true);
 
     if (
-      [role].flat().every((role) => {
-        // check the custom claims role
-        if ((role = "")) return false;
+      [roles].flat().every((role) => {
+        if (role == "") return false; // if authenticated without role!, sometime we need to expose route with only login need
         const [roleName, userID] = role.split("#");
 
         if (decodedToken.role != roleName) return true;
         if (userID && userID != decodedToken.uid) return true;
-        if (roleName != "admin" && !decodedToken.phone_number) return true;
+        // todo rethink about this, when the client submit a request, he doesn't have phone number till he get accepted!
+        // if (roleName != "admin" && !decodedToken.phone_number) return true;
       })
     )
       return true;
