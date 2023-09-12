@@ -391,7 +391,7 @@ class _BagScreenState extends State<BagScreen> {
                               AndroidIntent(
                                 action: 'action_view',
                                 data:
-                                    'geo:${widget.bag.latitude},${widget.bag.longitude}',
+                                    'geo:0,0?q=${widget.bag.latitude},${widget.bag.longitude}',
                               ).launch();
                             },
                           ),

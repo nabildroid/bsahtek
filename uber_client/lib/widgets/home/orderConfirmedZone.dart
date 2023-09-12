@@ -53,7 +53,8 @@ class OrderConfirmedZone extends StatelessWidget {
                     onPressed: () {
                       AndroidIntent(
                         action: 'action_view',
-                        data: 'geo:${address.latitude},${address.longitude}',
+                        data:
+                            'geo:0,0?q=${address.latitude},${address.longitude}',
                       ).launch();
                     },
                     icon: Icon(

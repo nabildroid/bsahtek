@@ -371,7 +371,7 @@ class AcceptedOrderPanel extends StatelessWidget {
                     AndroidIntent(
                       action: 'action_view',
                       data:
-                          'geo:${clientLocation.latitude},${clientLocation.longitude}',
+                          'geo:0,0?q=${clientLocation.latitude},${clientLocation.longitude}',
                     ).launch();
                   },
                   icon: Icon(
@@ -449,7 +449,7 @@ class AcceptedOrderPanel extends StatelessWidget {
                       AndroidIntent(
                         action: 'action_view',
                         data:
-                            'geo:${sellerLocation!.latitude},${sellerLocation!.longitude}',
+                            'geo:0,0?q=${sellerLocation!.latitude},${sellerLocation!.longitude}',
                       ).launch();
                     },
                     icon: Icon(
