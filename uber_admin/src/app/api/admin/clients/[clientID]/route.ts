@@ -56,7 +56,7 @@ export async function POST(request: Request, context: Context) {
       });
     } catch (e) {
       console.log("how the client user doesn't exists?", clientID);
-      return new Response("Something bad did happen:(", { status: 400 });;
+      return new Response("Something bad did happen:(", { status: 400 });
     }
 
     await clientRef.update({
@@ -71,32 +71,55 @@ export async function POST(request: Request, context: Context) {
       console.error("order didn't go through");
     }
   } else {
+    if (demand.rejectionReason) {
+      try {
+        await notifyClientRejection(clientID, demand, demand.rejectionReason);
+      } catch (e) {
+        console.log(
+          "can't send Rejection:'" +
+            demand.rejectionReason +
+            ", to client#" +
+            demand.id
+        );
+      }
+    }
     await clientRef.update({
       suspended: true,
-      acrive: false,
-    });
-
-    await firebase.auth().updateUser(clientID, {
-      disabled: true,
+      active: false,
     });
   }
   return NextResponse.json({ success: true });
 }
 
-async function notifyClient(clientID: string, order: IOrder) {
-  const query = await firebase
-    .firestore()
-    .collection("clients")
-    .doc(clientID)
-    .get();
-  if (!query.exists) return;
-
-  const data = query.data();
-
-  const notiID = data!.notiID;
-
+async function notifyClientRejection(
+  clientID: string,
+  client: IClient,
+  reason: string
+) {
   await firebase.messaging().send({
-    token: notiID,
+    token: (await getClientNotiID(clientID))!,
+    fcmOptions: {
+      analyticsLabel: "clientRejection",
+    },
+    android: {
+      priority: "high",
+      ttl: 1000 * 60 * 10,
+      notification: {
+        body: `sorry  ${client.name}, we can't accept your request, ${reason}`,
+        title: `bad news, ${client.name}`,
+      },
+    },
+    data: {
+      client: JSON.stringify(client),
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      type: "account_rejected",
+    },
+  });
+}
+
+async function notifyClient(clientID: string, order: IOrder) {
+  await firebase.messaging().send({
+    token: (await getClientNotiID(clientID))!,
     fcmOptions: {
       analyticsLabel: "clientActivation",
     },
@@ -118,4 +141,17 @@ async function notifyClient(clientID: string, order: IOrder) {
       type: "account_activated",
     },
   });
+}
+
+async function getClientNotiID(clientID: string) {
+  const query = await firebase
+    .firestore()
+    .collection("clients")
+    .doc(clientID)
+    .get();
+  if (!query.exists) return;
+
+  const data = query.data();
+
+  return data!.notiID as string;
 }

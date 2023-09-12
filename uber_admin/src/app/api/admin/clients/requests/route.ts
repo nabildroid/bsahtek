@@ -14,12 +14,14 @@ export async function GET(request: Request) {
     .where("active", "==", false)
     .get();
 
-  const requests = query.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    } as IClient;
-  });
+  const requests = query.docs
+    .map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      } as IClient;
+    })
+    .filter((a: any) => !a.suspended);
 
   return NextResponse.json({ requests });
 }

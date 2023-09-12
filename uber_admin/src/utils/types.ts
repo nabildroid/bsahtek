@@ -291,6 +291,7 @@ export const Client = z.object({
   active: z.boolean().default(false),
 
   requestedOrder: NewOrder,
+  rejectionReason: z.string().optional(),
 });
 
 export const AcceptSeller = Seller.extend({

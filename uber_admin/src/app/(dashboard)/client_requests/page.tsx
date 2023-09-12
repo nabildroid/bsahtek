@@ -23,7 +23,11 @@ export default function Page() {
     }
 
     async function reject(demand: IClient) {
-        await Server.acceptClient(demand);
+        const msg = prompt("reason for rejection") || undefined;
+        await Server.rejectClient({
+            ...demand,
+            rejectionReason: msg
+        });
         refetch();
     }
 
@@ -38,7 +42,7 @@ export default function Page() {
                 <div className="flex-1">
                     <h1 className="font-bold text-sm text-black">{request.name}</h1>
                     <p className="text-stone-800">{request.address} {" "}
-                        <a href={`tel:+213${request.phone.replaceAll(" ", "")}`} className="underline decoration-stone-800" >0{request.phone}</a>
+                        <a href={`tel:+213${request.phone?.replaceAll(" ", "")}`} className="underline decoration-stone-800" >0{request.phone}</a>
                     </p>
                 </div>
 
@@ -51,7 +55,7 @@ export default function Page() {
                     <button
                         onClick={() => reject(request)}
                         className="px-2 py-1 rounded-md border bg-stone-500/30 border-stone-600/40  text-black">
-                        delete
+                        Reject
                     </button>
                 </div>
 
