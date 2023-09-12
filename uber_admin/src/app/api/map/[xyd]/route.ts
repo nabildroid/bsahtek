@@ -8,6 +8,7 @@ import {
   addKilometersToLongitude,
 } from "@/utils/coordination";
 import { BlocForNot, VerificationError } from "../../repository/firebase";
+import secureHash from "../../utils";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +47,22 @@ export async function GET(
     )
     .execute();
 
+  // todo make it ovious like create a subtype of a computed field in the database!
+
+  const enrishedFoods = await Promise.all(
+    rows.map(async (r) => ({
+      ...r,
+      hash: await secureHash(
+        r.windowStart.toString() + r.windowEnd.toString() + r.id
+      ),
+    }))
+  );
+
   console.log(originalX, originalY, rows.length);
   return NextResponse.json({
     x,
     originalX,
     params: boundryX,
-    foods: rows, //todo rename it to product!
+    foods: enrishedFoods, //todo rename it to product!
   });
 }

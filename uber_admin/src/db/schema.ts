@@ -33,4 +33,6 @@ export const bagsTable = mysqlTable("bags", {
   isPromoted: boolean("is_promoted").default(false),
   originalPrice: double("original_price").notNull(),
   price: double("price").notNull(),
+  windowStart: int("window_start").notNull().default(1),
+  windowEnd: double("window_end").notNull().default(23),
 });

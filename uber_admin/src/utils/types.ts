@@ -1,5 +1,6 @@
 import * as z from "zod";
 import * as Schema from "@/db/schema";
+import secureHash from "@/app/api/utils";
 
 /**
  * final String id;
@@ -93,6 +94,13 @@ export const Order = z.object({
     .optional(),
 
   isPickup: z.boolean(),
+
+  timeslot: z
+    .object({
+      window: z.array(z.number()).length(2),
+      hash: z.string(),
+    })
+    .optional(),
 });
 
 export type IOrder = z.infer<typeof Order>;

@@ -8,6 +8,8 @@ import { TypeOf, z } from "zod";
 import { seller } from "@/local_repository/server";
 import { IStats } from "@/types";
 import { ValueOf } from "next/dist/shared/lib/constants";
+import { Redis } from "@upstash/redis/nodejs";
+import secureHash from "../utils";
 
 /**
  * 
@@ -27,13 +29,62 @@ same goes with FCM notification the TTL is critical!!
 for now, we don't need to enforced serverSide, only clientSide, since all parties will agree on these durations!
  */
 
+const redis = new Redis({
+  url: "https://eu1-super-dinosaur-40060.upstash.io",
+  token: "********",
+});
+
 export async function POST(request: Request) {
   if (await BlocForNot("", request)) return VerificationError();
 
   const newOrder = NewOrder.parse(await request.json());
 
+  if (!(await ensureWithinTimeslot(newOrder))) {
+    return new Response("please wait for the time window!");
+  }
+
+  if (await oneOrderAday(newOrder.clientID)) {
+    return new Response("you can't submit multiple orders a day!");
+  }
+
   const order = await addOrder(newOrder);
   return new Response(JSON.stringify(order));
+}
+
+async function ensureWithinTimeslot(order: INewOrder) {
+  if (!order.timeslot) return true;
+  if (
+    order.timeslot.hash !=
+    (await secureHash(
+      order.timeslot.window[0].toString() +
+        order.timeslot.window[1].toString() +
+        order.bagID
+    ))
+  )
+    return false;
+
+  const createdAt = new Date(order.createdAt);
+  if (Math.abs(Date.now() - createdAt.getTime()) > 1000 * 60) {
+    return false;
+  }
+
+  if (
+    createdAt.getHours() < order.timeslot.window[0] ||
+    createdAt.getHours() > order.timeslot.window[1]
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+async function oneOrderAday(clientID: string) {
+  const lastOrder = await redis.hget("daily_orders", clientID);
+
+  if (!lastOrder || lastOrder != new Date().toLocaleDateString()) {
+    redis.hset("daily_orders", { [clientID]: new Date().toLocaleDateString() });
+    return false;
+  } else return true;
 }
 
 export async function addOrder(newOrder: INewOrder) {
