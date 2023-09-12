@@ -3,6 +3,8 @@
 import { User } from "firebase/auth";
 import { atom } from "jotai";
 
+export const realTimeAtom = atom(false);
+
 export const userAtom = atom<User | null>(null);
 
 export const userAtomAsync = atom(

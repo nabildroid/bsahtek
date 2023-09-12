@@ -1,6 +1,6 @@
 "use client";
 
-import { userAtomAsync } from "@/state";
+import { realTimeAtom, userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import * as Server from "@/local_repository/server";
@@ -27,10 +27,8 @@ type Entry = ValueOf<IStats["today"]>;
 export default function Page() {
     console.log("need the user");
     const [user] = useAtom(userAtomAsync);
+    const [isRealtime] = useAtom(realTimeAtom);
 
-
-
-    const [isRealtime, setIsRealtime] = useState(false);
 
     const { data } = useQuery(["stats"], Server.stats, {
         refetchInterval: isRealtime ? 1000 * 10 : false,
@@ -43,26 +41,9 @@ export default function Page() {
 
 
 
-
     return <>
         <div className="max-w-2xl w-full mx-auto">
 
-            <div className="flex items-center justify-between mx-1">
-                <select className="outline-none ring-black  ring-2 px-4 bg-transparent py-1 rounded-md text-black font-bold text-sm">
-                    <option value="day">Today</option>
-                    {/* <option value="month">This Month</option>
-                    <option value="year">This Year</option> */}
-                </select>
-
-                <button className={cn(
-                    "outline-none ring-black duration-300 ease-in-out ml-1 ring-2 px-4 bg-transparent py-1 rounded-md text-black font-bold text-sm"
-                    , isRealtime && "no-underline  text-white bg-black hover:line-through hover:bg-transparent hover:text-black"
-                    , !isRealtime && "line-through hover:no-underline text-black hover:bg-black hover:text-white"
-                )} onClick={() => setIsRealtime(a => !a)}>
-                    Near Realtime
-                </button>
-
-            </div>
 
             <div className="grid sm:grid-cols-3 gap-8 grid-cols-1 px-2 sm:px-0 mt-2">
 
@@ -128,10 +109,11 @@ function Chart(props: Props) {
                     </defs>
 
                     <Tooltip
-                    
 
-                        contentStyle={{ backgroundColor: "#1f2937", color: "#fff" ,
-                        accentColor:"#ddd",
+
+                        contentStyle={{
+                            backgroundColor: "#1f2937", color: "#fff",
+                            accentColor: "#ddd",
                         }} />
                     <CartesianGrid strokeDasharray="8 8" />
 

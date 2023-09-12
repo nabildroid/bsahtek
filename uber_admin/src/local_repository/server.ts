@@ -128,3 +128,9 @@ export async function acceptDeliver(deliverID: string, demand: IDeliver) {
   const { data } = await Http.post(`/admin/delivers/${deliverID}`, demand);
   return data;
 }
+export async function getOrders() {
+  const { data } = await Http.get(`/admin/orders`);
+
+  return data.orders as IOrder[];
+}
+
