@@ -227,6 +227,7 @@ class Server {
       firestore.collection('clients').doc(clientID).set({
         ...client.toJson(),
         'active': false,
+        'suspended': false,
       }, SetOptions(merge: true)),
       http.post("submitting/client"),
       auth.currentUser!.updateDisplayName(client.name),
