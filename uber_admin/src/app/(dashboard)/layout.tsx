@@ -60,5 +60,10 @@ function NavButtons() {
             link="/deliver_requests"
         />
 
+        <NavButton
+            label="ads"
+            link="/ads"
+        />
+
     </>
 }

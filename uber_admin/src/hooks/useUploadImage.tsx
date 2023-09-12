@@ -12,7 +12,7 @@ export default function useUploadImage() {
     return async (
         file: File,
         fileName: string,
-        type: "seller/photo" | "deliver/photo" | "bag/photo"
+        type: "seller/photo" | "deliver/photo" | "bag/photo" | "ads"
     ) => {
         return new Promise<string>((resolve, reject) => {
             const extention = file.name.split(".").pop();

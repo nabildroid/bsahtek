@@ -9,6 +9,7 @@ import { IBag, IStats } from "@/types";
 import { InferModel } from "drizzle-orm";
 import {
   IAcceptSeller,
+  IAd,
   IClient,
   IDeliver,
   IOrder,
@@ -128,9 +129,23 @@ export async function acceptDeliver(deliverID: string, demand: IDeliver) {
   const { data } = await Http.post(`/admin/delivers/${deliverID}`, demand);
   return data;
 }
+
+export async function getAds() {
+  const { data } = await Http.get(`/admin/ads`);
+
+  return data.ads as IAd[];
+}
+
 export async function getOrders() {
   const { data } = await Http.get(`/admin/orders`);
 
   return data.orders as IOrder[];
 }
 
+export async function saveAd(ad: IAd) {
+  const { data } = await Http.post(`/admin/ads`, { ad });
+}
+
+export async function deleteAd(id: string) {
+  const { data } = await Http.post(`/admin/ads`, { id });
+}

@@ -317,3 +317,13 @@ export const OrderExpireTask = z.object({
 });
 
 export type IOrderExpireTask = z.infer<typeof OrderExpireTask>;
+
+export const Ad = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  photo: z.string(),
+  location: z.enum(["discover", "home", "discover-fixed"]),
+  active: z.boolean().default(true),
+});
+
+export type IAd = z.infer<typeof Ad>;
