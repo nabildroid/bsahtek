@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 
 abstract class Notifications {
   static final AwesomeNotifications _instance = AwesomeNotifications();
@@ -123,11 +124,25 @@ abstract class Notifications {
     await _instance.cancelNotificationsByChannelKey("delivery");
   }
 
-  static onClick(Function(String type, dynamic payload) callback) {
-    _instance.actionStream.listen((event) {
-      if (event.payload?.containsKey("type") ?? false) {
-        callback(event.payload!["type"].toString(), event.payload!);
-      }
-    });
+  static List<Function(String type, dynamic payload)> _actionStreamListeners =
+      []; // we need this because  _instance.actionStream.listen().cancel doesn't work!
+
+  static Future<void> Function() onClick(
+      Function(String type, dynamic payload) callback) {
+    if (_actionStreamListeners.isEmpty) {
+      _instance.actionStream.listen((event) {
+        if (event.payload?.containsKey("type") ?? false) {
+          _actionStreamListeners.forEach((element) {
+            element(event.payload!["type"].toString(), event.payload!);
+          });
+        }
+      });
+    }
+
+    _actionStreamListeners.add(callback);
+
+    return () async {
+      _actionStreamListeners = [(type, payload) => {}];
+    };
   }
 }
