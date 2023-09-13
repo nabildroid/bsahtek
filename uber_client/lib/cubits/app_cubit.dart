@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:bsahtak/models/ad.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:bsahtak/models/client.dart';
@@ -12,28 +13,35 @@ import '../repositories/server.dart';
 class AppState extends Equatable {
   Client? client;
 
+  List<Ad> ads;
+
   AppState({
     this.client,
+    required this.ads,
   });
 
   AppState copyWith({
     Client? client,
+    List<Ad>? ads,
   }) {
     return AppState(
       client: client ?? this.client,
+      ads: ads ?? this.ads,
     );
   }
 
   @override
-  List<Object?> get props => [
-        client?.toJson(),
-      ];
+  List<Object?> get props => [client?.toJson(), ...ads.map((e) => e.id)];
 }
 
 class AppCubit extends Cubit<AppState> {
-  AppCubit() : super(AppState());
+  AppCubit() : super(AppState(ads: []));
 
   Future<void> setUser(Client user) async {
+    Server().getAds().then((ads) => emit(state.copyWith(
+          ads: ads,
+        )));
+
     emit(state.copyWith(client: user));
     Cache.client = user;
 

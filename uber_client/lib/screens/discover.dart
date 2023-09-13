@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:bsahtak/cubits/app_cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +13,7 @@ import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/widgets/shared/location_picker.dart';
 
 import '../cubits/home_cubit.dart';
+import '../models/ad.dart';
 import '../models/bag.dart';
 import '../widgets/shared/suggestion_card.dart';
 import 'bag_screen.dart';
@@ -163,84 +167,188 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               collapsedHeight: 130,
               snap: true,
             ),
-            doSearch == true
-                ? SliverList(
-                    key: Key("search"),
-                    delegate: SliverChildListDelegate([
-                      ...getSearchResults().map((spot) {
-                        final cubit = context.watch<BagsQubit>().state;
+            if (doSearch == true)
+              SliverList(
+                key: Key("search"),
+                delegate: SliverChildListDelegate([
+                  ...getSearchResults().map((spot) {
+                    final cubit = context.watch<BagsQubit>().state;
 
-                        final quantity =
-                            cubit.quantities[spot.id.toString()] ?? 0;
-                        if (currentFilter?.check(spot, quantity) == false) {
-                          return SizedBox.shrink();
-                        }
+                    final quantity = cubit.quantities[spot.id.toString()] ?? 0;
+                    if (currentFilter?.check(spot, quantity) == false) {
+                      return SizedBox.shrink();
+                    }
 
-                        return SuggestionCard(
-                          aspectRatio: 16 / 12,
-                          id: spot.id,
-                          title: spot.name,
-                          subtitle: spot.sellerAddress,
-                          chip: quantity < 5
-                              ? quantity != 0
-                                  ? "$quantity restant"
-                                  : null
-                              : null,
-                          discountPrice: spot.originalPrice.toString(),
-                          distance: (Geolocator.distanceBetween(
-                                    spot.latitude,
-                                    spot.longitude,
-                                    cubit.currentLocation!.latitude,
-                                    cubit.currentLocation!.longitude,
-                                  ) /
-                                  1000)
-                              .toStringAsFixed(2),
-                          picture: spot.photo,
-                          price: spot.price.toString(),
-                          rating: spot.rating.toStringAsFixed(1),
-                          storeName: spot.sellerName,
-                          storePicture: spot.sellerPhoto,
-                          onTap: () => BagScreen.go(context, spot),
-                          onFavoriteTap: () =>
-                              context.read<HomeCubit>().toggleLiked(spot),
-                        );
-                      })
-                    ]),
-                  )
-                : SliverList(
-                    delegate: SliverChildListDelegate([
-                      AutoSuggestionView(
-                        label: "Recommended for you",
-                        description: "Bags we think you'll love.",
-                        secondFilter: (b, d, q) =>
-                            currentFilter?.check(b, q) ?? true,
-                        filter: (bag, distance, quantity) =>
-                            quantity > 3 || distance < 2,
-                        max: 5,
-                      ),
-                      AutoSuggestionView(
-                        label: "Save before end",
-                        secondFilter: (b, d, q) =>
-                            currentFilter?.check(b, q) ?? true,
-                        description:
-                            "Bags won't be on sale for long.. but there's still a chance to save them!",
-                        filter: (bag, distance, quantity) => quantity < 2,
-                      ),
-                      ...tags.map(
-                        (e) => AutoSuggestionView(
-                          label: e,
-                          secondFilter: (b, d, q) =>
-                              currentFilter?.check(b, q) ?? true,
-                          filter: (bag, distance, quantity) =>
-                              bag.tags.contains(e),
-                        ),
-                      )
-                    ]),
-                  )
+                    return SuggestionCard(
+                      aspectRatio: 16 / 12,
+                      id: spot.id,
+                      title: spot.name,
+                      subtitle: spot.sellerAddress,
+                      chip: quantity < 5
+                          ? quantity != 0
+                              ? "$quantity"
+                              : null
+                          : null,
+                      discountPrice: spot.originalPrice.toString(),
+                      distance: (Geolocator.distanceBetween(
+                                spot.latitude,
+                                spot.longitude,
+                                cubit.currentLocation!.latitude,
+                                cubit.currentLocation!.longitude,
+                              ) /
+                              1000)
+                          .toStringAsFixed(2),
+                      picture: spot.photo,
+                      price: spot.price.toString(),
+                      rating: spot.rating.toStringAsFixed(1),
+                      storeName: spot.sellerName,
+                      storePicture: spot.sellerPhoto,
+                      onTap: () => BagScreen.go(context, spot),
+                      onFavoriteTap: () =>
+                          context.read<HomeCubit>().toggleLiked(spot),
+                    );
+                  })
+                ]),
+              ),
+            if (doSearch != true) ...[
+              SliverToBoxAdapter(
+                child: DiscoverAd(
+                  where: "discover-top",
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: AutoSuggestionView(
+                  label: "Recommended for you",
+                  description: "Bags we think you'll love.",
+                  secondFilter: (b, d, q) => currentFilter?.check(b, q) ?? true,
+                  filter: (bag, distance, quantity) =>
+                      quantity > 3 || distance < 2,
+                  max: 5,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: AutoSuggestionView(
+                  label: "Save before end",
+                  secondFilter: (b, d, q) => currentFilter?.check(b, q) ?? true,
+                  description:
+                      "Bags won't be on sale for long.. but there's still a chance to save them!",
+                  filter: (bag, distance, quantity) => quantity < 2,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: DiscoverAd(
+                  where: "discover-center",
+                ),
+              ),
+              ...tags.map(
+                (e) => SliverToBoxAdapter(
+                  child: AutoSuggestionView(
+                    label: e,
+                    secondFilter: (b, d, q) =>
+                        currentFilter?.check(b, q) ?? true,
+                    filter: (bag, distance, quantity) =>
+                        bag.tags.toLowerCase().contains(e),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: DiscoverAd(
+                  where: "discover-end",
+                ),
+              ),
+            ]
           ],
         ),
       ),
     );
+  }
+}
+
+class DiscoverAd extends StatefulWidget {
+  final String where;
+  const DiscoverAd({
+    super.key,
+    required this.where,
+  });
+
+  @override
+  State<DiscoverAd> createState() => _DiscoverAdState();
+}
+
+class _DiscoverAdState extends State<DiscoverAd> {
+  final controller = PageController();
+  Timer? timer;
+
+  int maxPage = 1;
+  int currentPage = 0;
+  int direction = 1;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void startAutoScrolling() {
+    timer?.cancel();
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (currentPage == maxPage || currentPage == -1) {
+        direction *= -1;
+      }
+      currentPage = currentPage + direction;
+      controller.animateToPage(
+        currentPage,
+        duration: Duration(milliseconds: 350),
+        curve: Curves.easeInExpo,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  List<Ad> getAds(List<Ad> all) {
+    return all.where((element) => element.location == widget.where).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<AppCubit, AppState>(
+        listenWhen: (n, o) => n.ads != o.ads,
+        listener: (ctx, state) {
+          maxPage = getAds(state.ads).length;
+          startAutoScrolling();
+        },
+        builder: (context, state) {
+          final ads = getAds(state.ads);
+          if (ads.isEmpty) return SizedBox.shrink();
+
+          return AspectRatio(
+            aspectRatio: 16 / 7,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: PageView(
+                controller: controller,
+                children: [
+                  ...ads.map((e) => Material(
+                        child: InkWell(
+                          onTap: () => AndroidIntent(
+                            action: 'action_view',
+                            data: e.link,
+                          ).launch(),
+                          child: Image.network(
+                            e.photo,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ))
+                ],
+              ),
+            ),
+          );
+        });
   }
 }
 
@@ -322,7 +430,7 @@ class AutoSuggestionView extends StatelessWidget {
                             subtitle: spot.sellerAddress,
                             chip: quantity < 5
                                 ? quantity != 0
-                                    ? "$quantity restant"
+                                    ? "$quantity"
                                     : null
                                 : null,
                             discountPrice: spot.originalPrice.toString(),
@@ -370,7 +478,7 @@ class AutoSuggestionView extends StatelessWidget {
                 subtitle: spot.sellerAddress,
                 chip: quantity < 5
                     ? quantity != 0
-                        ? "$quantity restant"
+                        ? "$quantity"
                         : null
                     : null,
                 discountPrice: spot.price.toString(),

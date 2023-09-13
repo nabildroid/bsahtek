@@ -236,4 +236,15 @@ class Server {
     auth.currentUser!.reload();
     // update the user account!
   }
+
+  Future<List<Ad>> getAds() async {
+    try {
+      final response = await http.get("ads");
+      final data = response.data["ads"] as List<dynamic>;
+
+      return data.map((e) => Ad.fromJson(e)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }
