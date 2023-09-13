@@ -30,8 +30,8 @@ for now, we don't need to enforced serverSide, only clientSide, since all partie
  */
 
 const redis = new Redis({
-  url: "https://eu1-super-dinosaur-40060.upstash.io",
-  token: "********",
+  url: process.env.UPSTASH_URL!,
+  token: process.env.UPSTASH_TOKEN!,
 });
 
 export async function POST(request: Request) {
