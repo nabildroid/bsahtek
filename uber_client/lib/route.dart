@@ -130,7 +130,7 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
         destinations: const [
           NavigationDestination(label: 'Discover', icon: Icon(Icons.explore)),
           NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
-          NavigationDestination(label: 'Favorit', icon: Icon(Icons.favorite)),
+          NavigationDestination(label: 'Favorite', icon: Icon(Icons.favorite)),
           NavigationDestination(label: 'Me', icon: Icon(Icons.person_pin)),
         ],
         onDestinationSelected: _goBranch,
