@@ -148,7 +148,7 @@ class Server {
     }
   }
 
-  VoidCallback listenToZone(
+  Future<void> Function() listenToZone(
       String zoneID, Function(Map<String, dynamic>) callback) {
     final ref = firestore.collection("zones").doc(zoneID);
 
@@ -159,7 +159,8 @@ class Server {
     return sub.cancel;
   }
 
-  VoidCallback listenToOrder(String orderID, Function(Order) callback) {
+  Future<void> Function() listenToOrder(
+      String orderID, Function(Order) callback) {
     final ref = firestore.collection("orders").doc(orderID);
 
     final sub = ref.snapshots().listen((event) {
@@ -176,7 +177,7 @@ class Server {
     return sub.cancel;
   }
 
-  VoidCallback listenToPrevOrders(
+  Future<void> Function() listenToPrevOrders(
       DateTime lastUpdate, void Function(List<Order>) listen) {
     final query = firestore
         .collection("orders")

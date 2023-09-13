@@ -180,12 +180,12 @@ class BagsState extends Equatable {
 }
 
 class BagsQubit extends Cubit<BagsState> {
-  final List<VoidCallback> activeSubs = [];
+  final List<Future<void> Function()> activeSubs = [];
 
   @override
   close() async {
     for (var sub in activeSubs) {
-      sub();
+      await sub();
     }
     super.close();
   }

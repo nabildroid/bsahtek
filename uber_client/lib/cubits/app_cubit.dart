@@ -1,13 +1,18 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:bsahtak/cubits/bags_cubit.dart';
+import 'package:bsahtak/cubits/home_cubit.dart';
 import 'package:bsahtak/models/ad.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:bsahtak/models/client.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../repositories/cache.dart';
 import '../repositories/messages_remote.dart';
+import '../repositories/notifications.dart';
 import '../repositories/server.dart';
 
 class AppState extends Equatable {
@@ -58,6 +63,7 @@ class AppCubit extends Cubit<AppState> {
 
   Future<void> deliveryManExists(Client client) async {
     if (!Cache.isFirstRun) return;
+
     final userID = client.id;
     final fcmToken = await RemoteMessages().getToken();
 
@@ -113,8 +119,16 @@ class AppCubit extends Cubit<AppState> {
     Cache.client = client;
   }
 
-  Future<void> logOut() async {
+  Future<void> logOut(BuildContext context) async {
     await Cache.clear(); // this will force the entire app to be clear!
+
+    try {
+      await Future.wait([
+        context.read<BagsQubit>().close(),
+        context.read<HomeCubit>().close(),
+      ]);
+    } catch (e) {}
+
     await Server.auth.signOut();
 
     emit(state.copyWith(client: null));

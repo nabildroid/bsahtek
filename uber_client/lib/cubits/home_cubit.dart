@@ -82,7 +82,7 @@ class HomeCubit extends Cubit<HomeState> {
           throttlingReservation: Cache.throttlingReservation,
         ));
 
-  Map<String, VoidCallback> tobeDisposed = {};
+  Map<String, Future<void> Function()> tobeDisposed = {};
 
   BuildContext? freshContext;
   List<void Function(BuildContext context)> waitingForContext = [];
@@ -136,7 +136,8 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void _subscribeToOnAppNotification() {
-    Notifications.onClick((type, payload) async {
+    tobeDisposed["noti"]?.call();
+    tobeDisposed["noti"] = Notifications.onClick((type, payload) async {
       if (type == 'rate') {
         final orderID = payload["orderID"];
         final bagName = payload["bagName"];
@@ -273,7 +274,7 @@ class HomeCubit extends Cubit<HomeState> {
   @override
   close() async {
     for (var element in tobeDisposed.values) {
-      element();
+      await element();
     }
     super.close();
   }
