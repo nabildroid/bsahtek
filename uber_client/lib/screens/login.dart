@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ColorFilter.mode(Colors.green, BlendMode.srcATop),
 
                     child: Image.network(
-                      'https://wastnothin.vercel.app/static/logo.png',
+                      'https://www.bsahtek.net/static/logo.png',
                     ), // Replace 'colored_image.png' with your image file path
                   ),
                 ),
