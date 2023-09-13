@@ -69,21 +69,22 @@ class BagsState extends Equatable {
 
   final List<String> selectedTags;
   List<String> get availableTags {
-    final tags = <String>[];
+    final tags = <String>{};
 
     for (var bag in bags) {
-      if (!tags.contains(bag.tags) && bag.tags.trim() != "") {
-        tags.add(bag.tags);
+      final lowercaseTag = bag.tags.trim().toLowerCase();
+      if (lowercaseTag.isNotEmpty) {
+        tags.add(lowercaseTag);
       }
     }
 
-    return tags;
+    return tags.toList(); // Convert the Set back to a List if necessary
   }
 
   List<Bag> get filtredBags {
     if (selectedTags.isEmpty) return [...visibleBags];
     return visibleBags
-        .where((element) => selectedTags.contains(element.tags))
+        .where((element) => selectedTags.contains(element.tags.toLowerCase()))
         .toList();
   }
 

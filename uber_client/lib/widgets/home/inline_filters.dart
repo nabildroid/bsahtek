@@ -49,7 +49,7 @@ class InlineFilters extends StatelessWidget {
                         context.read<BagsQubit>().toggleTag(tag);
                       },
                       child: Text(
-                        "${selected ? "" : "Try: "}$tag",
+                        tag,
                         style: TextStyle(
                           color: selected ? Colors.white : Colors.black54,
                           fontWeight: FontWeight.bold,
