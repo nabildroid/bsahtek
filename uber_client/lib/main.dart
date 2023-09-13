@@ -48,8 +48,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => BagsQubit()),
-        BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => AppCubit()),
       ],
       child: MaterialApp.router(
