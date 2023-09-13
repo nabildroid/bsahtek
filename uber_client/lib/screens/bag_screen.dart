@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:bsahtak/widgets/home/inline_suggestion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -197,6 +198,26 @@ class _BagScreenState extends State<BagScreen> {
           bagsCubit.state.currentLocation!.longitude,
         ) /
         1000;
+
+    var relatedBags = [...bagsCubit.state.filtredBags];
+    relatedBags.sort((a, b) {
+      if (a.tags.contains(widget.bag.tags) &&
+          !b.tags.contains(widget.bag.tags)) {
+        return 1;
+      } else if (!a.tags.contains(widget.bag.tags) &&
+          b.tags.contains(widget.bag.tags)) {
+        return -1;
+      } else {
+        return Geolocator.distanceBetween(widget.bag.latitude,
+                    widget.bag.longitude, a.latitude, a.longitude) >
+                Geolocator.distanceBetween(widget.bag.latitude,
+                    widget.bag.longitude, b.latitude, b.longitude)
+            ? 1
+            : -1;
+      }
+    });
+
+    relatedBags = relatedBags.sublist(0, min(relatedBags.length, 7));
 
     return WillPopScope(
       onWillPop: () async {
@@ -427,33 +448,56 @@ class _BagScreenState extends State<BagScreen> {
                   child: Container(
                     padding: EdgeInsets.all(8),
                     color: Colors.white,
-                    child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: TextButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  maxQuantity > 0
-                                      ? Colors.green.shade700
-                                      : Colors.grey),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      maxQuantity > 0
+                                          ? Colors.green.shade700
+                                          : Colors.grey),
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                  ),
+                                  foregroundColor:
+                                      MaterialStateProperty.all(Colors.white),
                                 ),
+                                onPressed: () {
+                                  if (maxQuantity == 0) return;
+                                  setState(() {
+                                    goingToReserve = true;
+                                  });
+                                },
+                                child: Text(maxQuantity > 0
+                                    ? "Order"
+                                    : "Reviens demain"),
                               ),
-                              foregroundColor:
-                                  MaterialStateProperty.all(Colors.white),
                             ),
-                            onPressed: () {
-                              if (maxQuantity == 0) return;
-                              setState(() {
-                                goingToReserve = true;
-                              });
-                            },
-                            child: Text(
-                                maxQuantity > 0 ? "Order" : "nothing today"),
-                          ),
+                          ],
                         ),
+                        if (maxQuantity < 1) ...[
+                          InlineSuggestions(suggestions: [
+                            ...relatedBags.map(
+                              (e) => InlineSuggestion(
+                                id: e.id.toString(),
+                                title: e.sellerName,
+                                subtitle: e.name,
+                                image: e.sellerPhoto,
+                                thirdtitle: e.description,
+                                quantity: 100,
+                                onTap: () {
+                                  BagScreen.go(context, e);
+                                },
+                              ),
+                            )
+                          ], onView: (_) => {})
+                        ]
                       ],
                     ),
                   ),
