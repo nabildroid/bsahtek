@@ -329,9 +329,14 @@ export type IOrderExpireTask = z.infer<typeof OrderExpireTask>;
 
 export const Ad = z.object({
   id: z.string().optional(),
-  name: z.string(),
+  name: z.string().startsWith("https://"),
   photo: z.string(),
-  location: z.enum(["discover", "home", "discover-fixed"]),
+  location: z.enum([
+    "home",
+    "discover-center",
+    "discover-top",
+    "discover-bottom",
+  ]),
   active: z.boolean().default(true),
 });
 

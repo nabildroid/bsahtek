@@ -53,10 +53,9 @@ export default function Page() {
                 <button
                     onClick={() => setAds(a => [...a, {
                         active: true,
-                        location: "discover",
-                        name: "Ad",
+                        location: "home",
+                        name: "",
                         photo: "https://etre.pro/logo.png",
-
                     }])}
                 >Add new</button>
 
@@ -102,7 +101,7 @@ function AD(props: IAd & { save: (val: IAd) => void, delete: (id?: string) => vo
         <div className="p-2 space-y-2">
             <input value={val.name}
                 onChange={e => update({ ...val, name: e.target.value })}
-                placeholder="Ad name" type="text" className="p-2 w-full outline-none focus:ring-2 ring-black rounded-md bg-stone-100 text-black" />
+                placeholder="Extenral Link" type="text" className="p-2 w-full outline-none focus:ring-2 ring-black rounded-md bg-stone-100 text-black" />
             <select
                 onChange={e => update({ ...val, location: e.target.value as any })}
                 value={val.location} className="p-2 w-full outline-none focus:ring-2 ring-black rounded-md bg-stone-100 text-black">
