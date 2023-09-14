@@ -78,7 +78,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
                   colorFilter:
                       ColorFilter.mode(Colors.green, BlendMode.srcATop),
                   child: Image.network(
-                    'https://wastnothin.vercel.app/static/logo.png',
+                    'https://www.bsahtek.net/static/logo.png',
                   ), //
                 ),
               ),

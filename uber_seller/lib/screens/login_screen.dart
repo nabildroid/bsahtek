@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ColorFilter.mode(Colors.green, BlendMode.srcATop),
 
                     child: Image.network(
-                      'https://wastnothin.vercel.app/static/logo.png',
+                      'https://www.bsahtek.net/static/logo.png',
                     ), // Replace 'colored_image.png' with your image file path
                   ),
                 ),
@@ -294,8 +294,7 @@ class _FormSubmitState extends State<FormSubmit> {
   @override
   void initState() {
     super.initState();
-    photoURL = widget.defaultImage ??
-        "https://firebase.flutter.dev/img/flutterfire_300x.png";
+    photoURL = widget.defaultImage ?? "https://www.bsahtek.net/static/logo.png";
   }
 
   void submit() async {
