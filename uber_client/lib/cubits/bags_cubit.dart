@@ -260,9 +260,11 @@ class BagsQubit extends Cubit<BagsState> {
 
         if (quantites == null) return;
 
-        final q = Map<String, int>.from(quantites);
+        final filteredQ = Map<String, dynamic>.from(quantites);
+        filteredQ.removeWhere((key, value) => value is! int);
+        final mapQ = filteredQ.map((key, value) => MapEntry(key, value as int));
 
-        emit(state.addQuantity(q));
+        emit(state.addQuantity(mapQ));
       },
     ));
 
