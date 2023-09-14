@@ -125,6 +125,8 @@ class SuggestionCard extends StatelessWidget {
                                   ),
                                   Row(children: [
                                     CircleAvatar(
+                                      backgroundColor: Colors.yellow.shade100
+                                          .withOpacity(.3),
                                       backgroundImage:
                                           NetworkImage(storePicture),
                                     ),

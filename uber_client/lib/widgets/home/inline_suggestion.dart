@@ -203,6 +203,7 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                                   Hero(
                                     tag: "Bag-Seller-Photo${suggestion.id}",
                                     child: CircleAvatar(
+                                      backgroundColor: Colors.white,
                                       backgroundImage:
                                           NetworkImage(suggestion.image),
                                     ),
