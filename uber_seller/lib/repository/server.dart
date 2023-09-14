@@ -112,22 +112,26 @@ class Server {
         print("Auth changed" + Timestamp.now().toDate().toIso8601String());
         if (isGood) return;
         isGood = true;
+        try {
+          // calling getIdTokenResult will force authStateChanges to be called again
+          final idToken = await event.getIdTokenResult(
+            forced == false && forceFirst,
+          );
 
-        // calling getIdTokenResult will force authStateChanges to be called again
-        final idToken = await event.getIdTokenResult(
-          forced == false && forceFirst,
-        );
+          injectToken(idToken.token!);
+          final role = idToken.claims?["role"] ?? "";
+          forced = true;
 
-        injectToken(idToken.token!);
-        final role = idToken.claims?["role"] ?? "";
-        forced = true;
-
-        listen(Seller.fromUser(
-          event,
-          role == "seller",
-        ).copyWith(
-          phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
-        ));
+          listen(Seller.fromUser(
+            event,
+            role == "seller",
+          ).copyWith(
+            phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
+          ));
+        } catch (e) {
+          isGood = false;
+          listen(null);
+        }
       }
     });
 
