@@ -66,8 +66,8 @@
 
 
        
-
-        <activity
+        <!--  wihout lock screen -->
+        <!-- <activity
             android:name=".MyMainActivity"
             android:exported="true"
             android:launchMode="singleTop"
@@ -101,7 +101,7 @@
             <data android:scheme="https" />
         </intent-filter>
         
-        </activity>
+        </activity> -->
 
 
         <!-- Don't delete the meta-data below.
