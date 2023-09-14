@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../model/seller.dart';
 import '../repository/cache.dart';
 import '../repository/messages_remote.dart';
 import '../repository/server.dart';
+import 'home_cubit.dart';
 
 class AppState extends Equatable {
   Seller? seller;
@@ -63,10 +66,17 @@ class AppCubit extends Cubit<AppState> {
     Cache.seller = seller;
   }
 
-  Future<void> logOut() async {
+  Future<void> logOut(BuildContext context) async {
+    Cache.clear(); // this will force the entire app to be clear!
+
+    try {
+      await Future.wait([
+        context.read<HomeCubit>().close(),
+      ]);
+    } catch (e) {}
+
     await Server.auth.signOut();
 
-    Cache.clear(); // this will force the entire app to be clear!
     emit(state.copyWith(seller: null));
   }
 }

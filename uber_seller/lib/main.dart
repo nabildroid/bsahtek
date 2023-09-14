@@ -110,7 +110,6 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (ctx) => AppCubit()),
-        BlocProvider(create: (ctx) => HomeCubit()),
       ],
       child: MaterialApp.router(
         routerConfig: goRouter,

@@ -40,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
       checkUser,
       forceFirst: true,
     );
+
+    super.initState();
   }
 
   void checkUser(Seller? user) {

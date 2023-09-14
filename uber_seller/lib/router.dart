@@ -1,11 +1,14 @@
 // private navigators
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:store/screens/Loading_to_home.dart';
 import 'package:store/screens/home.dart';
 import 'package:store/screens/me/account_setting_screen.dart';
 import 'package:store/screens/me/me_screen.dart';
 import 'package:store/screens/me/setting_screen.dart';
+
+import 'cubits/home_cubit.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -23,7 +26,15 @@ final goRouter = GoRouter(
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         // the UI shell
-        return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
+        return MultiBlocProvider(
+          key: Key("prov"),
+          providers: [
+            BlocProvider(create: (ctx) => HomeCubit()),
+          ],
+          child: ScaffoldWithNestedNavigation(
+            navigationShell: navigationShell,
+          ),
+        );
       },
       branches: [
         StatefulShellBranch(

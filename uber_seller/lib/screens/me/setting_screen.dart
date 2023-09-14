@@ -29,7 +29,7 @@ class SettingScreen extends StatelessWidget {
             title: Text("Log out"),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () async {
-              await context.read<AppCubit>().logOut();
+              await context.read<AppCubit>().logOut(context);
               context.go("/loading");
             },
           ),
