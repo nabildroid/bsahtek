@@ -1,5 +1,8 @@
 // private navigators
+import 'package:bsahtak/screens/filters.dart';
+import 'package:bsahtak/screens/location_selector.dart';
 import 'package:bsahtak/screens/offline.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -52,11 +55,26 @@ final goRouter = GoRouter(
           routes: [
             // top route inside branch
             GoRoute(
-              path: '/discover',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: DiscoverScreen(),
-              ),
-            ),
+                path: '/discover',
+                pageBuilder: (context, state) => const MaterialPage(
+                      child: DiscoverScreen(),
+                    ),
+                routes: [
+                  GoRoute(
+                    path: 'filters',
+                    pageBuilder: (context, state) => CupertinoPage(
+                      child: Filters(),
+                      fullscreenDialog: true,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'location-picker',
+                    pageBuilder: (context, state) => CupertinoPage(
+                      child: LocationSelector(),
+                      fullscreenDialog: true,
+                    ),
+                  ),
+                ]),
           ],
         ),
         StatefulShellBranch(
@@ -64,11 +82,19 @@ final goRouter = GoRouter(
           routes: [
             // top route inside branch
             GoRoute(
-              path: '/home',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: HomeScreen(),
-              ),
-            ),
+                path: '/home',
+                pageBuilder: (context, state) => const MaterialPage(
+                      child: HomeScreen(),
+                    ),
+                routes: [
+                  GoRoute(
+                    path: 'location-picker',
+                    pageBuilder: (context, state) => CupertinoPage(
+                      child: LocationSelector(),
+                      fullscreenDialog: true,
+                    ),
+                  ),
+                ]),
           ],
         ),
         StatefulShellBranch(
@@ -131,21 +157,29 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDialog = goRouter.location.endsWith("/filters") ||
+        goRouter.location.endsWith("/location-picker");
+
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        backgroundColor: Colors.white,
-        selectedIndex: navigationShell.currentIndex,
-        elevation: 10,
-        destinations: const [
-          NavigationDestination(label: 'Discover', icon: Icon(Icons.explore)),
-          NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
-          NavigationDestination(label: 'Favorite', icon: Icon(Icons.favorite)),
-          NavigationDestination(label: 'Me', icon: Icon(Icons.person_pin)),
-        ],
-        onDestinationSelected: _goBranch,
-      ),
+      bottomNavigationBar: isDialog
+          ? null
+          : NavigationBar(
+              height: 64,
+              backgroundColor: Colors.white,
+              selectedIndex: navigationShell.currentIndex,
+              elevation: 10,
+              destinations: const [
+                NavigationDestination(
+                    label: 'Discover', icon: Icon(Icons.explore)),
+                NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
+                NavigationDestination(
+                    label: 'Favorite', icon: Icon(Icons.favorite)),
+                NavigationDestination(
+                    label: 'Me', icon: Icon(Icons.person_pin)),
+              ],
+              onDestinationSelected: _goBranch,
+            ),
     );
   }
 }

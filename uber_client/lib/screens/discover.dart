@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/widgets/shared/location_picker.dart';
+import 'package:go_router/go_router.dart';
 
 import '../cubits/home_cubit.dart';
 import '../models/ad.dart';
@@ -76,10 +77,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   children: [
                     LocationPicker(
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => LocationSelector(),
-                        );
+                        context.push("/discover/location-picker");
                       },
                       isTransparent: true,
                     ),
@@ -117,9 +115,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               child: SizedBox(
                                 child: OutlinedButton(
                                   onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (ctx) => Filters());
+                                    context.push("/discover/filters");
                                   },
                                   child: Icon(
                                     Icons.settings,

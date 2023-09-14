@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
@@ -167,10 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       SizedBox(height: 16),
                       LocationPicker(
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => LocationSelector(),
-                          );
+                          context.push("/home/location-picker");
                         },
                         bottomBar: ViewMode(
                           leftLabel: "List",
