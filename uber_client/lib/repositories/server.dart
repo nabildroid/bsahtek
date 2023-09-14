@@ -7,8 +7,8 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 
+import '../models/ad.dart';
 import '../models/bag.dart';
 import '../models/client.dart';
 import '../models/order.dart';
