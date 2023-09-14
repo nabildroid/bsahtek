@@ -17,7 +17,7 @@ export function ListenToAuth(onUser: (user: User) => void) {
     if (user) {
       const data = await user.getIdTokenResult();
       console.log("claims", data.claims);
-      if (data.claims.admin != true) {
+      if (data.claims.role != "admin") {
         AuthClient.signOut();
         Cookies.remove("token");
         Cookies.remove("isLogged");
