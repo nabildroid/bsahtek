@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import * as Schema from "@/db/schema";
 import { IBag } from "@/types";
 import { calculateSquareCenter } from "@/utils/coordination";
+import { revalidateTag } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -106,6 +107,16 @@ export async function POST(request: Request, context: Context) {
   // todo update userClaims
   // todo update the user informations
 
+  const sellerZone = calculateSquareCenter(
+    demand.longitude,
+    demand.latitude,
+    30
+  );
+
+  const zoneID = `${sellerZone.x},${sellerZone.y}`;
+  revalidateTag(`foods-zone-${zoneID}`);
+  console.log("Map zoneID to be revalidated", `foods-zone-${zoneID}`);
+
   if (demand.bagID) {
     await db
       .update(Schema.bagsTable)
@@ -121,17 +132,11 @@ export async function POST(request: Request, context: Context) {
       .values(bagData)
       .execute();
 
-    const sellerZone = calculateSquareCenter(
-      demand.longitude,
-      demand.latitude,
-      30
-    );
-
     // update the quantities
     await firebase
       .firestore()
       .collection("zones")
-      .doc(`${sellerZone.x},${sellerZone.y}`)
+      .doc(zoneID)
       .set(
         {
           quantities: {

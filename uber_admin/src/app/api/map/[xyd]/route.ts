@@ -10,7 +10,10 @@ import {
 import { BlocForNot, VerificationError } from "../../repository/firebase";
 import secureHash from "../../utils";
 
-export const dynamic = "force-dynamic";
+import { unstable_cache as cache } from "next/cache";
+
+
+
 
 export async function GET(
   req: Request,
@@ -36,7 +39,36 @@ export async function GET(
     addKilometersToLongitude(originalY, distance / 2),
   ];
 
-  const rows = await db
+
+  const zoneID = `foods-zone-${x},${y}`;
+  
+  console.log("Map zoneID ",zoneID);
+  const foods = await cache(() => getFoods(boundryX, boundryY), [zoneID], {
+    tags: [zoneID],
+  })();
+
+  // todo make it ovious like create a subtype of a computed field in the database!
+
+  const enrishedFoods = await Promise.all(
+    foods.map(async (r) => ({
+      ...r,
+      hash: await secureHash(
+        r.windowStart.toString() + r.windowEnd.toString() + r.id
+      ),
+    }))
+  );
+
+  console.log(originalX, originalY, foods.length);
+  return NextResponse.json({
+    x,
+    originalX,
+    params: boundryX,
+    foods: enrishedFoods, //todo rename it to product!
+  });
+}
+
+async function getFoods(boundryX: number[], boundryY: number[]) {
+  return await db
     .select()
     .from(Schema.bagsTable)
     .where(
@@ -46,23 +78,8 @@ export async function GET(
       )
     )
     .execute();
-
-  // todo make it ovious like create a subtype of a computed field in the database!
-
-  const enrishedFoods = await Promise.all(
-    rows.map(async (r) => ({
-      ...r,
-      hash: await secureHash(
-        r.windowStart.toString() + r.windowEnd.toString() + r.id
-      ),
-    }))
-  );
-
-  console.log(originalX, originalY, rows.length);
-  return NextResponse.json({
-    x,
-    originalX,
-    params: boundryX,
-    foods: enrishedFoods, //todo rename it to product!
-  });
 }
+
+
+
+export const revalidate = 100000;
