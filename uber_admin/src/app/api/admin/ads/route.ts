@@ -5,6 +5,7 @@ import firebase, {
 } from "../../repository/firebase";
 import { Ad, IAd } from "@/utils/types";
 import { z } from "zod";
+import { revalidateTag } from "next/cache";
 
 const ref = firebase.firestore().collection("ads");
 
@@ -30,6 +31,9 @@ export async function POST(request: Request) {
     await ref.add({ ...ad });
   }
 
+  revalidateTag("ads");
+  revalidateTag("ads");
+
   return NextResponse.json({});
 }
 
@@ -39,6 +43,9 @@ export async function DELETE(request: Request) {
   const data = await request.json();
   const id = z.string().parse(data.id);
   await ref.doc(id).delete();
+
+  revalidateTag("ads");
+  revalidateTag("ads");
 
   return NextResponse.json({});
 }
