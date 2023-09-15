@@ -1,4 +1,4 @@
-import { addOrder } from "@/app/api/order/route";
+import { addOrder, oneOrderAday } from "@/app/api/order/route";
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -65,8 +65,9 @@ export async function POST(request: Request, context: Context) {
 
     try {
       const order = await addOrder(demand.requestedOrder);
-
       await notifyClient(clientID, order);
+
+      await oneOrderAday(order.clientID);
     } catch (e) {
       console.error("order didn't go through");
     }

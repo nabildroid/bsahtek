@@ -78,7 +78,7 @@ async function ensureWithinTimeslot(order: INewOrder) {
   return true;
 }
 
-async function oneOrderAday(clientID: string) {
+export async function oneOrderAday(clientID: string) {
   const lastOrder = await redis.hget("daily_orders", clientID);
 
   if (!lastOrder || lastOrder != new Date().toLocaleDateString()) {
