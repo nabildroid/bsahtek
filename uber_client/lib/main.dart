@@ -1,3 +1,4 @@
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:bsahtak/repositories/cache.dart';
 import 'package:bsahtak/repositories/messages_remote.dart';
 import 'package:bsahtak/repositories/server.dart';
@@ -14,7 +15,8 @@ import 'cubits/home_cubit.dart';
 import 'repositories/notifications.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

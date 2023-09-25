@@ -60,11 +60,20 @@ dependencies:
 
   flutter_otp_text_field:
   firebase_crashlytics: ^3.3.5
+  flutter_native_splash: ^2.3.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons:
+  build_runner:
+
+
+flutter_native_splash:
+  color: "#fafaf5"
+  image: "assets/logo.png"
+
+
 
 flutter_launcher_icons:
   android: "launcher_icon"
