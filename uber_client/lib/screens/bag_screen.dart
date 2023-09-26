@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'dart:math';
 
 import 'package:android_intent_plus/android_intent.dart';
@@ -16,12 +18,23 @@ import '../cubits/app_cubit.dart';
 import '../models/clientSubmit.dart';
 import '../repositories/gps.dart';
 import '../repositories/server.dart';
+import '../utils/utils.dart';
 
 class BagScreen extends StatefulWidget {
   final Bag bag;
 
   static go(BuildContext context, Bag bag) {
     Navigator.of(context).push(MaterialPageRoute(
+      builder: (ctx) {
+        return BagScreen(
+          bag: bag,
+        );
+      },
+    ));
+  }
+
+  static replace(BuildContext context, Bag bag) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
       builder: (ctx) {
         return BagScreen(
           bag: bag,
@@ -41,6 +54,9 @@ class BagScreen extends StatefulWidget {
 
 // todo refactor this to cubit
 class _BagScreenState extends State<BagScreen> {
+  bool isOrderActionOnView =
+      false; // used to animate the order button after sometime
+
   bool goingToReserve = false;
   int quantity = 1;
   bool isPickup = true;
@@ -178,6 +194,9 @@ class _BagScreenState extends State<BagScreen> {
     });
 
     phone.addListener(_formatPhoneNumber);
+
+    Future.delayed(Duration(seconds: 1))
+        .then((_) => setState(() => isOrderActionOnView = true));
   }
 
   @override
@@ -301,6 +320,10 @@ class _BagScreenState extends State<BagScreen> {
                                       tag: "Bag-Seller-Photo${widget.bag.id}",
                                       child: CircleAvatar(
                                         radius: 26,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .tertiary
+                                            .withOpacity(.2),
                                         backgroundImage: NetworkImage(
                                           widget.bag.sellerPhoto,
                                         ),
@@ -340,11 +363,14 @@ class _BagScreenState extends State<BagScreen> {
                                         children: [
                                           Icon(
                                             Icons.shopping_bag_outlined,
-                                            color: Colors.green.shade900,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .tertiary,
                                           ),
                                           SizedBox(width: 8),
                                           Text(
-                                            widget.bag.name,
+                                            Utils.splitTranslation(
+                                                widget.bag.name, context),
                                             style: TextStyle(
                                               fontSize: 16,
                                             ),
@@ -356,7 +382,9 @@ class _BagScreenState extends State<BagScreen> {
                                         children: [
                                           Icon(
                                             Icons.star,
-                                            color: Colors.green.shade900,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .tertiary,
                                           ),
                                           SizedBox(width: 8),
                                           Text(
@@ -376,7 +404,9 @@ class _BagScreenState extends State<BagScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    widget.bag.originalPrice.toString() + "dz",
+                                    widget.bag.originalPrice.toString() +
+                                        AppLocalizations.of(context)!
+                                            .bag_price_unit,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey,
@@ -388,10 +418,13 @@ class _BagScreenState extends State<BagScreen> {
                                     height: 8,
                                   ),
                                   Text(
-                                    widget.bag.price.toString() + "dz",
+                                    widget.bag.price.toString() +
+                                        AppLocalizations.of(context)!
+                                            .bag_price_unit,
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: Colors.green.shade800,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -403,10 +436,12 @@ class _BagScreenState extends State<BagScreen> {
                           ListTile(
                             leading: Icon(
                               Icons.location_on,
-                              color: Colors.green.shade900,
+                              color: Theme.of(context).colorScheme.tertiary,
                             ),
-                            title: Text(widget.bag.sellerAddress),
-                            subtitle: Text("see seller address on google map"),
+                            title: Text(Utils.splitTranslation(
+                                widget.bag.sellerAddress, context)),
+                            subtitle: Text(AppLocalizations.of(context)!
+                                .bag_seller_location),
                             trailing: Icon(Icons.chevron_right),
                             onTap: () {
                               AndroidIntent(
@@ -422,7 +457,7 @@ class _BagScreenState extends State<BagScreen> {
                                     vertical: 8.0, horizontal: 20)
                                 .copyWith(),
                             child: Text(
-                              "Description",
+                              AppLocalizations.of(context)!.bag_description,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -430,75 +465,118 @@ class _BagScreenState extends State<BagScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20)
-                                .copyWith(
-                              bottom: photoHeight * .6,
-                            ),
-                            child: Text(widget.bag.description),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(Utils.splitTranslation(
+                                widget.bag.description, context)),
                           ),
+                          if (maxQuantity < 1) ...[
+                            SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 20)
+                                  .copyWith(),
+                              child: Text(
+                                AppLocalizations.of(context)!.bag_related,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            InlineSuggestions(suggestions: [
+                              ...relatedBags.map(
+                                (e) => InlineSuggestion(
+                                  id: e.id.toString(),
+                                  title: e.sellerName,
+                                  subtitle: e.name,
+                                  image: e.sellerPhoto,
+                                  thirdtitle: e.description,
+                                  quantity: 100,
+                                  onTap: () {
+                                    BagScreen.replace(context, e);
+                                  },
+                                ),
+                              )
+                            ], onView: (_) => {}),
+                          ],
+                          SizedBox(height: photoHeight * .6),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              if (context.watch<HomeCubit>().state.runningOrder == null || true)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    color: Colors.white,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
+              if (context.watch<HomeCubit>().state.runningOrder == null)
+                Opacity(
+                  opacity: isOrderActionOnView ? 1 : 0,
+                  child: AnimatedSlide(
+                    duration: Duration(milliseconds: 350),
+                    offset: Offset(0, isOrderActionOnView ? 0 : 2),
+                    curve: Curves.easeInOutExpo,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration:
+                            BoxDecoration(color: Colors.white, boxShadow: [
+                          BoxShadow(
+                            offset: Offset(0, -2),
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            spreadRadius: 2,
+                          )
+                        ]),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: TextButton(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      maxQuantity > 0
-                                          ? Colors.green.shade700
-                                          : Colors.grey),
-                                  shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextButton(
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              maxQuantity > 0
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary),
+                                      shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                        ),
+                                      ),
+                                      foregroundColor:
+                                          MaterialStateProperty.all(
+                                              Colors.white),
                                     ),
+                                    onPressed: () {
+                                      if (maxQuantity == 0) {
+                                        _controller.animateTo(100000,
+                                            duration:
+                                                Duration(milliseconds: 350),
+                                            curve: Curves.easeInOutExpo);
+                                        return;
+                                      }
+                                      setState(() {
+                                        goingToReserve = true;
+                                      });
+                                    },
+                                    child: Text(maxQuantity > 0
+                                        ? AppLocalizations.of(context)!
+                                            .bag_order_order
+                                        : AppLocalizations.of(context)!
+                                            .bag_order_nothing),
                                   ),
-                                  foregroundColor:
-                                      MaterialStateProperty.all(Colors.white),
                                 ),
-                                onPressed: () {
-                                  if (maxQuantity == 0) return;
-                                  setState(() {
-                                    goingToReserve = true;
-                                  });
-                                },
-                                child: Text(maxQuantity > 0
-                                    ? "Order"
-                                    : "Reviens demain"),
-                              ),
+                              ],
                             ),
                           ],
                         ),
-                        if (maxQuantity < 1) ...[
-                          InlineSuggestions(suggestions: [
-                            ...relatedBags.map(
-                              (e) => InlineSuggestion(
-                                id: e.id.toString(),
-                                title: e.sellerName,
-                                subtitle: e.name,
-                                image: e.sellerPhoto,
-                                thirdtitle: e.description,
-                                quantity: 100,
-                                onTap: () {
-                                  BagScreen.go(context, e);
-                                },
-                              ),
-                            )
-                          ], onView: (_) => {})
-                        ]
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -530,7 +608,8 @@ class _BagScreenState extends State<BagScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        "Let's active your Account",
+                                        AppLocalizations.of(context)!
+                                            .bag_order_activate_title,
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w600,
@@ -549,7 +628,9 @@ class _BagScreenState extends State<BagScreen> {
                                                 BorderRadius.circular(10),
                                             borderSide: BorderSide.none,
                                           ),
-                                          hintText: "Name",
+                                          hintText:
+                                              AppLocalizations.of(context)!
+                                                  .bag_order_activate_name,
                                         ),
                                         validator: (value) {
                                           if (value == null ||
@@ -574,7 +655,9 @@ class _BagScreenState extends State<BagScreen> {
                                                 BorderRadius.circular(10),
                                             borderSide: BorderSide.none,
                                           ),
-                                          hintText: "phone",
+                                          hintText:
+                                              AppLocalizations.of(context)!
+                                                  .bag_order_activate_phone,
                                         ),
                                         validator: (value) {
                                           if (value == null ||
@@ -597,7 +680,9 @@ class _BagScreenState extends State<BagScreen> {
                                                 BorderRadius.circular(10),
                                             borderSide: BorderSide.none,
                                           ),
-                                          hintText: "Email",
+                                          hintText:
+                                              AppLocalizations.of(context)!
+                                                  .bag_order_activate_email,
                                         ),
                                         validator: (value) {
                                           if (value == null) return null;
@@ -620,7 +705,9 @@ class _BagScreenState extends State<BagScreen> {
                                                 BorderRadius.circular(10),
                                             borderSide: BorderSide.none,
                                           ),
-                                          hintText: "Address",
+                                          hintText:
+                                              AppLocalizations.of(context)!
+                                                  .bag_order_activate_address,
                                         ),
                                         validator: (value) {
                                           if (value == null ||
@@ -634,11 +721,14 @@ class _BagScreenState extends State<BagScreen> {
                                       ),
                                       SizedBox(height: 16),
                                       ElevatedButton(
-                                        child: Text("Activate"),
+                                        child: Text(
+                                            AppLocalizations.of(context)!
+                                                .bag_order_activate_action),
                                         onPressed: activateAccount,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              Colors.green.shade700,
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                           elevation: 0,
                                           minimumSize:
                                               Size(double.infinity, 50),
@@ -671,11 +761,13 @@ class _BagScreenState extends State<BagScreen> {
                                 ),
                                 Divider(height: 32),
                                 Text(
-                                  "Select quantity",
+                                  AppLocalizations.of(context)!
+                                      .bag_order_quantity,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.green.shade900,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                                 SizedBox(height: 16),
@@ -686,7 +778,9 @@ class _BagScreenState extends State<BagScreen> {
                                     CircleAvatar(
                                       backgroundColor: quantity < 2
                                           ? Colors.black12
-                                          : Colors.green.shade700,
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                       child: IconButton(
                                         onPressed: () {
                                           setState(() {
@@ -710,7 +804,9 @@ class _BagScreenState extends State<BagScreen> {
                                         fontSize: 32,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: "monospace",
-                                        color: Colors.green.shade900,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                       ),
                                     ),
                                     SizedBox(
@@ -719,7 +815,9 @@ class _BagScreenState extends State<BagScreen> {
                                     CircleAvatar(
                                       backgroundColor: quantity >= maxQuantity
                                           ? Colors.black12
-                                          : Colors.green.shade700,
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                       child: IconButton(
                                         onPressed: () {
                                           setState(() {
@@ -749,14 +847,18 @@ class _BagScreenState extends State<BagScreen> {
                                 //   ),
                                 // ),
                                 ListTile(
-                                  title: Text("Total"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .bag_order_total),
                                   trailing: Text(
                                     (widget.bag.price * quantity)
                                             .toStringAsFixed(2) +
-                                        "dz",
+                                        AppLocalizations.of(context)!
+                                            .bag_price_unit,
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: Colors.green.shade800,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                       fontWeight: FontWeight.bold,
                                       fontFamily: "monospace",
                                     ),
@@ -771,7 +873,9 @@ class _BagScreenState extends State<BagScreen> {
                                               ? MaterialStateProperty.all(
                                                   Colors.grey.shade600)
                                               : MaterialStateProperty.all(
-                                                  Colors.green.shade700),
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .primary),
                                           shape: MaterialStateProperty.all(
                                             RoundedRectangleBorder(
                                               borderRadius:
@@ -808,7 +912,9 @@ class _BagScreenState extends State<BagScreen> {
                                                   : distance > 50
                                                       ? Text("Too Far")
                                                       : Text(
-                                                          "Reserve Now",
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .bag_order_reserve,
                                                           key: ValueKey(
                                                               "Reserve Now"),
                                                         ),

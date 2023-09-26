@@ -1,3 +1,6 @@
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:bsahtak/repositories/cache.dart';
 import 'package:bsahtak/repositories/messages_remote.dart';
@@ -8,10 +11,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 
 import 'cubits/app_cubit.dart';
 import 'cubits/bags_cubit.dart';
 import 'cubits/home_cubit.dart';
+import 'cubits/static_provider.dart';
 import 'repositories/notifications.dart';
 
 void main() async {
@@ -39,7 +45,12 @@ void main() async {
     };
   }
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => StaticProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -54,10 +65,29 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         routerConfig: goRouter,
+        supportedLocales: [
+          Locale('en'),
+          Locale('fr'),
+          Locale('ar'),
+        ],
+        localizationsDelegates: [
+          AppLocalizations.delegate, // Add this line
+
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         debugShowCheckedModeBanner: false,
+        locale: context.watch<StaticProvider>().locale,
         title: 'Bsahtak',
         theme: ThemeData(
-          primarySwatch: Colors.green,
+          textTheme: GoogleFonts.rubikTextTheme(),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.teal,
+            primary: Colors.teal.shade800,
+            tertiary: Colors.teal.shade600.withAlpha(150),
+          ),
+          canvasColor: Color.fromARGB(255, 243, 248, 248),
         ),
       ),
     );

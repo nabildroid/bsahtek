@@ -26,6 +26,8 @@ class ViewMode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8),
       child: ClipRRect(
@@ -47,7 +49,7 @@ class ViewMode extends StatelessWidget {
                     widthFactor: .5,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.green.shade600.withOpacity(.8),
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
@@ -56,27 +58,32 @@ class ViewMode extends StatelessWidget {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => onClick(true),
+                      onTap: () => onClick(true && !isRtl),
                       child: Container(
                           color: Colors.transparent,
                           child: Center(
                             child: Text(
-                              leftLabel,
-                              style:
-                                  !leftSelected ? disabledStyle : activeStyle,
+                              isRtl ? rightLabel : leftLabel,
+                              style: (!isRtl && !leftSelected ||
+                                      isRtl && leftSelected)
+                                  ? disabledStyle
+                                  : activeStyle,
                             ),
                           )),
                     ),
                   ),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => onClick(false),
+                      onTap: () => onClick(false || isRtl),
                       child: Container(
                           color: Colors.transparent,
                           child: Center(
                             child: Text(
-                              rightLabel,
-                              style: leftSelected ? disabledStyle : activeStyle,
+                              !isRtl ? rightLabel : leftLabel,
+                              style: (!isRtl && leftSelected ||
+                                      isRtl && !leftSelected)
+                                  ? disabledStyle
+                                  : activeStyle,
                             ),
                           )),
                     ),

@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -125,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     return SizedBox.expand(
                       child: FractionallySizedBox(
                           alignment: Alignment.bottomCenter,
-                          heightFactor: .65,
+                          heightFactor: .7,
                           child: ListView.builder(
                             itemBuilder: (ctx, index) {
                               final spot = state.filtredBags[index];
@@ -133,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 id: spot.id,
                                 title: spot.name,
                                 subtitle: spot.sellerAddress,
-                                chip: "Bag 1",
                                 discountPrice: spot.originalPrice.toString(),
                                 distance: (Geolocator.distanceBetween(
                                           spot.latitude,
@@ -171,8 +172,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           context.push("/home/location-picker");
                         },
                         bottomBar: ViewMode(
-                          leftLabel: "List",
-                          rightLabel: "Map",
+                          leftLabel:
+                              AppLocalizations.of(context)!.home_view_list,
+                          rightLabel:
+                              AppLocalizations.of(context)!.home_view_map,
                           leftSelected: !isMap,
                           onClick: (isLeft) => setState(() => isMap = !isLeft),
                         ),

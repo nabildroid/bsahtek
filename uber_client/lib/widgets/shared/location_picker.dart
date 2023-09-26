@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
@@ -50,9 +52,9 @@ class LocationPicker extends StatelessWidget {
               child: Column(
                 children: [
                   Row(children: [
-                    const Icon(
+                    Icon(
                       Icons.location_pin,
-                      color: Colors.green,
+                      color: Theme.of(context).colorScheme.tertiary,
                     ),
                     const SizedBox(width: 8),
                     if (currentArea != null)
@@ -68,20 +70,24 @@ class LocationPicker extends StatelessWidget {
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: Colors.green.shade800),
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "within ${currentArea!.radius} km",
-                              style: TextStyle(color: Colors.green.shade600),
+                              AppLocalizations.of(context)!
+                                  .home_location_within(currentArea.radius),
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary),
                             ),
                           ],
                         ),
                       ),
-                    const Icon(
+                    Icon(
                       Icons.keyboard_arrow_down_outlined,
-                      color: Colors.green,
+                      color: Theme.of(context).colorScheme.tertiary,
                     ),
                   ]),
                   if (bottomBar != null) ...[

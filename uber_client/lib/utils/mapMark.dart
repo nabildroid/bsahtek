@@ -90,7 +90,7 @@ class MapMark {
 
   void _drawDefaultCircle(Canvas canvas, int width, {bool isActive = true}) {
     final paint = Paint()
-      ..color = isActive ? Colors.green.shade700 : Colors.grey.shade600
+      ..color = isActive ? Colors.teal.shade700 : Colors.grey.shade600
       ..strokeWidth = 2
       ..style = PaintingStyle.fill;
 

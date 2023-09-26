@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -74,7 +76,7 @@ class _AllowGPSPopupState extends State<AllowGPSPopup> {
     return SimpleDialog(
       insetPadding: EdgeInsets.all(16),
       title: Text(
-        'We Need Your Permission to use your Location',
+        AppLocalizations.of(context)!.home_gps_confirm_title,
         style: TextStyle(
           fontSize: 21,
           color: Colors.black87,
@@ -86,7 +88,7 @@ class _AllowGPSPopupState extends State<AllowGPSPopup> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'To see stores around you, please turn on location access or choose a location',
+            AppLocalizations.of(context)!.home_gps_confirm_description,
             style: TextStyle(
               fontSize: 16,
               color: Colors.black54,
@@ -99,7 +101,7 @@ class _AllowGPSPopupState extends State<AllowGPSPopup> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text("Allow",
+            child: Text(AppLocalizations.of(context)!.home_gps_confirm_action,
                 style: TextStyle(
                   fontSize: 16,
                 )),

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubits/app_cubit.dart';
 import '../../models/ad.dart';
+import '../../utils/utils.dart';
 
 abstract class InlineSuggestionBase {}
 
@@ -142,6 +143,9 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
     final target = ads.where((element) => element.location == "home").toList();
     mergeAds(target);
 
+    final of_translation =
+        Directionality.of(context) == TextDirection.rtl ? "من" : "of";
+
     return SizedBox(
         height: 110,
         child: PageView.builder(
@@ -184,7 +188,7 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            "${index + 1} of ${inlineSuggestions.length}",
+                            "${index + 1} ${of_translation} ${inlineSuggestions.length}",
                             style: TextStyle(
                               color: Colors.grey.shade600,
                               fontSize: 12,
@@ -235,7 +239,7 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                               ),
                             ),
                             title: Text(
-                              suggestion.title,
+                              Utils.splitTranslation(suggestion.title, context),
                               maxLines: 1,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -243,7 +247,8 @@ class _InlineSuggestionsState extends State<InlineSuggestions> {
                               ),
                             ),
                             subtitle: Text(
-                              suggestion.subtitle,
+                              Utils.splitTranslation(
+                                  suggestion.subtitle, context),
                               maxLines: 1,
                               style: TextStyle(
                                 color: Colors.black,

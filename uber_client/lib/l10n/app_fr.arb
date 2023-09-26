@@ -1,0 +1,87 @@
+{
+  "appName": "Bsahtak",
+  "slogan":"Bonne Nourriture, Bon Prix",
+  "login_title":"Obtenez meilleures offres\nLutte contre le gaspillage",
+  "login_term_inform":"vous acceptez notre",
+  "login_term_action":"conditions et services",
+  "login_google":"Connectez avec Google",
+  "login_facebook":"Connectez avec Facebook",
+  "login_region_title":"Préférences de région",
+  "login_region_continue":"Continuer",
+  "login_region_language":"Langue",
+  "login_region_country":"Choisissez un pays",
+
+
+  "me_label":"Profile",
+  "me_title":"Vos commandes",
+  "me_status_pending":"PENDING1",
+  "me_status_pickup":"Récupéré",
+  "me_status_expired":"Expiré",
+  "me_status_progress":"IN PROGRESS1",
+  "me_status_delivred":"Récupéré",
+  "me_settings":"Paramètres",
+  "me_account_settings":"Paramètres du compte",
+  "me_personalInfo":"Informations personnelles",
+  "me_name":"Nom",
+  "me_phone":"Numéro de téléphone",
+  "me_logout":"Déconnexion",
+  "me_deleteAccount":"Termes et conditions",
+  "me_terms":"Politique de confidentialité",
+  "me_privacy":"Privacy Policy",
+  "me_fqa":"FQA",
+
+
+  "bag_order_activate_title":"Activons votre compte",
+  "bag_order_activate_action":"Activer",
+  "bag_order_activate_name":"Nom",
+  "bag_order_activate_phone":"Numéro de téléphone",
+  "bag_order_activate_email":"email",
+  "bag_order_activate_address":"Adresse",
+  
+  "bag_order_nothing":"A demain",
+  "bag_order_quantity":"Sélectionner la quantité",
+  "bag_order_total":"Total",
+  "bag_order_reserve":"Réserver maintenant",
+  "bag_order_order":"Commander",
+  "bag_price_unit":"dz",
+  "bag_seller_location":"Voir l'adresse du vendeur sur Google Maps",
+  "bag_description":"Description",
+  "bag_related":"Produits similaires",
+
+  "home_label":"ACCUEIL",
+  "home_view_map":"Map",
+  "home_view_list":"Liste",
+  "home_location_within":"Rayon de {distance} km",
+  "@home_location_within": {
+    "placeholders": {
+      "distance": {
+        "type": "dynamic"
+      }
+    }
+  },
+  "home_location_title":"Choose a location to see\nwhat's available",
+  "home_location_distance_select":"Sélectionner une distance",
+  "home_location_search":"Rechercher une ville",
+  "home_location_useGPS":"Utiliser ma position actuelle",
+  "home_location_select":"Choisir cet emplacement",
+  "home_location_km":"km",
+  
+  "home_gps_confirm_title":"Besoin d'accéder à votre emplacement",
+  "home_gps_confirm_description":"Pour voir les magasins autour de vous, veuillez activer l'accès à la localisation ou choisir un emplacement",
+  "home_gps_confirm_action":"Permettre",
+
+
+  "discover_label":"Découvrir",
+  "discover_search":"Rechercher",
+  "discover_recommanded":"Recommandé pour vous",
+  "discover_before_end":"Enregistrer avant la fin",
+  "discover_seeall":"Tout voir",
+
+  "filter_title":"Filtres",
+  "filter_hide_soldout":"Masquer les paniers épuisés",
+  "filter_type":"Types de paniers",
+
+
+  "favorite_label":"Favoris"
+  
+}

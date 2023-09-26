@@ -41,8 +41,9 @@ class InlineFilters extends StatelessWidget {
                     padding: EdgeInsets.only(left: 16),
                     child: TextButton(
                       style: TextButton.styleFrom(
-                        backgroundColor:
-                            selected ? Colors.green.shade800 : Colors.white,
+                        backgroundColor: selected
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.white,
                         elevation: .5,
                       ),
                       onPressed: () {
@@ -51,7 +52,9 @@ class InlineFilters extends StatelessWidget {
                       child: Text(
                         tag,
                         style: TextStyle(
-                          color: selected ? Colors.white : Colors.black54,
+                          color: selected
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

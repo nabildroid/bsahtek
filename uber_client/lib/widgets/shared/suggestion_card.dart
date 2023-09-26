@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../../utils/utils.dart';
+
 class SuggestionCard extends StatelessWidget {
   // todo why not accepting the entire bag as a parameter?
   final String title;
@@ -156,23 +160,29 @@ class SuggestionCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              title,
+                              Utils.splitTranslation(title, context),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            if (title.length < 25)
+                            if (Utils.splitTranslation(title, context).length <
+                                25)
                               Text(
-                                subtitle,
+                                Utils.splitTranslation(subtitle, context),
                                 style: TextStyle(
                                   fontSize: 16,
                                 ),
                               ),
                             Align(
-                              alignment: Alignment.centerRight,
+                              alignment: Directionality.of(context) ==
+                                      TextDirection.rtl
+                                  ? Alignment.centerLeft
+                                  : Alignment.centerRight,
                               child: Text(
-                                price + "dz",
+                                price +
+                                    AppLocalizations.of(context)!
+                                        .bag_price_unit,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey,
@@ -184,8 +194,9 @@ class SuggestionCard extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.star,
-                                  color: Colors.green.shade800,
+                                  color: Theme.of(context).colorScheme.tertiary,
                                 ),
+                                SizedBox(width: 2),
                                 Text(
                                   rating,
                                   style: TextStyle(
@@ -200,7 +211,9 @@ class SuggestionCard extends StatelessWidget {
                                   thickness: 4,
                                 ),
                                 Text(
-                                  "$distance km",
+                                  "$distance " +
+                                      AppLocalizations.of(context)!
+                                          .home_location_km,
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -208,10 +221,13 @@ class SuggestionCard extends StatelessWidget {
                                 ),
                                 Spacer(),
                                 Text(
-                                  discountPrice + "dz",
+                                  discountPrice +
+                                      AppLocalizations.of(context)!
+                                          .bag_price_unit,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.green.shade800,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

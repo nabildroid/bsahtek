@@ -1,0 +1,84 @@
+{
+  "appName": "بصحتك - Bsahtak",
+  "slogan":"طعام جيد، سعر جيد",
+  "login_title":"احصل على أفضل العروض\nحارب هدر الطعام",
+  "login_term_inform":" توافق على",
+  "login_term_action":"الشروط والأحكام",
+  "login_google":"تسجيل عبر جوجل",
+  "login_facebook":"تسجيل عبر الفيسبوك",
+
+  "login_region_title":"اعدادات المنطقة",
+  "login_region_continue":"التالي",
+  "login_region_language":"اللغة",
+  "login_region_country":"اختيار البلد",
+
+
+  "me_label":"حسابي",
+  "me_title":"طلباتك",
+  "me_status_pending":"قيد الانتظار",
+  "me_status_pickup":"تم الاستلام",
+  "me_status_expired":"انتهى العرض",
+  "me_status_progress":"في تَقَدم",
+  "me_status_delivred":"تم الاستلام",
+  "me_settings":"إعدادات",
+  "me_account_settings":"إعدادات الحساب",
+  "me_personalInfo":"معلومات شخصية",
+  "me_name":"الاسم",
+  "me_phone":"رقم الهاتف",
+  "me_logout":"تسجيل الخروج",
+  "me_deleteAccount":"delete my account",
+  "me_terms":"الشروط والأحكام",
+  "me_privacy":"سياسة الخصوصية",
+  "me_fqa":"الأسئلة الشائعة",
+
+  "bag_order_activate_title":"دعنا نفعل حسابك",
+  "bag_order_activate_action":"تفعيل",
+  "bag_order_activate_name":"الاسم",
+  "bag_order_activate_phone":"هاتف",
+  "bag_order_activate_email":"بريد إلكتروني",
+  "bag_order_activate_address":"عنوان",
+
+  "bag_order_nothing":"حاول غدا",
+  "bag_order_quantity":"اختر الكمية",
+  "bag_order_total":"المجموع",
+  "bag_order_reserve":"احجز الآن",
+  "bag_order_order":"الطلب",
+  "bag_price_unit":"د.ج",
+  "bag_seller_location":"عنوان البائع على خرائط google",
+  "bag_description":"الوصف",
+  "bag_related":"منتجات ذات صله",
+
+  "home_label":"إستقبال",
+  "home_view_map":"خريطة",
+  "home_view_list":"قائمة",
+  "home_location_within":"في حدود {distance} كم",
+  "@home_location_within": {
+    "placeholders": {
+      "distance": {
+        "type": "dynamic"
+      }
+    }
+  },
+  "home_location_title":"اختر موقعًا لرؤية ما هو متاح",
+  "home_location_distance_select":"اختيار المسافة",
+  "home_location_search":"البحث عن مدينة",
+  "home_location_useGPS":"استخدام موقعي الحالي",
+  "home_location_select":"اختيار هذا الموقع",
+  "home_location_km":"كم",
+
+  "home_gps_confirm_title":"نحن بحاجة إلى إذنك لاستخدام موقعك",
+  "home_gps_confirm_description":"لرؤية المتاجر من حولك، يرجى تشغيل الوصول إلى الموقع أو اختيار موقع",
+  "home_gps_confirm_action":"يسمح",
+
+  "discover_label":"اكتشاف",
+  "discover_search":"البحث",
+  "discover_recommanded":"موصى به لك",
+  "discover_before_end":"حفظ قبل الانتهاء",
+  "discover_seeall":"مشاهدة الكل",
+
+  "filter_title":"مرشحات",
+  "filter_hide_soldout":"إخفاء العلب المباعة",
+  "filter_type":"أنواع العلب",
+  "favorite_label":"المفضلة"
+  
+}

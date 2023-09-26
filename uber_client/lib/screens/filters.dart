@@ -1,3 +1,4 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class _FiltersState extends State<Filters> {
                 ],
               ),
               Text(
-                "Filters",
+                AppLocalizations.of(context)!.filter_title,
                 style: TextStyle(
                   fontSize: 21,
                   fontWeight: FontWeight.w700,
@@ -55,7 +56,7 @@ class _FiltersState extends State<Filters> {
               ),
               Divider(),
               ListTile(
-                title: Text("Hide sold-out Bags"),
+                title: Text(AppLocalizations.of(context)!.filter_hide_soldout),
                 trailing: Checkbox(
                   value: !currentFilter.showSoldOut,
                   onChanged: (v) {
@@ -76,7 +77,7 @@ class _FiltersState extends State<Filters> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        "Bag Types",
+                        AppLocalizations.of(context)!.filter_type,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -102,11 +103,11 @@ class _FiltersState extends State<Filters> {
                               return ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: selected
-                                      ? Colors.green.shade700
+                                      ? Theme.of(context).colorScheme.primary
                                       : Colors.white,
                                   elevation: !selected ? 4 : 0,
                                   foregroundColor: !selected
-                                      ? Colors.green.shade700
+                                      ? Theme.of(context).colorScheme.primary
                                       : Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -160,7 +161,7 @@ class _FiltersState extends State<Filters> {
                     )),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade900,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       padding: EdgeInsets.symmetric(
                           horizontal: MediaQuery.of(context).size.width * .2,
                           vertical: 16),

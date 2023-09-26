@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +30,7 @@ class MeScreen extends StatelessWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
-            "Your Orders",
+            AppLocalizations.of(context)!.me_title,
             style: TextStyle(color: Colors.black),
           ),
           actions: [
@@ -45,7 +47,7 @@ class MeScreen extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                color: Colors.green.shade300.withOpacity(.8),
+                color: Theme.of(context).colorScheme.tertiary.withOpacity(.8),
                 padding: EdgeInsets.only(top: 80, bottom: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -94,7 +96,9 @@ class MeScreen extends StatelessWidget {
                                                     BorderRadius.circular(200),
                                                 child: ColorFiltered(
                                                   colorFilter: ColorFilter.mode(
-                                                      Colors.green.shade600
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .tertiary
                                                           .withOpacity(.3),
                                                       BlendMode.srcOver),
                                                   child: CircleAvatar(
@@ -125,7 +129,9 @@ class MeScreen extends StatelessWidget {
                                           text: order.bagPrice + "dz",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.green.shade800,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
                                         ),
                                         TextSpan(
@@ -153,20 +159,32 @@ class MeScreen extends StatelessWidget {
                                       ),
                                       Text(
                                         order.id == Constants.notActiveOrderID
-                                            ? "PENDING"
+                                            ? AppLocalizations.of(context)!
+                                                .me_status_pending
                                             : order.expired
-                                                ? "EXPIRED"
+                                                ? AppLocalizations.of(context)!
+                                                    .me_status_expired
                                                 : order.inProgress
-                                                    ? "IN PROGRESS"
+                                                    ? AppLocalizations.of(
+                                                            context)!
+                                                        .me_status_progress
                                                     : order.isPickup
-                                                        ? "PICKUP"
-                                                        : "DELIVERED",
+                                                        ? AppLocalizations.of(
+                                                                context)!
+                                                            .me_status_pickup
+                                                        : AppLocalizations.of(
+                                                                context)!
+                                                            .me_status_delivred,
                                         style: TextStyle(
                                           color: order.expired
                                               ? Colors.red.shade600
                                               : order.inProgress
-                                                  ? Colors.green.shade800
-                                                  : Colors.grey.shade600,
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -183,26 +201,26 @@ class MeScreen extends StatelessWidget {
               SizedBox(height: 20),
               ListTile(
                 leading: Icon(Icons.settings),
-                title: Text(" Settings"),
+                title: Text(AppLocalizations.of(context)!.me_settings),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => context.push("/me/settings"),
               ),
               ListTile(
-                title: Text("Term and Conditions"),
+                title: Text(AppLocalizations.of(context)!.me_terms),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (ctx) => TermsAndConditionsPage()),
                 ),
               ),
               ListTile(
-                title: Text("Privacy Policy"),
+                title: Text(AppLocalizations.of(context)!.me_privacy),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (ctx) => PrivacyScreen()),
                 ),
               ),
               ListTile(
-                title: Text("FQA"),
+                title: Text(AppLocalizations.of(context)!.me_fqa),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (ctx) => FQAScreen()),

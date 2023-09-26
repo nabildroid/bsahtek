@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +15,7 @@ class AccountSettingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.black,
-        title: const Text("Account Settings"),
+        title: Text(AppLocalizations.of(context)!.me_account_settings),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -21,9 +23,9 @@ class AccountSettingScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Label("Personal info"),
+            Label(AppLocalizations.of(context)!.me_personalInfo),
             ListTile(
-              title: Text("Name"),
+              title: Text(AppLocalizations.of(context)!.me_name),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -116,7 +118,7 @@ class _NameSettingState extends State<NameSetting> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.black,
-        title: const Text("Your name"),
+        title: Text(AppLocalizations.of(context)!.me_name),
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: [
@@ -133,7 +135,7 @@ class _NameSettingState extends State<NameSetting> {
           Padding(
             padding: const EdgeInsets.only(left: 20, top: 20),
             child: Text(
-              "Name",
+              AppLocalizations.of(context)!.me_name,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),

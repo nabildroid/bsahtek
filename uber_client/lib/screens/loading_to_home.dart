@@ -92,8 +92,8 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
               child: SizedBox(
                 width: 150,
                 child: ColorFiltered(
-                  colorFilter:
-                      ColorFilter.mode(Colors.green, BlendMode.srcATop),
+                  colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.primary, BlendMode.srcATop),
                   child: Image.network(
                     'https://www.bsahtek.net/static/logo.png',
                   ), //

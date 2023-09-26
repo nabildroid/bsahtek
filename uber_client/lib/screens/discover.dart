@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:bsahtak/cubits/app_cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -67,7 +69,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).canvasColor,
               elevation: 3,
               expandedHeight: 130,
               flexibleSpace: Padding(
@@ -97,12 +99,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: "Search",
+                                hintText: AppLocalizations.of(context)!
+                                    .discover_search,
                                 contentPadding: EdgeInsets.all(0),
                                 prefixIcon: Icon(Icons.search),
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.grey,
+                                    color: Colors.grey.withOpacity(.5),
                                     width: 1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -121,15 +124,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                     Icons.settings,
                                     color: currentFilter != null
                                         ? Colors.white
-                                        : Colors.green.shade900,
+                                        : Theme.of(context).colorScheme.primary,
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: Colors.grey,
+                                      color: Colors.grey.withOpacity(.5),
                                       width: 1,
                                     ),
                                     backgroundColor: currentFilter != null
-                                        ? Colors.green.shade500
+                                        ? Theme.of(context).colorScheme.tertiary
                                         : Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -214,7 +217,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
               SliverToBoxAdapter(
                 child: AutoSuggestionView(
-                  label: "Recommended for you",
+                  label: AppLocalizations.of(context)!.discover_recommanded,
                   description: "Bags we think you'll love.",
                   secondFilter: (b, d, q) => currentFilter?.check(b, q) ?? true,
                   filter: (bag, distance, quantity) =>
@@ -224,7 +227,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
               SliverToBoxAdapter(
                 child: AutoSuggestionView(
-                  label: "Save before end",
+                  label: AppLocalizations.of(context)!.discover_before_end,
                   secondFilter: (b, d, q) => currentFilter?.check(b, q) ?? true,
                   description:
                       "Bags won't be on sale for long.. but there's still a chance to save them!",
@@ -398,10 +401,11 @@ class AutoSuggestionView extends StatelessWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Label(label),
             TextButton(
-              child: Text("See All"),
+              child: Text(AppLocalizations.of(context)!.discover_seeall),
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -516,7 +520,7 @@ class Label extends StatelessWidget {
     return Row(
       children: [
         Padding(
-          padding: EdgeInsets.only(left: 20, top: 26, bottom: 16),
+          padding: EdgeInsets.only(left: 20, right: 20, top: 26, bottom: 16),
           child: Text(
             label,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../models/bag.dart';
 
 abstract class Utils {
@@ -52,5 +54,32 @@ abstract class Utils {
     }
 
     return result;
+  }
+
+  static String splitTranslation(String text, BuildContext context) {
+    List<String> parts = text.split(RegExp('---+'));
+    parts.removeWhere((element) => element.trim().isEmpty);
+
+    if (parts.length == 1) return parts[0];
+
+    final isArabic = Directionality.of(context) == TextDirection.rtl;
+
+    RegExp arabicRegExp = RegExp(r'[\u0600-\u06FF]');
+    List<String> arabicParts = [];
+    List<String> otherParts = [];
+    for (String part in parts) {
+      if (arabicRegExp.hasMatch(part)) {
+        arabicParts.add(part);
+      } else {
+        otherParts.add(part);
+      }
+    }
+
+    if (isArabic && arabicParts.isNotEmpty)
+      return arabicParts[0];
+    else if (otherParts.isNotEmpty)
+      return otherParts[0];
+    else
+      return text;
   }
 }

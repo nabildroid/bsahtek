@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -207,8 +209,12 @@ class _LocationSelectorState extends State<LocationSelector> {
                         children: [
                           Expanded(
                             child: Text(
-                              "Choose a location to see\nwhat's available",
+                              AppLocalizations.of(context)!.home_location_title,
                               textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           IconButton(
@@ -248,7 +254,7 @@ class _LocationSelectorState extends State<LocationSelector> {
           ),
           bottomSheet: AnimatedFractionallySizedBox(
             duration: Duration(milliseconds: 450),
-            heightFactor: isExpanded ? 0.8 : .4,
+            heightFactor: isExpanded ? 0.8 : .42,
             child: Container(
               padding: EdgeInsets.all(20),
               width: double.infinity,
@@ -265,7 +271,8 @@ class _LocationSelectorState extends State<LocationSelector> {
                         : Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text("Select a distance"),
+                              Text(AppLocalizations.of(context)!
+                                  .home_location_distance_select),
                               Row(
                                 children: [
                                   Expanded(
@@ -296,7 +303,9 @@ class _LocationSelectorState extends State<LocationSelector> {
                                       },
                                     ),
                                   ),
-                                  Text("$distance km"),
+                                  Text("$distance " +
+                                      AppLocalizations.of(context)!
+                                          .home_location_km),
                                 ],
                               ),
                             ],
@@ -323,7 +332,8 @@ class _LocationSelectorState extends State<LocationSelector> {
                       filled: true,
                       fillColor: Colors.grey.shade200,
                       prefixIcon: Icon(Icons.search),
-                      hintText: "Search for a city",
+                      hintText:
+                          AppLocalizations.of(context)!.home_location_search,
                     ),
                   ),
                   TextButton.icon(
@@ -331,7 +341,8 @@ class _LocationSelectorState extends State<LocationSelector> {
                       context.read<BagsQubit>().init(context);
                     },
                     icon: Icon(Icons.location_on_outlined),
-                    label: Text("Use my current location"),
+                    label: Text(
+                        AppLocalizations.of(context)!.home_location_useGPS),
                   ),
                   if (!isExpanded)
                     Row(
@@ -340,11 +351,13 @@ class _LocationSelectorState extends State<LocationSelector> {
                           child: TextButton(
                             onPressed: applyLocation,
                             child: Text(
-                              "Choose this location",
+                              AppLocalizations.of(context)!
+                                  .home_location_select,
                               style: TextStyle(color: Colors.white),
                             ),
                             style: TextButton.styleFrom(
-                              backgroundColor: Colors.green.shade800,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
                               shape: StadiumBorder(),
                             ),
                           ),

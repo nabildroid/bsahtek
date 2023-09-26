@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bsahtak/utils/constants.dart';
@@ -22,6 +23,22 @@ class Cache {
     _instance.setBool("isFirstRun", false);
 
     return isit;
+  }
+
+  static Locale? get appLocale {
+    final lng = _instance.getString("appLocal");
+    if (lng != null) {
+      return Locale(lng);
+    }
+    return null;
+  }
+
+  static set appLocale(Locale? locale) {
+    if (locale == null) {
+      _instance.remove("appLocal");
+    } else {
+      _instance.setString("appLocal", locale.languageCode);
+    }
   }
 
   static Client? get client {

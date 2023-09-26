@@ -1,4 +1,8 @@
 // private navigators
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:bsahtak/screens/filters.dart';
 import 'package:bsahtak/screens/location_selector.dart';
 import 'package:bsahtak/screens/offline.dart';
@@ -169,14 +173,19 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
               backgroundColor: Colors.white,
               selectedIndex: navigationShell.currentIndex,
               elevation: 10,
-              destinations: const [
+              destinations: [
                 NavigationDestination(
-                    label: 'Discover', icon: Icon(Icons.explore)),
-                NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
+                    label: AppLocalizations.of(context)!.discover_label,
+                    icon: Icon(Icons.explore)),
                 NavigationDestination(
-                    label: 'Favorite', icon: Icon(Icons.favorite)),
+                    label: AppLocalizations.of(context)!.home_label,
+                    icon: Icon(Icons.home)),
                 NavigationDestination(
-                    label: 'Me', icon: Icon(Icons.person_pin)),
+                    label: AppLocalizations.of(context)!.favorite_label,
+                    icon: Icon(Icons.favorite)),
+                NavigationDestination(
+                    label: AppLocalizations.of(context)!.me_label,
+                    icon: Icon(Icons.person_pin)),
               ],
               onDestinationSelected: _goBranch,
             ),
