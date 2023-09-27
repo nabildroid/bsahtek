@@ -68,6 +68,7 @@ dependencies:
   dropdown_button2: ^2.3.9
   provider: ^6.0.5
   flutter_facebook_auth: ^6.0.2
+  cached_network_image: ^3.3.0
 
 dev_dependencies:
   flutter_test:
