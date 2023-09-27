@@ -83,11 +83,11 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           textTheme: GoogleFonts.rubikTextTheme(),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.teal,
-            primary: Colors.teal.shade800,
-            tertiary: Colors.teal.shade600.withAlpha(150),
+            seedColor: Color(0xff39783A),
+            primary: Color(0xff39783A),
+            tertiary: Color(0xffB0A448),
           ),
-          canvasColor: Color.fromARGB(255, 243, 248, 248),
+          canvasColor: Color.fromARGB(255, 246, 246, 242),
         ),
       ),
     );
