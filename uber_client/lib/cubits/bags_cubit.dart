@@ -256,6 +256,8 @@ class BagsQubit extends Cubit<BagsState> {
     activeSubs.add(Server().listenToZone(
       "${square.longitude},${square.latitude}",
       (data) {
+        if (this.isClosed) return;
+
         final quantites = data["quantities"];
 
         if (quantites == null) return;

@@ -750,7 +750,8 @@ class _BagScreenState extends State<BagScreen> {
                                         (widget.bag.name ==
                                                 widget.bag.sellerName
                                             ? ""
-                                            : widget.bag.name),
+                                            : Utils.splitTranslation(
+                                                widget.bag.name, context)),
                                     style: TextStyle(
                                       fontSize: 21,
                                       fontWeight: FontWeight.w700,

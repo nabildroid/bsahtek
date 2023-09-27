@@ -10,6 +10,7 @@ import 'package:bsahtak/screens/me/term.dart';
 
 import '../../repositories/cache.dart';
 import '../../utils/constants.dart';
+import '../../utils/utils.dart';
 import 'fqa.dart';
 
 class MeScreen extends StatelessWidget {
@@ -111,8 +112,10 @@ class MeScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               SizedBox(width: 7),
-                                              Text(order.sellerName ??
-                                                  order.bagName)
+                                              Text(Utils.splitTranslation(
+                                                  order.sellerName ??
+                                                      order.bagName,
+                                                  context))
                                             ],
                                           ))
                                     ],

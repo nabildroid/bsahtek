@@ -132,7 +132,10 @@ class HomeCubit extends Cubit<HomeState> {
       await Notifications.clear();
     }
 
-    syncPrevOrders();
+    useContext((context) {
+      if (context.read<AppCubit>().state.client?.isActive == true)
+        syncPrevOrders();
+    });
   }
 
   void _subscribeToOnAppNotification() {
@@ -201,6 +204,10 @@ class HomeCubit extends Cubit<HomeState> {
         emit(state.copyWith()..runningOrder = order);
         subscribeToRunningOrder();
         return;
+      }
+
+      if (event.data["type"] == 'account_activated') {
+        syncPrevOrders(force: true);
       }
     });
   }
@@ -368,8 +375,6 @@ class HomeCubit extends Cubit<HomeState> {
 
     Cache.setPrevOrders([order]);
     emit(state.copyWith(prevOrders: [order]));
-
-    syncPrevOrders();
   }
 
   Future<String?> showEnterYourNameDialog() {
