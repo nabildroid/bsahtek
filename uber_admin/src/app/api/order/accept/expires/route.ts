@@ -3,14 +3,14 @@ import * as admin from "firebase-admin";
 import * as Tasks from "@/app/api/repository/tasks";
 import { NextResponse } from "next/server";
 import { cancelOrderExpiration } from "../../delivery/finish/route";
+import firebase from "@/app/api/repository/firebase";
 
 // todo implement upstash request signature verification
 export async function POST(request: Request) {
   const message = OrderExpireTask.parse(await request.json());
   await cancelOrderExpiration(message.orderID);
 
-  await admin
-    .firestore()
+  await firebase.firestore()
     .collection("zones")
     .doc(message.zone)
     .update({

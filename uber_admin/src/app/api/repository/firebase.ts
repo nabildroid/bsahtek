@@ -1,14 +1,14 @@
 import * as Admin from "firebase-admin";
 
 let firebase =
-  Admin.apps.find((a) => a?.name == "client") ??
+  Admin.apps.find((a) => a?.name == "apps") ??
   Admin.initializeApp(
     {
       credential: process.env.FIREBASE
         ? Admin.credential.cert(JSON.parse(process.env.FIREBASE))
         : Admin.credential.applicationDefault(),
     },
-    "client"
+    "apps"
   );
 
 export default firebase;

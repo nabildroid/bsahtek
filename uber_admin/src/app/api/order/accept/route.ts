@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   );
 
   // update the quantities
-  await admin
+  await firebase
     .firestore()
     .collection("zones")
     .doc(`${sellerZone.x},${sellerZone.y}`)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   });
 
   // update the order
-  await admin
+  await firebase
     .firestore()
     .collection("orders")
     .doc(order.id)

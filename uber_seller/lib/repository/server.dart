@@ -22,7 +22,7 @@ class Server {
 
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "https://wastnothin.vercel.app/api/",
+    baseUrl: "http://192.168.0.105:3000/api/",
   ));
 
   static Future<void> init() async {
