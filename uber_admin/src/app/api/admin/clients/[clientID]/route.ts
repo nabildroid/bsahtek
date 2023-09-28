@@ -1,4 +1,5 @@
 import { addOrder, oneOrderAday } from "@/app/api/order/route";
+import { AdminBlocForNot } from "@/app/api/repository/admin_firebase";
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -15,7 +16,7 @@ type Context = {
 };
 // get details of a deliver
 export async function GET(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["clients_viewer"], request)) return VerificationError();
 
   const { clientID } = context.params;
 
@@ -36,7 +37,7 @@ export async function GET(request: Request, context: Context) {
 
 // handle both acceptance, (there is not updates)
 export async function POST(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["clients_admin"], request)) return VerificationError();
 
   const { clientID: clientID } = context.params;
   const demand = Client.parse(await request.json());

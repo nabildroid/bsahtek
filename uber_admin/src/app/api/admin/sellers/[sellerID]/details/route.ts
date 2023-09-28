@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import * as Schema from "@/db/schema";
 import { IBag } from "@/types";
 import { calculateSquareCenter } from "@/utils/coordination";
+import { AdminBlocForNot } from "@/app/api/repository/admin_firebase";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,8 @@ type Context = {
 };
 // get details of a seller
 export async function GET(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["seller_viewer", "analytic"], request))
+    return VerificationError();
   const { sellerID } = context.params;
 
   const query = await firebase
@@ -43,7 +45,7 @@ export async function GET(request: Request, context: Context) {
     .collection("orders")
     .where("sellerID", "==", sellerID)
     .get();
-    
+
   const orders = ordersquery.docs.map((doc) => {
     return {
       id: doc.id,

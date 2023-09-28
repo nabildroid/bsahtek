@@ -16,8 +16,9 @@ export function ListenToAuth(onUser: (user: User) => void) {
   return AuthClient.onIdTokenChanged(async (user) => {
     if (user) {
       const data = await user.getIdTokenResult();
-      console.log("claims", data.claims);
-      if (data.claims.role != "admin") {
+
+
+      if (!user.email?.endsWith("@laknabil.me")) {
         AuthClient.signOut();
         Cookies.remove("token");
         Cookies.remove("isLogged");

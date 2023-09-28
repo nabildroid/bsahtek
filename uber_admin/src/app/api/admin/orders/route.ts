@@ -1,3 +1,4 @@
+import { AdminBlocForNot } from "../../repository/admin_firebase";
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -7,7 +8,8 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["analytic","clients_viewer", "seller_viewer"], request))
+    return VerificationError();
 
   const query = await firebase.firestore().collection("orders").get();
 

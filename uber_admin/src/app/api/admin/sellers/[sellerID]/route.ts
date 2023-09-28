@@ -13,6 +13,7 @@ import * as Schema from "@/db/schema";
 import { IBag } from "@/types";
 import { calculateSquareCenter } from "@/utils/coordination";
 import { revalidateTag } from "next/cache";
+import { AdminBlocForNot } from "@/app/api/repository/admin_firebase";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,8 @@ type Context = {
 };
 // get details of a seller
 export async function GET(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["seller_viewer"], request))
+    return VerificationError();
   const { sellerID } = context.params;
 
   const query = await firebase
@@ -60,7 +62,8 @@ export async function GET(request: Request, context: Context) {
 
 // accept seller and assign them a bag
 export async function POST(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["seller_accept"], request))
+    return VerificationError();
   const { sellerID } = context.params;
   const demand = AcceptSeller.parse(await request.json());
   if (sellerID !== demand.id)
@@ -160,7 +163,8 @@ export async function POST(request: Request, context: Context) {
 }
 
 export async function DELETE(request: Request, context: Context) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["seller_editor"], request))
+    return VerificationError();
   const { sellerID } = context.params;
 
   const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);

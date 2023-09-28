@@ -1,3 +1,4 @@
+import { AdminBlocForNot } from "@/app/api/repository/admin_firebase";
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -7,7 +8,8 @@ import { NextResponse } from "next/server";
 
 // get list of all  (pending-tobe) drivers
 export async function GET(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["seller_viewer"], request))
+    return VerificationError();
 
   const query = await firebase
     .firestore()

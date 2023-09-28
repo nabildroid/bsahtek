@@ -6,11 +6,13 @@ import firebase, {
 import { Ad, IAd } from "@/utils/types";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
+import { AdminBlocForNot } from "../../repository/admin_firebase";
 
 const ref = firebase.firestore().collection("ads");
 
 export async function GET(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["ads_viewer"], request))
+    return VerificationError();
 
   const query = await ref.get();
   const ads = query.docs.map((d) => ({ id: d.id, ...d.data() } as IAd));
@@ -19,7 +21,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["ads_editor"], request))
+    return VerificationError();
   const data = await request.json();
   const ad = Ad.parse(data.ad);
 
@@ -38,7 +41,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["ads_editor"], request))
+    return VerificationError();
 
   const data = await request.json();
   const id = z.string().parse(data.id);

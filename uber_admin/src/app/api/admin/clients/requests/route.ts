@@ -1,3 +1,4 @@
+import { AdminBlocForNot } from "@/app/api/repository/admin_firebase";
 import firebase, {
   BlocForNot,
   VerificationError,
@@ -6,7 +7,7 @@ import { IClient } from "@/utils/types";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  if (await BlocForNot("admin", request)) return VerificationError();
+  if (await AdminBlocForNot(["clients_viewer"], request)) return VerificationError();
 
   const query = await firebase
     .firestore()

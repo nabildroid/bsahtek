@@ -2,15 +2,14 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDO4H7E1RqYRVVd8GwubFb6pbAd-SDldpg",
-  authDomain: "ubereat-eb4c7.firebaseapp.com",
+  apiKey: "AIzaSyAMypMX_KpT-23TSPiEdMlKpI9Bn_MxCGQ",
+  authDomain: "arib-api.firebaseapp.com",
   databaseURL:
-    "https://ubereat-eb4c7-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "ubereat-eb4c7",
-  storageBucket: "ubereat-eb4c7.appspot.com",
-  messagingSenderId: "1090457346712",
-  appId: "1:1090457346712:web:16c60992fccebe2d0ba6ed",
-  measurementId: "G-RD3YDZEZBQ",
+    "https://arib-api-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "arib-api",
+  storageBucket: "arib-api.appspot.com",
+  messagingSenderId: "130736475332",
+  appId: "1:130736475332:web:1e8230d3bb9302682f4d91",
 };
 
 // Initialize Firebase
