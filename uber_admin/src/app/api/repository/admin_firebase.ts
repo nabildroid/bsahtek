@@ -23,19 +23,19 @@ export const VerificationError = (msg: string = "Not Allowed") =>
 // create express middleware to verify firebase token from cookie
 
 type GroupAccessLevel =
-  | "super@laknabil.me"
-  | "viewer@laknabil.me"
-  | "ads_editor@laknabil.me"
-  | "ads_viewer@laknabil.me"
-  | "seller_admin@laknabil.me"
-  | "seller_accept@laknabil.me"
-  | "seller_editor@laknabil.me"
-  | "seller_viewer@laknabil.me"
-  | "clients_admin@laknabil.me"
-  | "clients_viewer@laknabil.me"
-  | "analytic@laknabil.me";
+  | "super@bsahtek.net"
+  | "viewer@bsahtek.net"
+  | "ads_editor@bsahtek.net"
+  | "ads_viewer@bsahtek.net"
+  | "seller_admin@bsahtek.net"
+  | "seller_accept@bsahtek.net"
+  | "seller_editor@bsahtek.net"
+  | "seller_viewer@bsahtek.net"
+  | "clients_admin@bsahtek.net"
+  | "clients_viewer@bsahtek.net"
+  | "analytic@bsahtek.net";
 
-type ExtractRole = GroupAccessLevel extends `${infer Role}@laknabil.me`
+type ExtractRole = GroupAccessLevel extends `${infer Role}@bsahtek.net`
   ? Role
   : never;
 
@@ -54,10 +54,10 @@ export const AdminBlocForNot = async (
       .auth()
       .verifyIdToken(AuthToken, true);
 
-    if (!decodedToken.email?.endsWith("@laknabil.me")) return true;
+    if (!decodedToken.email?.endsWith("@bsahtek.net")) return true;
 
     const levels = [level, "super"].flat().reverse();
-    const groups = await IdentityListGroups("C045fq31n");
+    const groups = await IdentityListGroups("C02dg8bdg");
 
     const groupIds = levels
       .map((l) => {

@@ -18,7 +18,7 @@ export function ListenToAuth(onUser: (user: User) => void) {
       const data = await user.getIdTokenResult();
 
 
-      if (!user.email?.endsWith("@laknabil.me")) {
+      if (!user.email?.endsWith("@bshatek.net")) {
         AuthClient.signOut();
         Cookies.remove("token");
         Cookies.remove("isLogged");

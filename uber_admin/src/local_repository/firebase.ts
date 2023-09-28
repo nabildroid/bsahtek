@@ -2,14 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAMypMX_KpT-23TSPiEdMlKpI9Bn_MxCGQ",
-  authDomain: "arib-api.firebaseapp.com",
-  databaseURL:
-    "https://arib-api-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "arib-api",
-  storageBucket: "arib-api.appspot.com",
-  messagingSenderId: "130736475332",
-  appId: "1:130736475332:web:1e8230d3bb9302682f4d91",
+  apiKey: "AIzaSyDoROhtYM_umElKN-MykTj1KKusCoP0fP8",
+  authDomain: "bsahtek-dashboard.firebaseapp.com",
+  projectId: "bsahtek-dashboard",
+  storageBucket: "bsahtek-dashboard.appspot.com",
+  messagingSenderId: "971263764073",
+  appId: "1:971263764073:web:14711c1c0ee959c5a224f8",
+  measurementId: "G-XE5L464B1Q",
 };
 
 // Initialize Firebase
