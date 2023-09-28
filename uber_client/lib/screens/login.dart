@@ -321,7 +321,7 @@ class _OnboardingInfoCollectionState extends State<OnboardingInfoCollection> {
     super.initState();
   }
 
-  void submit() {
+  void submit(BuildContext context) {
     if (!isFilled) return;
     final locale = language.startsWith("Fr")
         ? Locale("fr")
@@ -407,7 +407,7 @@ class _OnboardingInfoCollectionState extends State<OnboardingInfoCollection> {
           ),
           Spacer(),
           ElevatedButton(
-            onPressed: isFilled ? submit : null,
+            onPressed: isFilled ? () => submit(context) : null,
             child: Text(AppLocalizations.of(context)!.login_region_continue),
             style: ElevatedButton.styleFrom(
               minimumSize: Size(double.infinity, 45),
