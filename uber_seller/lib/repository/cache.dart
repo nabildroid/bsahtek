@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/bag.dart';
 import '../model/order.dart';
 import '../model/seller.dart';
 import '../model/zone.dart';
@@ -111,5 +112,22 @@ class Cache {
   static List<Zone> get zones {
     final zonesJson = _instance.getStringList('zones') ?? [];
     return zonesJson.map((e) => Zone.fromJson(jsonDecode(e))).toList();
+  }
+
+  static Bag? get bag {
+    // saved as json
+    final bagJson = _instance.getString('bag');
+    if (bagJson == null) {
+      return null;
+    }
+    return Bag.fromJson(jsonDecode(bagJson));
+  }
+
+  static set bag(Bag? bag) {
+    if (bag == null) {
+      _instance.remove('bag');
+    } else {
+      _instance.setString('bag', jsonEncode(bag.toJson()));
+    }
   }
 }

@@ -103,8 +103,11 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> fetchBagsAndQuantities() async {
+    if (Cache.bag != null) emit(state.copyWith(bags: [Cache.bag!]));
+
     final bags = await Server().getBags();
     emit(state.copyWith(bags: bags));
+    if (bags.isNotEmpty) Cache.bag = bags.first;
 
     final bagsIds = bags.map((e) => e.id.toString()).toList();
 
