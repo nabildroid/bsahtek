@@ -83,14 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   signInWithFacebook() async {
-    final LoginResult loginResult = await FacebookAuth.instance.login();
-    if (loginResult.accessToken == null) return;
-
-    final OAuthCredential facebookAuthCredential =
-        FacebookAuthProvider.credential(loginResult.accessToken!.token);
-
-    final user = await Server.auth.signInWithCredential(facebookAuthCredential);
-    await Server.auth.currentUser!.getIdToken(true);
+    final result = await FacebookAuth.instance
+        .login(permissions: ['public_profile', 'email']);
+    if (result.status == LoginStatus.success) {
+      final userData = await FacebookAuth.instance.getUserData();
+      // use userData
+    }
   }
 
   @override
@@ -143,6 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.slogan,
+            textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.w500,
@@ -232,13 +231,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     ),
                     onPressed: () async {
-                      final info = await showModalBottomSheet<InfoCollection>(
-                        context: context,
-                        builder: (_) => OnboardingInfoCollection(),
-                      );
-                      if (info == null) return;
+                      // final info = await showModalBottomSheet<InfoCollection>(
+                      //   context: context,
+                      //   builder: (_) => OnboardingInfoCollection(),
+                      // );
+                      // if (info == null) return;
 
-                      context.read<StaticProvider>().setLocale(info.locale);
+                      // context.read<StaticProvider>().setLocale(info.locale);
                       signInWithFacebook();
                     },
                     style: ElevatedButton.styleFrom(

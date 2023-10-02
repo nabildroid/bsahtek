@@ -71,7 +71,7 @@ class Server {
         print("Auth changed" + Timestamp.now().toDate().toIso8601String());
         if (isGood) return;
         isGood = true;
-
+        try {
         final idToken = await event.getIdTokenResult(
           forced == false && forceFirst,
         ); //todo this call cause the listener to fire again, why not return empty and later if isGood return the good client!
@@ -88,6 +88,10 @@ class Server {
               "https://api.dicebear.com/6.x/identicon/svg?seed=${event.phoneNumber}",
           isActive: role == "client",
         ));
+        } catch (e) {
+          isGood = false;
+          listen(null);
+        }
       }
     });
 
