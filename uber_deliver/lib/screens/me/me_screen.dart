@@ -41,7 +41,7 @@ class MeScreen extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                color: Colors.green.shade300.withOpacity(.8),
+                color: Theme.of(context).primaryColor.withOpacity(.8),
                 padding: EdgeInsets.only(top: 80, bottom: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
