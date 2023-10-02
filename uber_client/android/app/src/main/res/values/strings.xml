@@ -3,5 +3,6 @@
 
 <resources>
     <string name="facebook_app_id">2340229173031840</string>
+    <string name="fb_login_protocol_scheme">fb2340229173031840</string>
     <string name="facebook_client_token">1ad9c95d24e1111a0d59848a07070d2b</string>
 </resources>
