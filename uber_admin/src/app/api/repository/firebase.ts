@@ -22,17 +22,14 @@ export const VerificationError = (msg: string = "Not Allowed") =>
 // create express middleware to verify firebase token from cookie
 
 export const BlocForNot = async (roles: string | string[], req: Request) => {
-  console.log(roles);
   const AuthToken = (req.headers as any).get("authorization")?.split(" ")[1];
 
-  console.log(AuthToken);
   // if (process.env.NODE_ENV == "development") return false;
 
   if (!AuthToken || AuthToken == "") return true;
 
   try {
     const decodedToken = await firebase.auth().verifyIdToken(AuthToken, true);
-    console.log(decodedToken);
 
     if (
       [roles].flat().every((role) => {
