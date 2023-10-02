@@ -62,7 +62,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
       await Future.delayed(Duration(milliseconds: 1500));
       final client = await Navigator.of(context).push(
         LoginScreen.go(),
-      ) as Client?;
+      );
 
       if (client == null) {
         SystemNavigator.pop();
