@@ -190,7 +190,7 @@ export default function Page(props: Props) {
                   #{order.id.slice(0, 10)}
                 </th>
                 <td className="px-3 py-4 font-mono">
-                  {ago(new Date(order.createdAt))}
+                  {new Date(order.createdAt).toLocaleString()}
                 </td>
                 <td className="px-3 py-4 hidden sm:table-cell">
                   {order.bagName}
