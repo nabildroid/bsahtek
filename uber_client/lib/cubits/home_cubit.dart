@@ -176,6 +176,7 @@ class HomeCubit extends Cubit<HomeState> {
       if (event.data["type"] == "delivery_end" ||
           event.data["type"] == "self_pickup") {
         await Backgrounds.firebaseMessagingBackgroundHandler(event);
+        if (isClosed) return;
         emit(state.killRunningOrder());
         return;
       }
@@ -186,6 +187,7 @@ class HomeCubit extends Cubit<HomeState> {
         if (!await Backgrounds.firebaseMessagingBackgroundHandler(event))
           return;
 
+        if (isClosed) return;
         emit(state.copyWith(focusOnRunningOrder: true)..runningOrder = order);
         useContext((ctx) => RunningScreen.go(order));
         tobeDisposed["runningOrder"]?.call();
@@ -201,6 +203,7 @@ class HomeCubit extends Cubit<HomeState> {
         if (!await Backgrounds.firebaseMessagingBackgroundHandler(event))
           return;
 
+        if (isClosed) return;
         emit(state.copyWith()..runningOrder = order);
         subscribeToRunningOrder();
         return;
