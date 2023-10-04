@@ -43,11 +43,12 @@ class AppCubit extends Cubit<AppState> {
   AppCubit() : super(AppState(ads: []));
 
   Future<void> setUser(Client user) async {
+    emit(state.copyWith(client: user));
+
     Server().getAds().then((ads) => emit(state.copyWith(
           ads: ads,
         )));
 
-    emit(state.copyWith(client: user));
     Cache.client = user;
 
     if (user.isActive == false || user.phone.isEmpty) {

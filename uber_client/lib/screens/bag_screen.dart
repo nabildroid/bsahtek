@@ -132,9 +132,10 @@ class _BagScreenState extends State<BagScreen> {
 
   void reserveNow() async {
     setState(() => isLoading = true);
+    final location = await GpsRepository.getLocation(context);
+
     final homeCubit = context.read<HomeCubit>();
     final appCubit = context.read<AppCubit>();
-    final location = await GpsRepository.getLocation(context);
 
     if (location == null) {
       setState(() => isLoading = false);
@@ -142,7 +143,8 @@ class _BagScreenState extends State<BagScreen> {
       return;
     }
 
-    if (appCubit.state.client!.isActive == false) {
+    if (appCubit.state.client == null ||
+        appCubit.state.client!.isActive == false) {
       setState(() => goingToActivateAccount = true);
 
       return;
