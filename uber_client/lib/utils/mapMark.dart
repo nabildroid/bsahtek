@@ -41,7 +41,8 @@ class MapMark {
       }
     }
 
-    if (!draws.containsKey("g_$roof${isActive ? 1 : 0}")) {
+    final key = "g_$roof${isActive ? 1 : 0}";
+    if (!draws.containsKey(key)) {
       late final Uint8List bytes;
       if (roof == 1) {
         bytes = await _createCanvas([
@@ -57,10 +58,10 @@ class MapMark {
           (canvas, width) => _drawDefaultCircleText("$roof+", canvas, width),
         ]);
       }
-      draws["g_$roof"] = BitmapDescriptor.fromBytes(bytes);
+      draws[key] = BitmapDescriptor.fromBytes(bytes);
     }
 
-    return draws["g_$roof"]!;
+    return draws[key]!;
   }
 
   void _drawDefaultCircleText(String text, Canvas canvas, int width) {
