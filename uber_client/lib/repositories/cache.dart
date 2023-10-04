@@ -18,9 +18,9 @@ class Cache {
     // await _instance.clear();
   }
 
-  static bool get isFirstRun {
+  static Future<bool> isFirstRun() async {
     final isit = _instance.getBool("isFirstRun") ?? true;
-    _instance.setBool("isFirstRun", false);
+    await _instance.setBool("isFirstRun", false);
 
     return isit;
   }

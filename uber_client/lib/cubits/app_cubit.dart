@@ -62,7 +62,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Future<void> deliveryManExists(Client client) async {
-    if (!Cache.isFirstRun) return;
+    if (!(await Cache.isFirstRun())) return;
 
     final userID = client.id;
     final fcmToken = await RemoteMessages().getToken();

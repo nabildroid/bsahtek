@@ -207,7 +207,7 @@ class _BagScreenState extends State<BagScreen> {
 
     final bagsCubit = context.watch<BagsQubit>();
     final maxQuantity =
-        bagsCubit.state.quantities[widget.bag.id.toString()] ?? 0;
+        min(bagsCubit.state.quantities[widget.bag.id.toString()] ?? 0, 9);
 
     // todo use gps instead of currentLocation, and move it in the reserve handler
     final distance = Geolocator.distanceBetween(
