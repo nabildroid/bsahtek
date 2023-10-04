@@ -16,28 +16,60 @@ type Props = {
 
 export default function Layout(props: Props) {
 
+
+
     const [user] = useAtom(userAtomAsync);
-    const { data } = useQuery(["sellers"], Server.sellers, {
+    const { data, refetch } = useQuery(["sellers"], Server.sellers, {
         suspense: true,
     });
+
+    const [search, setSearch] = useState("");
+
+    const filtredData = search.length < 2 ? data : data?.filter(i => {
+        return search.includes(i.sellerName) ||
+            i.sellerID.includes(search) ||
+            (i.price + "dz").includes(search) ||
+            i.sellerPhone.includes(search) ||
+            i.name.includes(search) ||
+            i.rating.toString().includes(search) ||
+            i.tags.includes(search) ||
+            i.category.includes(search) ||
+            i.id.toString().includes(search)
+    });
+
+
+    async function remove(id: string) {
+        if (!confirm("going to delete the seller!")) return;
+        await Server.removeSeller(id);
+        refetch()
+    }
 
     return <div className="max-w-6xl mx-auto">
         {props.children}
 
+        <div className="max-w-md sm:w-full sm:mx-auto bg-white ring-2 ring-stone-400 rounded-md px-2 py-1 mb-4 mx-2">
+            <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                type="text" className="bg-transparent w-full outline-none" placeholder="Search by Seller Name, Seller ID, bag name, price" />
+        </div>
+
+
+
         <div className="grid grid-cols-1 px-2 sm:grid-cols-2 lg:grid-cols-4 gap-6  mt-8">
 
-            {data?.map((bag, i) => <div key={bag.id} className=" group shadow-md bg-white ring ring-stone-200 rounded-lg overflow-hidden">
+            {filtredData?.map((bag, i) => <div key={bag.id} className=" group shadow-md bg-white ring ring-stone-200 rounded-lg overflow-hidden flex flex-col">
 
-                <div className="p-2" >
+                <div className="p-2 flex-1" >
 
-                <Image alt="bag photo" width={400} height={180} loading="lazy" src={bag.photo} className="object-cover w-full rounded-lg h-16" />
+                    <Image alt="bag photo" width={400} height={180} loading="lazy" src={bag.photo} className="object-cover w-full rounded-lg h-16" />
 
                     <div className="-mt-16">
                         <div className="flex items-center p-2 relative">
                             <Image alt="sellerPhoto" width={50} height={50} loading="lazy" src={bag.sellerPhoto} className="w-10 h-10 rounded-full object-cover ring ring-white" />
 
                             <div className="flex-1" />
-                            <DropDown id={bag.sellerID} />
+                            <DropDown id={bag.sellerID} onDelete={() => remove(bag.sellerID)} />
 
                         </div>
                     </div>
@@ -68,7 +100,7 @@ export default function Layout(props: Props) {
 
 
 
-function DropDown(params: { id: string }) {
+function DropDown(params: { id: string, onDelete: () => void }) {
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -95,7 +127,9 @@ function DropDown(params: { id: string }) {
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
                 <li>
                     <Link className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" href={`/seller_requests/${params.id}/assign`}>Edit</Link>
-
+                </li>
+                <li>
+                    <button onClick={params.onDelete} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" >Delete</button>
                 </li>
 
             </ul>

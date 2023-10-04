@@ -41,10 +41,10 @@ export async function GET(
 
 
   const zoneID = `foods-zone-${x},${y}`;
-  
+
   console.log("Map zoneID ",zoneID);
   const foods = await cache(() => getFoods(boundryX, boundryY), [zoneID], {
-    tags: [zoneID],
+    tags: [zoneID, "all-sellers"],
   })();
 
   // todo make it ovious like create a subtype of a computed field in the database!

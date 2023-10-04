@@ -170,12 +170,22 @@ export async function DELETE(request: Request, context: Context) {
   const sellerRef = firebase.firestore().collection("sellers").doc(sellerID);
   await sellerRef.delete();
 
+  // remove it also from the bag database, even though it must be already accepted to exists there!
+
+  await db
+  .delete(Schema.bagsTable)
+  .where(eq(Schema.bagsTable.sellerID, sellerID))
+  .execute();
+
+
   try {
     await firebase.auth().deleteUser(sellerID);
     // todo update also the informations
   } catch (e) {
     console.log("how the seller user doesn't exists?", sellerID);
   }
+
+  revalidateTag(`all-sellers`);
 
   return NextResponse.json({ success: true });
 }

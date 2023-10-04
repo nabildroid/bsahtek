@@ -51,14 +51,14 @@ function NavButtons() {
             label="Seller Requests"
             link="/seller_requests"
         />
-        <NavButton
+        {/* <NavButton
             label="Delivers"
             link="/delivers"
         />
         <NavButton
             label="Deliver Requests"
             link="/deliver_requests"
-        />
+        /> */}
 
         <NavButton
             label="ads"
