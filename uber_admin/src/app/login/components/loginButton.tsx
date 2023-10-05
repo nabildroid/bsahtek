@@ -1,6 +1,6 @@
 "use client";
 import { getAuth, getRedirectResult, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import firebase from "@/local_repository/firebase";
+import {authApp} from "@/local_repository/firebase";
 import { useRef } from "react";
 import { setLoginToken } from "@/utils";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ export default function LoginButton() {
     const router = useRouter();
 
 
-    const auth = useRef(getAuth(firebase));
+    const auth = useRef(getAuth(authApp));
 
 
 

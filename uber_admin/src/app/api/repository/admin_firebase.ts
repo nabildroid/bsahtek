@@ -23,6 +23,7 @@ export const VerificationError = (msg: string = "Not Allowed") =>
 // create express middleware to verify firebase token from cookie
 
 type GroupAccessLevel =
+  | "@bsahtek.net"
   | "super@bsahtek.net"
   | "viewer@bsahtek.net"
   | "ads_editor@bsahtek.net"

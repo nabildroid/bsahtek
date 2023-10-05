@@ -35,6 +35,11 @@ const Auth = (customToken?: string) => ({
   Authorization: `Bearer ${customToken ?? Cookies.get("token") ?? ""}`,
 });
 
+export async function auth(): Promise<any> {
+  const { data } = await Http.get("/admin/auth");
+  return data.accessToken;
+}
+
 export async function ping(): Promise<any> {
   const { data } = await Http.get("/admin/stats");
   return data.success;

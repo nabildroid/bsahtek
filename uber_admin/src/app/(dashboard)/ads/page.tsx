@@ -95,7 +95,7 @@ function AD(props: IAd & { save: (val: IAd) => void, delete: (id?: string) => vo
                     update({ ...val, photo: url })
                 }}
                 type="file" className="absolute inset-0 opacity-0" />
-            <img className="z-10 w-full aspect-video" src={val.photo} />
+            <img className="z-10 w-full aspect-video" src={val.photo + "&timestamp=" + Math.random()} />
         </div>
 
         <div className="p-2 space-y-2">
