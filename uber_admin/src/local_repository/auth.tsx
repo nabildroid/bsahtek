@@ -16,7 +16,7 @@ export function ListenToAuth(onUser: (user: User) => void) {
 
   console.time("Fetching Token");
 
-  return AuthClient.onIdTokenChanged(async (user) => {
+  return AuthClient.onAuthStateChanged(async (user) => {
     if (user) {
       const data = await user.getIdTokenResult();
 
