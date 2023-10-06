@@ -29,7 +29,7 @@ export default function Layout(props: Props) {
         return search.includes(i.sellerName) ||
             i.sellerID.includes(search) ||
             (i.price + "dz").includes(search) ||
-            i.sellerPhone.includes(search) ||
+            i.sellerPhone?.includes(search) ||
             i.name.includes(search) ||
             i.rating.toString().includes(search) ||
             i.tags.includes(search) ||
