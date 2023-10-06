@@ -49,7 +49,7 @@
   "home_label":"Home",
   "home_view_map":"Map",
   "home_view_list":"List",
-  "home_location_within":"within1 {distance} km",
+  "home_location_within":"within {distance} km",
   "@home_location_within": {
     "placeholders": {
       "distance": {

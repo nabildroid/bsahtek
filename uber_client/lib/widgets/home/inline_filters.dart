@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/screens/filters.dart';
 
+import '../../utils/utils.dart';
+
 class InlineFilters extends StatelessWidget {
   const InlineFilters({
     super.key,
@@ -50,7 +52,7 @@ class InlineFilters extends StatelessWidget {
                         context.read<BagsQubit>().toggleTag(tag);
                       },
                       child: Text(
-                        tag,
+                        Utils.splitTranslation(tag, context),
                         style: TextStyle(
                           color: selected
                               ? Colors.white

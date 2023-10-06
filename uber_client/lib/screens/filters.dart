@@ -1,3 +1,4 @@
+import 'package:bsahtak/utils/utils.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
@@ -119,7 +120,8 @@ class _FiltersState extends State<Filters> {
                                         currentFilter.toggleTag(tag);
                                   });
                                 },
-                                child: Text(tag),
+                                child:
+                                    Text(Utils.splitTranslation(tag, context)),
                               );
                             })
                           ],

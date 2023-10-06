@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import "../utils/utils.dart";
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:android_intent_plus/android_intent.dart';
@@ -403,7 +405,7 @@ class AutoSuggestionView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Label(label),
+            Label(Utils.splitTranslation(label, context)),
             TextButton(
               child: Text(AppLocalizations.of(context)!.discover_seeall),
               onPressed: () {
@@ -412,7 +414,7 @@ class AutoSuggestionView extends StatelessWidget {
                     builder: (ctx) => Scaffold(
                       appBar: AppBar(
                         backgroundColor: Colors.white,
-                        title: Text(label),
+                        title: Text(Utils.splitTranslation(label, context)),
                         elevation: 0,
                         foregroundColor: Colors.black87,
                       ),

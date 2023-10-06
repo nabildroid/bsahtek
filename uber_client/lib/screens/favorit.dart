@@ -7,6 +7,7 @@ import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
 import 'package:bsahtak/widgets/shared/suggestion_card.dart';
 
+import '../utils/utils.dart';
 import 'bag_screen.dart';
 
 class FavoritScreen extends StatelessWidget {
@@ -37,7 +38,7 @@ class FavoritScreen extends StatelessWidget {
                       rating: bag.rating.toStringAsFixed(1),
                       price: bag.originalPrice.toString(),
                       discountPrice: bag.price.toString(),
-                      chip: bag.tags,
+                      chip: Utils.splitTranslation(bag.tags, context),
                       distance: (Geolocator.distanceBetween(
                                 bag.latitude,
                                 bag.longitude,
