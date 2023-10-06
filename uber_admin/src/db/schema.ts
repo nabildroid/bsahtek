@@ -20,9 +20,7 @@ export const bagsTable = mysqlTable("bags", {
   tags: varchar("tags", { length: 255 }).notNull(),
   sellerName: varchar("seller_name", { length: 255 }).notNull(),
   sellerAddress: varchar("seller_address", { length: 255 }).notNull(),
-  sellerPhone: varchar("seller_phone", { length: 255 })
-    .notNull()
-    .default("+2135656556545"), // todo remove the default
+  sellerPhone: varchar("seller_phone", { length: 255 }),
   sellerID: varchar("seller_id", { length: 255 }).notNull(),
   sellerPhoto: varchar("seller_photo", { length: 255 }).notNull(),
   wilaya: varchar("wilaya", { length: 50 }).notNull(),

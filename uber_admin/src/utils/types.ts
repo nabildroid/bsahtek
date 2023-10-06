@@ -309,6 +309,14 @@ export const AcceptSeller = Seller.extend({
   bagTags: z.string(),
 });
 
+export const NewSeller = AcceptSeller.omit({
+  phone: true,
+  bagID:true,
+}).extend({
+  phone: Seller.shape.phone.optional(),
+});
+
+export type INewSeller = z.infer<typeof NewSeller>;
 export type IAcceptSeller = z.infer<typeof AcceptSeller>;
 
 export type ISeller = z.infer<typeof Seller>;

@@ -12,6 +12,7 @@ import {
   IAd,
   IClient,
   IDeliver,
+  INewSeller,
   IOrder,
   ISeller,
 } from "@/utils/types";
@@ -122,6 +123,11 @@ export async function deliver(deliverID: string) {
 
 export async function updateSeller(sellerID: string, demand: IAcceptSeller) {
   const { data } = await Http.post(`/admin/sellers/${sellerID}`, demand);
+  return data;
+}
+
+export async function createSeller(demand: INewSeller) {
+  const { data } = await Http.post(`/admin/sellers/new`, demand);
   return data;
 }
 

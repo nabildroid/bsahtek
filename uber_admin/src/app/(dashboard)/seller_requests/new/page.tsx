@@ -5,18 +5,12 @@ import { userAtomAsync } from "@/state";
 import { useAtom } from "jotai";
 import { useQuery } from "react-query";
 import { useRouter } from "next/navigation";
-import { AcceptSeller, ISeller, IAcceptSeller } from "@/utils/types";
+import { AcceptSeller, ISeller, IAcceptSeller, NewSeller } from "@/utils/types";
 import { useState } from "react";
 import { IBag } from "@/types";
 
 import useUploadImage from "@/hooks/useUploadImage";
 
-
-type Props = {
-    params: {
-        id: string
-    }
-}
 
 
 const types = [
@@ -28,32 +22,16 @@ const types = [
     "Oriental ---- شرقي",
 ]
 
-export default function Page(props: Props) {
-
+export default function Page() {
     const uploader = useUploadImage();
-
 
     const router = useRouter();
     const [user] = useAtom(userAtomAsync);
 
-    const { data } = useQuery(["seller", props.params.id], () => Server.seller(props.params.id), {
-        suspense: true,
-        onError: (error) => {
-            router.replace("/seller_requests");
-        },
-        retry: 0
-
-    });
+    const bag = {} as any;
 
 
-
-    const bag = data?.bags[0];
-
-
-    const [sellerInfo, setSellerInfo] = useState<ISeller>({
-        id: props.params.id,
-        ...data!.seller
-    });
+    const [sellerInfo, setSellerInfo] = useState<ISeller>({} as any);
 
     const [bagInfo, setBagInfo] = useState<IBag>({
         ...(bag as any)
@@ -79,28 +57,27 @@ export default function Page(props: Props) {
             bagOriginalPrice: bagInfo.originalPrice,
             bagPhoto: bagInfo.photo ?? "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3",
             bagTags: (bagInfo.tags ?? "") as any,
-            bagID: bagInfo.id,
             storeType: sellerInfo.storeType,
         } as IAcceptSeller
 
-        const validation = AcceptSeller.safeParse(updates);
+
+        if (updates.phone?.length < 2) {
+            delete (updates as any).phone;
+
+        }
+        const validation = NewSeller.safeParse(updates);
 
         if (validation.success) {
-            await Server.updateSeller(props.params.id, updates);
-            router.push("/sellers");
+            await Server.createSeller(updates);
+            // router.push("/sellers");
+        } else {
+            console.log(validation, updates);
         }
     }
 
-    async function remove() {
-        await Server.removeSeller(props.params.id);
-        router.push("/sellers");
-    }
-
-
-
 
     return <div className="w-full max-w-3xl mx-auto -mt-4">
-        <h2 className="font-bold text-black text-2xl  w-full max-w-3xl ">Assing Seller to Bag</h2>
+        <h2 className="font-bold text-black text-2xl  w-full max-w-3xl ">Assing New Seller to Bag</h2>
 
         <div className=" bg-white shadow-md  flex  flex-col items-start  sm:flex-row px-2   my-6">
 
@@ -118,7 +95,7 @@ export default function Page(props: Props) {
 
                 <div className="p-2 rounded-lg focus-within:bg-stone-200">
                     <label className="text-sm font-bold px-2">Seller phone</label>
-                    <input disabled
+                    <input
                         value={sellerInfo.phone}
                         onChange={(e) => setSellerInfo({ ...sellerInfo, phone: e.target.value })}
                         className="w-full px-2 border-b-2 bg-transparent border-black/50 outline-none" placeholder="Seller Name" />
@@ -187,7 +164,7 @@ export default function Page(props: Props) {
                             onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const url = await uploader(file, props.params.id, "seller/photo");
+                                const url = await uploader(file, "manuel", "seller/photo");
                                 setSellerInfo(a => ({ ...a, photo: url }));
                             }}
                             className="absolute inset-0 opacity-0" />
@@ -207,9 +184,7 @@ export default function Page(props: Props) {
                 </div>
 
 
-                {!(sellerInfo.active) && <button onClick={remove} className="border-2 border-stone-600 text-black font-bold px-12 py-1.5 rounded-md my-4 w-full">
-                    Delete
-                </button>}
+
 
             </div>
 
@@ -259,7 +234,7 @@ export default function Page(props: Props) {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 // todo this will make the old photos saved for ever!
-                                const url = await uploader(file, props.params.id + "-" + (Math.random() * 100000000).toString(), "bag/photo");
+                                const url = await uploader(file, "manuel" + "-" + (Math.random() * 100000000).toString(), "bag/photo");
                                 setBagInfo(a => ({ ...a, photo: url }));
                             }}
                             type="file" className="absolute inset-0 opacity-0" />
