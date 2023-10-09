@@ -180,7 +180,7 @@ class SuggestionCard extends StatelessWidget {
                                   ? Alignment.centerLeft
                                   : Alignment.centerRight,
                               child: Text(
-                                price +
+                                discountPrice +
                                     AppLocalizations.of(context)!
                                         .bag_price_unit,
                                 style: TextStyle(
@@ -221,7 +221,7 @@ class SuggestionCard extends StatelessWidget {
                                 ),
                                 Spacer(),
                                 Text(
-                                  discountPrice +
+                                  price +
                                       AppLocalizations.of(context)!
                                           .bag_price_unit,
                                   style: TextStyle(
