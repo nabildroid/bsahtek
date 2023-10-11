@@ -3,10 +3,11 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   if (
+    request.nextUrl.pathname != "/landing" &&
     request.nextUrl.pathname != "/login" &&
     request.cookies.get("token") == null
   ) {
-    request.nextUrl.pathname = "/login";
+    
     return NextResponse.redirect(request.nextUrl);
   }
 }
