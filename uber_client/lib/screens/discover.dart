@@ -53,10 +53,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final bags = cubit.visibleBags;
 
     var filtredBags = bags.where((bag) {
-      return bag.name.toLowerCase().contains(search.text) ||
-          bag.description.toLowerCase().contains(search.text) ||
-          bag.sellerName.toLowerCase().contains(search.text) ||
-          bag.tags.toLowerCase().contains(search.text);
+      return bag.name.toLowerCase().contains(search.text.toLowerCase()) ||
+          bag.description.toLowerCase().contains(search.text.toLowerCase()) ||
+          bag.sellerName.toLowerCase().contains(search.text.toLowerCase()) ||
+          bag.tags.toLowerCase().contains(search.text.toLowerCase());
     }).toList();
 
     return filtredBags;
@@ -233,7 +233,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   secondFilter: (b, d, q) => currentFilter?.check(b, q) ?? true,
                   description:
                       "Bags won't be on sale for long.. but there's still a chance to save them!",
-                  filter: (bag, distance, quantity) => quantity < 2,
+                  filter: (bag, distance, quantity) =>
+                      quantity < 2 && quantity > 0,
                 ),
               ),
               SliverToBoxAdapter(
@@ -244,12 +245,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ...tags.map(
                 (e) => SliverToBoxAdapter(
                   child: AutoSuggestionView(
-                    label: e,
-                    secondFilter: (b, d, q) =>
-                        currentFilter?.check(b, q) ?? true,
-                    filter: (bag, distance, quantity) =>
-                        bag.tags.toLowerCase().contains(e),
-                  ),
+                      label: e,
+                      secondFilter: (b, d, q) =>
+                          currentFilter?.check(b, q) ?? true,
+                      filter: (bag, distance, quantity) {
+                        return bag.tags.toLowerCase().contains(e.toLowerCase());
+                      }),
                 ),
               ),
               SliverToBoxAdapter(
@@ -384,8 +385,8 @@ class AutoSuggestionView extends StatelessWidget {
           ) /
           1000;
 
-      final quantity = cubit.quantities[bag.id.toString()] ?? 0;
-      if (quantity == 0) return false;
+      final quantity = cubit.quantities[bag.id.toString()];
+      if (quantity == null) return false;
 
       if (secondFilter != null && !secondFilter!(bag, distance, quantity))
         return false;

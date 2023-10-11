@@ -36,8 +36,8 @@ class FavoritScreen extends StatelessWidget {
                       subtitle: bag.sellerAddress,
                       picture: bag.photo,
                       rating: bag.rating.toStringAsFixed(1),
-                      price: bag.originalPrice.toString(),
-                      discountPrice: bag.price.toString(),
+                      price: bag.price.toString(),
+                      discountPrice: bag.originalPrice.toString(),
                       chip: Utils.splitTranslation(bag.tags, context),
                       distance: (Geolocator.distanceBetween(
                                 bag.latitude,
