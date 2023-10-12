@@ -84,8 +84,8 @@ export default function Page() {
 
 
         </div>
-        <div id="about" className="sticky top-0 flex flex-col justify-center bg-[#003e4d]  space-y-16 h-screen  max-w-5xl  mx-auto  text-white  px-2 text-center">
-            <h2 className="uppercase text-emerald-200">À Propos de Nous</h2>
+        <div id="about" className="sm:sticky mt-16 sm:mt-0 top-0 flex flex-col justify-center bg-[#003e4d]  space-y-16 min-h-screen   max-w-5xl  mx-auto  text-white  px-2 text-center">
+            <h2 className="uppercase text-emerald-200 sticky top-0 bg-[#003e4d] w-full ">À Propos de Nous</h2>
             <p className=" leading-normal font-medium text-2xl text-left">
                 Chez Bsahtek, nous croyons en un avenir où chaque repas compte.
                 Nous sommes déterminés à réduire le gaspillage alimentaire en mettant à profit la technologie moderne pour connecter les acteurs clés
@@ -96,8 +96,8 @@ export default function Page() {
 
         </div>
 
-        <div id="vision" className="sticky top-0 flex flex-col justify-center bg-[#003e4d] border-t-2 border-white/10  space-y-16 h-screen  max-w-5xl  mx-auto  text-white  px-2 text-center">
-            <h2 className="uppercase text-emerald-200">Notre Vision</h2>
+        <div id="vision" className="sm:sticky top-0 flex flex-col justify-center bg-[#003e4d] sm:border-t-2 border-white/10  space-y-16 min-h-screen   max-w-5xl  mx-auto  text-white  px-2 text-center">
+            <h2 className="uppercase text-emerald-200 sticky top-0 bg-[#003e4d] w-full ">Notre Vision</h2>
             <p className=" leading-normal font-medium text-2xl text-left">
                 Nous rêvons d'un monde où chaque aliment est valorisé, où chaque surplus alimentaire trouve son chemin vers quelqu'un qui l'appréciera.
                 À travers notre application mobile, nous espérons catalyser un changement durable dans la façon dont nous gérons nos ressources alimentaires.
@@ -109,8 +109,8 @@ export default function Page() {
 
 
 
-        <div id="what" className="sticky top-0 flex flex-col justify-center bg-[#003e4d] border-t-2 border-white/10  space-y-16 h-screen  max-w-5xl  mx-auto  text-white  px-2 text-center">
-            <h2 className="uppercase text-emerald-200">Ce Que Nous Faisons</h2>
+        <div id="what" className="sm:sticky top-0 flex flex-col justify-center bg-[#003e4d] sm:border-t-2 border-white/10  space-y-16 min-h-screen   max-w-5xl  mx-auto  text-white  px-2 text-center">
+            <h2 className="uppercase text-emerald-200 sticky top-0 bg-[#003e4d] w-full ">Ce Que Nous Faisons</h2>
             <p className=" leading-normal font-medium text-2xl text-left">
                 Notre application Bsahtek est votre outil pour réduire le gaspillage alimentaire.
                 Elle permet aux restaurants, supermarchés, épiceries, boulangeries, et producteurs locaux de partager leurs excédents alimentaires avec ceux qui en ont besoin.
@@ -120,8 +120,8 @@ export default function Page() {
         </div>
 
 
-        <div id="how" className="sticky top-0 flex flex-col justify-center bg-[#003e4d] border-t-2 border-white/10  space-y-16 h-screen  max-w-5xl  mx-auto  text-white  px-2 text-center">
-            <h2 className="uppercase text-emerald-200">Comment Ça Marche</h2>
+        <div id="how" className="sm:sticky top-0 flex flex-col justify-center bg-[#003e4d] sm:border-t-2 border-white/10  space-y-16 min-h-screen   max-w-5xl  mx-auto  text-white  px-2 text-center">
+            <h2 className="uppercase text-emerald-200 sticky top-0 bg-[#003e4d] w-full ">Comment Ça Marche</h2>
             <p className=" leading-normal font-medium text-2xl text-left">
                 Partagez Vos Surplus : Les entreprises alimentaires enregistrent leurs excédents alimentaires sur notre application.
 
@@ -137,8 +137,8 @@ export default function Page() {
         </div>
 
 
-        <div className="sticky top-0 flex flex-col justify-center bg-[#003e4d] border-t-2 border-white/10  space-y-16 h-screen  max-w-5xl  mx-auto  text-white  px-2 text-center">
-            <h2 className="uppercase text-emerald-200">Notre Impact</h2>
+        <div className="sm:sticky top-0 flex flex-col justify-center bg-[#003e4d] sm:border-t-2 border-white/10  space-y-16 min-h-screen   max-w-5xl  mx-auto  text-white  px-2 text-center">
+            <h2 className="uppercase text-emerald-200 sticky top-0 bg-[#003e4d] w-full ">Notre Impact</h2>
             <p className=" leading-normal font-medium text-2xl text-left">
                 Grâce à la collaboration de notre communauté, nous avons déjà empêché des tonnes d'aliments de finir à la poubelle.
                 Chaque repas partagé est une victoire pour notre planète et une aide précieuse pour nos concitoyens dans le besoin.
