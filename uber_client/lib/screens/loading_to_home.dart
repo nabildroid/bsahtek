@@ -67,6 +67,8 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
       if (client == null) {
         SystemNavigator.pop();
         return;
+      } else if (!(client is Client)) {
+        return init();
       }
 
       await Server().setupTokenization(alreadyInited: true);
