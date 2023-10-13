@@ -164,7 +164,7 @@ export default function Page() {
                             onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const url = await uploader(file, "manuel", "seller/photo");
+                                const url = await uploader(file, "manuel" + "-" + (Math.random() * 100000000).toString(), "seller/photo");
                                 setSellerInfo(a => ({ ...a, photo: url }));
                             }}
                             className="absolute inset-0 opacity-0" />
