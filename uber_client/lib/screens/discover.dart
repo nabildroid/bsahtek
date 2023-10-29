@@ -484,7 +484,7 @@ class AutoSuggestionView extends StatelessWidget {
                         ? "$quantity"
                         : null
                     : null,
-                discountPrice: spot.price.toString(),
+                discountPrice: spot.originalPrice.toString(),
                 distance: (Geolocator.distanceBetween(
                           spot.latitude,
                           spot.longitude,
@@ -494,7 +494,7 @@ class AutoSuggestionView extends StatelessWidget {
                         1000)
                     .toStringAsFixed(2),
                 picture: spot.photo,
-                price: spot.originalPrice.toString(),
+                price: spot.price.toString(),
                 rating: spot.rating.toStringAsFixed(1),
                 storeName: spot.sellerName,
                 storePicture: spot.sellerPhoto,
