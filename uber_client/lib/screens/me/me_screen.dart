@@ -1,13 +1,14 @@
+import 'package:bsahtak/screens/me/privacy.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bsahtak/cubits/app_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
 import 'package:bsahtak/screens/me/privacy.dart';
 import 'package:bsahtak/screens/me/term.dart';
 
+import '../../cubits/app_cubit.dart';
 import '../../repositories/cache.dart';
 import '../../utils/constants.dart';
 import '../../utils/utils.dart';
@@ -22,6 +23,10 @@ class MeScreen extends StatelessWidget {
 
     final prevOrders = context.watch<HomeCubit>().state.prevOrders;
     prevOrders.sort((a, b) => b.lastUpdate.compareTo(a.lastUpdate));
+
+    final savedBags = prevOrders
+        .where((element) => !element.expired && !element.inProgress)
+        .toList();
 
     final app = context.read<AppCubit>().state;
 
@@ -201,7 +206,28 @@ class MeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              Transform.translate(
+                offset: Offset(0, -20),
+                child: Row(
+                  children: [
+                    Status(
+                      icon: Icons.money_outlined,
+                      label: savedBags
+                              .fold(0.0, (p, n) => p + double.parse(n.bagPrice))
+                              .toString() +
+                          " dz",
+                    ),
+                    Status(
+                      icon: Icons.shopping_basket_outlined,
+                      label: savedBags.length.toString(),
+                    ),
+                    Status(
+                      icon: Icons.co2,
+                      label: "${savedBags.length * 2.33} KG CO2",
+                    )
+                  ],
+                ),
+              ),
               ListTile(
                 leading: Icon(Icons.settings),
                 title: Text(AppLocalizations.of(context)!.me_settings),
@@ -231,6 +257,42 @@ class MeScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class Status extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const Status({
+    super.key,
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(color: Colors.white),
+        margin: EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Icon(icon),
+            FittedBox(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 18,
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
