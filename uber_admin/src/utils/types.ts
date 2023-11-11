@@ -67,7 +67,7 @@ export const Order = z.object({
 
   sellerName: z.string(),
   sellerPhone: z.string(),
-
+  livePicture: z.string(),
   bagID: z.string(),
   bagName: z.string(),
   bagImage: z.string(),
@@ -118,6 +118,7 @@ export const StartDeliveryOrder = Order.extend({
   isDelivered: true,
   deliveryPath: true,
   reportId: true,
+  livePicture: true,
 });
 
 // todo refine for the dates!
@@ -129,6 +130,7 @@ export const AcceptOrder = Order.extend({
   deliveryManID: true,
   deliveryPhone: true,
   deliveryName: true,
+  livePicture: true,
 
   reportId: true,
 });
@@ -311,7 +313,7 @@ export const AcceptSeller = Seller.extend({
 
 export const NewSeller = AcceptSeller.omit({
   phone: true,
-  bagID:true,
+  bagID: true,
 }).extend({
   phone: Seller.shape.phone.optional(),
 });

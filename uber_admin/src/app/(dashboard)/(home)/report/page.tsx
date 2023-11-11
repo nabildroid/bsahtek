@@ -12,6 +12,8 @@ import { useState } from "react"
 
 export default function Page() {
 
+    const [openPicture, setOpenPicture] = useState("");
+
     const [isRealtime] = useAtom(realTimeAtom);
     const { data } = useQuery(["report", "orders"], Server.getOrders, {
         suspense: true,
@@ -35,9 +37,12 @@ export default function Page() {
     });
 
 
+
     const date = new Date();
 
     return <>
+
+
         <div className="max-w-2xl w-full  mt-4 sm:w-full sm:mx-auto bg-white ring-2 ring-stone-400 rounded-md px-2 py-1 mb-4 mx-2">
             <input
                 value={search}
@@ -65,9 +70,6 @@ export default function Page() {
                         <th scope="col" className="px-3 py-3 hidden sm:table-cell">
                             Delivery
                         </th>
-
-                        
-
                         <th scope="col" className="px-3 py-3 hidden sm:table-cell">
                             Total
                         </th>
@@ -89,8 +91,11 @@ export default function Page() {
                             <td className="px-3 py-4 font-medium text-stone-900 whitespace-nowrap ">
                                 {order.clientName}
                             </td>
-                            <td className="px-3 py-4 hidden sm:table-cell">
-                                {order.deliveryName ?? order.isPickup ? 'pickup' : 'delivery'}
+                            <td className="px-1 py-2 hidden sm:table-cell ">
+                                <button disabled={!order.livePicture} onClick={() => setOpenPicture(order.livePicture)} className="flex space-x-2 px-2 py-1 rounded-lg hover:bg-black hover:text-white">
+                                    {order.livePicture && <Lucide.ImageIcon />}
+                                    <span>  {order.deliveryName ?? order.isPickup ? 'pickup' : 'delivery'}</span>
+                                </button>
                             </td>
                             <td className="px-3 py-4 hidden ">
                                 {/* {diffInMin(new Date(order.createdAt), new Date(order.lastUpdate))} min */}
@@ -105,6 +110,17 @@ export default function Page() {
                 </tbody>
             </table>
         </div>
+
+
+        {
+            openPicture != "" && <div className="inset-0 fixed z-50 flex items-center justify-center">
+                <div className="absolute bg-black/25 inset-0" onClick={() => setOpenPicture("")} />
+                <div className="relative m-8 max-w-2xl bg-white w-full ">
+                    <img src={openPicture} className="w-full" />
+                </div>
+
+            </div>
+        }
 
 
     </>

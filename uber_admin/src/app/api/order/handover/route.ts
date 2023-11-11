@@ -27,6 +27,10 @@ export async function POST(request: Request) {
   if (await BlocForNot("seller#" + order.sellerID, request))
     return VerificationError();
 
+  let orderUpdatesWithLivePricure = {
+    livePicture: order.livePicture,
+  } as Partial<IOrder>;
+
   if (order.isPickup == false) {
     // set track to be toSeller = true
 
@@ -36,15 +40,13 @@ export async function POST(request: Request) {
     });
   } else {
     // set order to be delivered
-    await firebase.firestore().collection("orders").doc(order.id).update({
+    orderUpdatesWithLivePricure = {
+      ...orderUpdatesWithLivePricure,
       isDelivered: true,
-      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
+    };
 
     await cancelOrderExpiration(order.id);
-
-    const today = new Date().toLocaleDateString();
-    const statsRef = firebase.firestore().collection("uber").doc("stats");
 
     await updateStats({
       selled: { increment: Number(order.bagPrice) },
@@ -52,6 +54,12 @@ export async function POST(request: Request) {
     // send notification to the client, so he can
     await notifyClient(order);
   }
+
+  await firebase
+    .firestore()
+    .collection("orders")
+    .doc(order.id)
+    .update(orderUpdatesWithLivePricure);
 
   console.log(order);
 
@@ -80,6 +88,7 @@ async function notifyClient(order: IOrder) {
       notification: {
         body: `you help save ${order.bagName}`,
         title: "Thank you",
+        imageUrl: order.livePicture,
       },
     },
     data: {
