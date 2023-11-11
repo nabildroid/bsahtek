@@ -20,6 +20,7 @@ class Order {
   final LatLng? sellerAddress;
   final String? sellerName;
   final String? sellerPhone;
+  final String? livePicture;
 
   final String bagID;
   final String bagName;
@@ -59,6 +60,7 @@ class Order {
     this.sellerAddress,
     this.sellerName,
     this.sellerPhone,
+    this.livePicture,
     this.deliveryManID,
     this.deliveryPhone,
     this.deliveryName,
@@ -100,6 +102,7 @@ class Order {
           : null,
       'sellerName': sellerName,
       'sellerPhone': sellerPhone,
+      'livePicture': livePicture,
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
@@ -147,6 +150,7 @@ class Order {
           : null,
       sellerName: json['sellerName'],
       sellerPhone: json['sellerPhone'],
+      livePicture: json['livePicture'],
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],
@@ -174,6 +178,13 @@ class Order {
     };
     data["sellerName"] = seller.name;
     data["sellerPhone"] = seller.phone;
+
+    return Order.fromJson(data);
+  }
+
+  Order captureLivePicture(String livePicture) {
+    final data = toJson();
+    data["livePicture"] = livePicture;
 
     return Order.fromJson(data);
   }

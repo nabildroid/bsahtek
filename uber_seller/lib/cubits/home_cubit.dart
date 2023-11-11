@@ -232,6 +232,9 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void handOver(Order order) async {
+    if (order.livePicture == null)
+      throw Exception("you can't handover order without taking picture");
+
     await Server().handOver(order);
   }
 

@@ -242,10 +242,12 @@ class Server {
   }
 
   // No configuration required - the plugin should work out of the box. It is however highly recommended to prepare for Android killing the application when low on memory. How to prepare for this is discussed in the Handling MainActivity destruction on Android section.
-  Future<String?> pickImage(String fileName, String path) async {
+  Future<String?> pickImage(String fileName, String path,
+      {bool isCamera = false}) async {
     final ImagePicker picker = ImagePicker();
     // Pick an image.
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+        source: isCamera ? ImageSource.camera : ImageSource.gallery);
 
     if (image == null) return null;
     final extention = image.path.split(".").last;

@@ -83,7 +83,16 @@ class _RunningOrderState extends State<RunningOrder> {
         Navigator.of(context).pop();
       });
     } else {
-      context.read<HomeCubit>().handOver(widget.order);
+      final sellerUID = Server.auth.currentUser!.uid;
+
+      final livePicture = await Server().pickImage(
+          widget.order.id, "/seller/handover/livePicture/$sellerUID",
+          isCamera: true);
+
+      print(livePicture);
+      context.read<HomeCubit>().handOver(
+            widget.order.captureLivePicture(livePicture!),
+          );
 
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
