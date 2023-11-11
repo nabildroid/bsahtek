@@ -30,6 +30,8 @@ export default function Page() {
 
     const bag = {} as any;
 
+    const [savingIndicator, setSavingIndicator] = useState(false);
+
 
     const [sellerInfo, setSellerInfo] = useState<ISeller>({} as any);
 
@@ -45,6 +47,7 @@ export default function Page() {
 
     async function update() {
 
+        setSavingIndicator(true);
         const updates = {
             ...sellerInfo,
             active: true,
@@ -69,8 +72,10 @@ export default function Page() {
 
         if (validation.success) {
             await Server.createSeller(updates);
+            setSavingIndicator(false);
             // router.push("/sellers");
         } else {
+            setSavingIndicator(false);
             console.log(validation, updates);
         }
     }
@@ -264,7 +269,8 @@ export default function Page() {
 
                 <button
                     onClick={update}
-                    className="bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full">
+                    disabled={savingIndicator}
+                    className={`bg-black text-white font-bold px-12 py-2 rounded-md my-4 w-full ${savingIndicator && "animate-pulse"}`}>
                     {sellerInfo.active ? "Update" : "Assign"}
                 </button>
 
