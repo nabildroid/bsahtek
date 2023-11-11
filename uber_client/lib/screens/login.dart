@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         BlendMode.srcATop),
 
                     child: Image.network(
-                      'https://www.bsahtek.net/static/logo.png',
+                      'https://bsahtek.net/static/logo.png',
                     ), // Replace 'colored_image.png' with your image file path
                   ),
                 ),
