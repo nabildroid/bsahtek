@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ColorFilter.mode(Colors.green, BlendMode.srcATop),
 
                     child: Image.network(
-                      'https://www.bsahtek.net/static/logo.png',
+                      'https://bsahtek.net/static/logo.png',
                     ), // Replace 'colored_image.png' with your image file path
                   ),
                 ),
@@ -296,7 +296,7 @@ class _FormSubmitState extends State<FormSubmit> {
   @override
   void initState() {
     super.initState();
-    photoURL = widget.defaultImage ?? "https://www.bsahtek.net/static/logo.png";
+    photoURL = widget.defaultImage ?? "https://bsahtek.net/static/logo.png";
   }
 
   void submit() async {
