@@ -177,6 +177,7 @@ export const NewOrder = Order.extend({}).omit({
   deliveryName: true,
 
   sellerName: true,
+  livePicture: true,
   sellerPhone: true,
 });
 
