@@ -66,20 +66,21 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   signInWithGoogle() async {
-    googleUser = await GoogleSignIn().signIn();
+    try {
+      googleUser = await GoogleSignIn().signIn();
 
-    if (googleUser == null) return;
+      if (googleUser == null) return;
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser!.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser!.authentication;
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-    final user = await Server.auth.signInWithCredential(credential);
-    await Server.auth.currentUser!.getIdToken(true);
+      final user = await Server.auth.signInWithCredential(credential);
+    } catch (e) {}
   }
 
   signInWithFacebook() async {

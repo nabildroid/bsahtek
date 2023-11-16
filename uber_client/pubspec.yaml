@@ -70,6 +70,7 @@ dependencies:
   flutter_facebook_auth: ^6.0.2
   cached_network_image: ^3.3.0
   firebase_remote_config: ^4.2.6
+  dio_smart_retry: ^6.0.0
 
 dev_dependencies:
   flutter_test:

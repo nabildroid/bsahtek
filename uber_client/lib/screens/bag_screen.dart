@@ -197,8 +197,10 @@ class _BagScreenState extends State<BagScreen> {
 
     phone.addListener(_formatPhoneNumber);
 
-    Future.delayed(Duration(seconds: 1))
-        .then((_) => setState(() => isOrderActionOnView = true));
+    Future.delayed(Duration(seconds: 1)).then((_) {
+      if (!mounted) return;
+      setState(() => isOrderActionOnView = true);
+    });
   }
 
   @override

@@ -291,18 +291,18 @@ class _DiscoverAdState extends State<DiscoverAd> {
   }
 
   void startAutoScrolling() {
-    timer?.cancel();
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (currentPage == maxPage || currentPage == -1) {
-        direction *= -1;
-      }
-      currentPage = currentPage + direction;
-      controller.animateToPage(
-        currentPage,
-        duration: Duration(milliseconds: 350),
-        curve: Curves.easeInExpo,
-      );
-    });
+    // timer?.cancel();
+    // timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    //   if (currentPage == maxPage || currentPage == -1) {
+    //     direction *= -1;
+    //   }
+    //   currentPage = currentPage + direction;
+    //   controller.animateToPage( // todo there is a bug here, however this functionality as been droped
+    //     currentPage,
+    //     duration: Duration(milliseconds: 350),
+    //     curve: Curves.easeInExpo,
+    //   );
+    // });
   }
 
   @override
