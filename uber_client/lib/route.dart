@@ -161,8 +161,10 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDialog = goRouter.location.endsWith("/filters") ||
-        goRouter.location.endsWith("/location-picker");
+    final goingTo = goRouter.routeInformationProvider.value.uri.path;
+
+    final isDialog =
+        goingTo.endsWith("/filters") || goingTo.endsWith("/location-picker");
 
     return Scaffold(
       body: navigationShell,

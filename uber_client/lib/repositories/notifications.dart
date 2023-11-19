@@ -130,7 +130,7 @@ abstract class Notifications {
   static Future<void> Function() onClick(
       Function(String type, dynamic payload) callback) {
     if (_actionStreamListeners.isEmpty) {
-      _instance.actionStream.listen((event) {
+      _instance.setListeners(onActionReceivedMethod: (event) async {
         if (event.payload?.containsKey("type") ?? false) {
           _actionStreamListeners.forEach((element) {
             element(event.payload!["type"].toString(), event.payload!);

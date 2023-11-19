@@ -44,7 +44,7 @@ class Server {
     // todo it should break when the user is disabled, not exists ...etc
     if (!alreadyInited) {
       final token = await auth.currentUser!.getIdToken();
-      injectToken(token);
+      if (token != null) injectToken(token);
     }
 
     auth.idTokenChanges().listen((event) async {
@@ -52,7 +52,7 @@ class Server {
         http.interceptors.clear();
       } else {
         final token = await event.getIdToken();
-        injectToken(token);
+        if (token != null) injectToken(token);
       }
     });
   }
@@ -72,22 +72,22 @@ class Server {
         if (isGood) return;
         isGood = true;
         try {
-        final idToken = await event.getIdTokenResult(
-          forced == false && forceFirst,
-        ); //todo this call cause the listener to fire again, why not return empty and later if isGood return the good client!
+          final idToken = await event.getIdTokenResult(
+            forced == false && forceFirst,
+          ); //todo this call cause the listener to fire again, why not return empty and later if isGood return the good client!
 
-        injectToken(idToken.token!);
-        final role = idToken.claims?["role"] ?? "";
-        forced = true;
+          injectToken(idToken.token!);
+          final role = idToken.claims?["role"] ?? "";
+          forced = true;
 
-        listen(Client(
-          id: event.uid,
-          name: event.displayName ?? "",
-          phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
-          photo: event.photoURL ??
-              "https://api.dicebear.com/6.x/identicon/svg?seed=${event.phoneNumber}",
-          isActive: role == "client",
-        ));
+          listen(Client(
+            id: event.uid,
+            name: event.displayName ?? "",
+            phone: event.phoneNumber ?? idToken.claims?["phone_number"] ?? "",
+            photo: event.photoURL ??
+                "https://api.dicebear.com/6.x/identicon/svg?seed=${event.phoneNumber}",
+            isActive: role == "client",
+          ));
         } catch (e) {
           isGood = false;
           listen(null);
