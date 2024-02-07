@@ -277,7 +277,7 @@ class DiscoverAd extends StatefulWidget {
   State<DiscoverAd> createState() => _DiscoverAdState();
 }
 
-class _DiscoverAdState extends State<DiscoverAd> {
+class _DiscoverAdState extends State<DiscoverAd> with WidgetsBindingObserver {
   final controller = PageController();
   Timer? timer;
 
@@ -287,7 +287,21 @@ class _DiscoverAdState extends State<DiscoverAd> {
 
   @override
   void initState() {
+    context.read<HomeCubit>().init(); // not sure if this pattern is good
+    context.read<BagsQubit>().init(context); // not sure if this pattern is good
+
+    WidgetsBinding.instance.addObserver(this);
+
     super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<HomeCubit>().recheckRunningOrder();
+    }
+
+    super.didChangeAppLifecycleState(state);
   }
 
   void startAutoScrolling() {
@@ -307,6 +321,8 @@ class _DiscoverAdState extends State<DiscoverAd> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
     timer?.cancel();
     super.dispose();
   }
@@ -317,6 +333,8 @@ class _DiscoverAdState extends State<DiscoverAd> {
 
   @override
   Widget build(BuildContext context) {
+    context.read<HomeCubit>().setContext(context);
+
     return BlocConsumer<AppCubit, AppState>(
         listenWhen: (n, o) => n.ads != o.ads,
         listener: (ctx, state) {

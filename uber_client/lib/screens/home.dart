@@ -31,7 +31,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> {
   LatLng? position;
 
   late GoogleMapController mapController;
@@ -41,31 +41,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool showFilters = false;
 
   bool showRunning = false;
-
-  @override
-  void initState() {
-    context.read<HomeCubit>().init(); // not sure if this pattern is good
-    context.read<BagsQubit>().init(context); // not sure if this pattern is good
-
-    WidgetsBinding.instance.addObserver(this);
-
-    super.initState();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      context.read<HomeCubit>().recheckRunningOrder();
-    }
-
-    super.didChangeAppLifecycleState(state);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

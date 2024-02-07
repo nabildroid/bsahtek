@@ -53,7 +53,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
       await context.read<AppCubit>().setUser(Cache.client!);
       try {
         await Server().setupTokenization();
-        context.go("/home");
+        context.go("/discover");
       } catch (e) {
         context.read<AppCubit>().logOut(context);
         context.replace("/loading");
@@ -73,7 +73,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
 
       await Server().setupTokenization(alreadyInited: true);
       await context.read<AppCubit>().setUser(client);
-      context.go("/home");
+      context.go("/discover");
     }
   }
 
