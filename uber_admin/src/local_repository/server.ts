@@ -56,6 +56,25 @@ export async function sellers() {
   return data.sellers as IBag[];
 }
 
+export async function zones() {
+  const { data } = await Http.get("/admin/sellers/zones");
+  return data.zones as {
+    id: string;
+    quantities: { [key: number]: number };
+  }[];
+}
+
+export async function setZoneQuantity(
+  zoneId: string,
+  bagID: number,
+  quantity: number
+) {
+  const { data } = await Http.post(`/admin/sellers/zones/${zoneId}/${bagID}`, {
+    quantity,
+  });
+  return data;
+}
+
 export async function seller(sellerID: string) {
   const { data } = await Http.get(`/admin/sellers/${sellerID}`);
   return data as {

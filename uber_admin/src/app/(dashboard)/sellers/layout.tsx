@@ -17,23 +17,30 @@ type Props = {
 export default function Layout(props: Props) {
 
 
-
     const [user] = useAtom(userAtomAsync);
     const { data, refetch } = useQuery(["sellers"], Server.sellers, {
         suspense: true,
     });
 
+    const { data: Zones, refetch: refetchZones } = useQuery(["zones"], Server.zones, {
+        refetchInterval: 1000 * 60 * 60
+    });
+
+    const getQuantity = (bagID: number) => Zones?.find(z => !!z.quantities[bagID])?.quantities[bagID]
+
     const [search, setSearch] = useState("");
 
     const filtredData = search.length < 2 ? data : data?.filter(i => {
-        return search.includes(i.sellerName) ||
+        return search.includes(i.sellerName.toLowerCase()) ||
             i.sellerID.includes(search) ||
             (i.price + "dz").includes(search) ||
             i.sellerPhone?.includes(search) ||
-            i.name.includes(search) ||
+            i.name.toLowerCase().includes(search) ||
             i.rating.toString().includes(search) ||
             i.tags.includes(search) ||
             i.category.includes(search) ||
+            search.toLowerCase() == "empty" && !!!getQuantity(i.id) ||
+            search.toLowerCase() == "available" && !!getQuantity(i.id) ||
             i.id.toString().includes(search)
     });
 
@@ -44,6 +51,21 @@ export default function Layout(props: Props) {
         refetch()
     }
 
+    async function setQuantity(bag: any, quantity: number) {
+        const newQuanity = new Number(prompt("new Quantity", quantity.toString()))
+
+        console.log(Zones);
+        const zone = (Zones!).find(z => z.quantities[bag.id] !== undefined)!
+
+        await Server.setZoneQuantity(zone.id, bag.id, newQuanity as number);
+
+        refetchZones();
+
+
+    }
+
+
+
     return <div className="max-w-6xl mx-auto">
         {props.children}
 
@@ -51,7 +73,7 @@ export default function Layout(props: Props) {
             <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                type="text" className="bg-transparent w-full outline-none" placeholder="Search by Seller Name, Seller ID, bag name, price" />
+                type="text" className="bg-transparent w-full outline-none" placeholder="Search by Seller Name,Empty/Available,  Seller ID, bag name, price" />
         </div>
 
 
@@ -69,13 +91,21 @@ export default function Layout(props: Props) {
                             <Image alt="sellerPhoto" width={50} height={50} loading="lazy" src={bag.sellerPhoto} className="w-10 h-10 rounded-full object-cover ring ring-white" />
 
                             <div className="flex-1" />
-                            <DropDown id={bag.sellerID} onDelete={() => remove(bag.sellerID)} />
+                            <DropDown
+                                setQuanity={() => setQuantity(bag, getQuantity(bag.id) ?? 0)}
+                                id={bag.sellerID} onDelete={() => remove(bag.sellerID)} />
 
                         </div>
                     </div>
                     <div className="p-2">
-                        {/* add price:56$, store name:.., location, phonenumber  */}
-                        <h2 className="text-lg font-bold">{bag.sellerName}</h2>
+                        <h2 className="text-lg font-bold">{bag.sellerName}
+                            {!!!getQuantity(bag.id) && <span className="text-sm text-yellow-950 inline px-2 animate-pulse  bg-yellow-200 py-0.5 rounded-full font-bold">Empty</span>}
+                            {!!getQuantity(bag.id) && <span className="text-sm text-green-950 inline px-2   bg-green-200 py-0.5 rounded-full font-bold">Available</span>}
+                        </h2>
+
+
+
+
                         <p className="text-sm text-gray-500">{bag.name} <b>{bag.price}dz</b> <span>{bag.sellerPhone}</span></p>
                     </div>
 
@@ -100,7 +130,10 @@ export default function Layout(props: Props) {
 
 
 
-function DropDown(params: { id: string, onDelete: () => void }) {
+function DropDown(params: {
+    id: string, onDelete: () => void,
+    setQuanity: () => void
+}) {
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -128,9 +161,15 @@ function DropDown(params: { id: string, onDelete: () => void }) {
                 <li>
                     <Link className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" href={`/seller_requests/${params.id}/assign`}>Edit</Link>
                 </li>
+
+                <li>
+                    <button onClick={params.setQuanity} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" >Update Quantity</button>
+                </li>
+
                 <li>
                     <button onClick={params.onDelete} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" >Delete</button>
                 </li>
+
 
             </ul>
         </div>
