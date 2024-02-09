@@ -52,7 +52,6 @@ export async function GET(request: Request, context: Context) {
       ...doc.data(),
       lastUpdate: doc.data().lastUpdate?.toDate().toISOString(),
       createdAt: doc.data().createdAt.toDate().toISOString(),
-      acceptedAt: doc.data().acceptedAt?.toDate().toISOString(),
     } as IOrder;
   });
 

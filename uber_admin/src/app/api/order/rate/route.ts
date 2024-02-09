@@ -5,7 +5,6 @@ import firebase, {
 import { calculateDistance, calculateSquareCenter } from "@/utils/coordination";
 import * as Schema from "@/db/schema";
 import {
-  AcceptOrder,
   IOrder,
   ITrack,
   StartDeliveryOrder,
