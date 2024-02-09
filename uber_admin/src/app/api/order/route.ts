@@ -1,9 +1,18 @@
-import { INewOrder, IOrder, ISeller, NewOrder, Order } from "@/utils/types";
+import {
+  INewOrder,
+  IOrder,
+  IOrderExpireTask,
+  ISeller,
+  NewOrder,
+  Order,
+} from "@/utils/types";
 import * as admin from "firebase-admin";
 import firebase, {
   BlocForNot,
   VerificationError,
 } from "../repository/firebase";
+import * as Tasks from "@/app/api/repository/tasks";
+
 import { TypeOf, z } from "zod";
 import { seller } from "@/local_repository/server";
 import { IStats } from "@/types";
@@ -35,17 +44,17 @@ const redis = new Redis({
 });
 
 export async function POST(request: Request) {
-  if (await BlocForNot("", request)) return VerificationError();
+  // if (await BlocForNot("", request)) return VerificationError();
 
   const newOrder = NewOrder.parse(await request.json());
 
-  if (!(await ensureWithinTimeslot(newOrder))) {
-    return new Response("please wait for the time window!");
-  }
+  // if (!(await ensureWithinTimeslot(newOrder))) {
+  //   return new Response("please wait for the time window!");
+  // }
 
-  if (await oneOrderAday(newOrder.clientID)) {
-    return new Response("you can't submit multiple orders a day!");
-  }
+  // if (await oneOrderAday(newOrder.clientID)) {
+  //   return new Response("you can't submit multiple orders a day!");
+  // }
 
   const order = await addOrder(newOrder);
   return new Response(JSON.stringify(order));
@@ -93,6 +102,7 @@ export async function addOrder(newOrder: INewOrder) {
     .collection("sellers")
     .doc(newOrder.sellerID)
     .get();
+
   const seller = {
     ...query.data(),
     id: query.id,
@@ -109,8 +119,10 @@ export async function addOrder(newOrder: INewOrder) {
     .collection("orders")
     .add({
       ...newOrder,
-      // you must not put the name, or phone of the seller, that happens only when the seller accept the order!
       lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
+      sellerName: seller.name,
+      sellerPhone: seller.phone,
+      sellerAddress: newOrder.sellerAddress,
     } as IOrder);
 
   const order = {
@@ -119,6 +131,16 @@ export async function addOrder(newOrder: INewOrder) {
   } as IOrder;
 
   console.log(order);
+
+  // // no need for this, because quantity is substracted when handover
+  // await scheduleExpires({
+  //   orderID: order.id,
+  //   bagID: Number(order.bagID),
+  //   clientID: order.clientID,
+  //   sellerID: order.sellerID,
+  //   quantity: order.quantity,
+  //   zone: `${newOrder.sellerAddress.latitude},${newOrder.sellerAddress.longitude}`,
+  // });
 
   try {
     await firebase.messaging().send({
@@ -188,4 +210,23 @@ export async function updateStats(
   };
 
   await statsRef.set(data, { merge: true });
+}
+
+async function scheduleExpires(experation: IOrderExpireTask) {
+  const baseURL = process.env.VERCEL_URL;
+  if (baseURL === undefined) {
+    console.error("VERCEL_URL is undefined, we can't schedule the task");
+    return;
+  }
+
+  const url = `https://${baseURL}/api/order/accept/expires`.replaceAll(
+    "https://https://",
+    "https://"
+  );
+
+  return await Tasks.create({
+    url: url + "?orderID=" + experation.orderID,
+    delayInSeconds: 60 * 60 * 3,
+    data: experation,
+  });
 }

@@ -31,7 +31,6 @@ import secureHash from "@/app/api/utils";
   final String? deliveryManID;
   final String? deliveryPhone;
   final String? deliveryName;
-  final DateTime? acceptedAt;
 
  */
 
@@ -67,7 +66,6 @@ export const Order = z.object({
 
   sellerName: z.string(),
   sellerPhone: z.string(),
-  livePicture: z.string(),
   bagID: z.string(),
   bagName: z.string(),
   bagImage: z.string(),
@@ -88,10 +86,6 @@ export const Order = z.object({
   deliveryManID: z.string().optional(),
   deliveryPhone: z.string().optional(),
   deliveryName: z.string().optional(),
-  acceptedAt: z
-    .string()
-    .transform((a) => new Date(a))
-    .optional(),
 
   isPickup: z.boolean(),
 
@@ -118,25 +112,10 @@ export const StartDeliveryOrder = Order.extend({
   isDelivered: true,
   deliveryPath: true,
   reportId: true,
-  livePicture: true,
 });
 
-// todo refine for the dates!
-export const AcceptOrder = Order.extend({
-  acceptedAt: z.string().transform((a) => new Date(a)),
-}).omit({
-  isDelivered: true,
-  deliveryPath: true,
-  deliveryManID: true,
-  deliveryPhone: true,
-  deliveryName: true,
-  livePicture: true,
-
-  reportId: true,
-});
 
 export const HandOverToClient = Order.extend({
-  acceptedAt: z.string().transform((a) => new Date(a)),
   isPickup: z.literal(true),
 }).omit({
   deliveryManID: true,
@@ -149,7 +128,6 @@ export const HandOverToClient = Order.extend({
 });
 
 export const HandOver = Order.extend({
-  acceptedAt: z.string().transform((a) => new Date(a)),
   isPickup: z.literal(false),
   deliveryManID: z.string(),
   deliveryPhone: z.string(),
@@ -167,7 +145,6 @@ export const HandOverForAll = z.discriminatedUnion("isPickup", [
 
 export const NewOrder = Order.extend({}).omit({
   id: true,
-  acceptedAt: true,
   reportId: true,
 
   isDelivered: true,
@@ -177,11 +154,12 @@ export const NewOrder = Order.extend({}).omit({
   deliveryName: true,
 
   sellerName: true,
-  livePicture: true,
   sellerPhone: true,
 });
 
 export type INewOrder = z.infer<typeof NewOrder>;
+
+
 
 // todo add photo url refine
 export const NewFood = z.object({
@@ -333,7 +311,6 @@ export const OrderExpireTask = z.object({
   quantity: z.number(),
   clientID: z.string(),
   zone: z.string(),
-  acceptedAt: z.string().transform((a) => new Date(a)),
 });
 
 export type IOrderExpireTask = z.infer<typeof OrderExpireTask>;

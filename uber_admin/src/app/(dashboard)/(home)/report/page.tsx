@@ -12,7 +12,6 @@ import { useState } from "react"
 
 export default function Page() {
 
-    const [openPicture, setOpenPicture] = useState("");
 
     const [isRealtime] = useAtom(realTimeAtom);
     const { data } = useQuery(["report", "orders"], Server.getOrders, {
@@ -92,10 +91,7 @@ export default function Page() {
                                 {order.clientName}
                             </td>
                             <td className="px-1 py-2 hidden sm:table-cell ">
-                                <button disabled={!order.livePicture} onClick={() => setOpenPicture(order.livePicture)} className="flex space-x-2 px-2 py-1 rounded-lg hover:bg-black hover:text-white">
-                                    {order.livePicture && <Lucide.ImageIcon />}
-                                    <span>  {order.deliveryName ?? order.isPickup ? 'pickup' : 'delivery'}</span>
-                                </button>
+                                <span>  {order.deliveryName ?? order.isPickup ? 'pickup' : 'delivery'}</span>
                             </td>
                             <td className="px-3 py-4 hidden ">
                                 {/* {diffInMin(new Date(order.createdAt), new Date(order.lastUpdate))} min */}
@@ -112,15 +108,6 @@ export default function Page() {
         </div>
 
 
-        {
-            openPicture != "" && <div className="inset-0 fixed z-50 flex items-center justify-center">
-                <div className="absolute bg-black/25 inset-0" onClick={() => setOpenPicture("")} />
-                <div className="relative m-8 max-w-2xl bg-white w-full ">
-                    <img src={openPicture} className="w-full" />
-                </div>
-
-            </div>
-        }
 
 
     </>

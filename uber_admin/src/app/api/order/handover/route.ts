@@ -9,7 +9,6 @@ import firebase, {
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
 import {
-  AcceptOrder,
   HandOverForAll,
   HandOverToClient,
   IOrder,
@@ -27,10 +26,6 @@ export async function POST(request: Request) {
   if (await BlocForNot("seller#" + order.sellerID, request))
     return VerificationError();
 
-  let orderUpdatesWithLivePricure = {
-    livePicture: order.livePicture,
-  } as Partial<IOrder>;
-
   if (order.isPickup == false) {
     // set track to be toSeller = true
 
@@ -39,27 +34,46 @@ export async function POST(request: Request) {
       lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
     });
   } else {
-    // set order to be delivered
-    orderUpdatesWithLivePricure = {
-      ...orderUpdatesWithLivePricure,
-      isDelivered: true,
-      lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
-    };
+    await firebase
+      .firestore()
+      .collection("orders")
+      .doc(order.id)
+      .update({
+        isDelivered: true,
+        lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
+      });
 
     await cancelOrderExpiration(order.id);
 
+    // update the quantities
+    const sellerZone = calculateSquareCenter(
+      order.sellerAddress.longitude,
+      order.sellerAddress.latitude,
+      30
+    );
+
+    await firebase
+      .firestore()
+      .collection("zones")
+      .doc(`${sellerZone.x},${sellerZone.y}`)
+      .set(
+        {
+          quantities: {
+            [order.bagID]: admin.firestore.FieldValue.increment(
+              order.quantity * -1
+            ),
+          },
+        },
+        { merge: true }
+      );
+
+    ///
     await updateStats({
       selled: { increment: Number(order.bagPrice) },
     });
     // send notification to the client, so he can
     await notifyClient(order);
   }
-
-  await firebase
-    .firestore()
-    .collection("orders")
-    .doc(order.id)
-    .update(orderUpdatesWithLivePricure);
 
   console.log(order);
 
@@ -88,7 +102,6 @@ async function notifyClient(order: IOrder) {
       notification: {
         body: `you help save ${order.bagName}`,
         title: "Thank you",
-        imageUrl: order.livePicture,
       },
     },
     data: {

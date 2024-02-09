@@ -37,15 +37,7 @@ export async function POST(request: Request) {
     );
 
   // set up cronjob to reset the quantities after order expiration
-  await scheduleExpires({
-    orderID: order.id,
-    bagID: Number(order.bagID),
-    acceptedAt: order.acceptedAt,
-    clientID: order.clientID,
-    sellerID: order.sellerID,
-    quantity: order.quantity,
-    zone: `${sellerZone.x},${sellerZone.y}`,
-  });
+ 
 
   // update the order
   await firebase
@@ -53,7 +45,6 @@ export async function POST(request: Request) {
     .collection("orders")
     .doc(order.id)
     .update({
-      acceptedAt: order.acceptedAt,
       lastUpdate: admin.firestore.FieldValue.serverTimestamp() as any,
       sellerAddress: order.sellerAddress,
       sellerName: order.sellerName,
@@ -120,21 +111,3 @@ export async function POST(request: Request) {
   return new Response(JSON.stringify(order));
 }
 
-async function scheduleExpires(experation: IOrderExpireTask) {
-  const baseURL = process.env.VERCEL_URL;
-  if (baseURL === undefined) {
-    console.error("VERCEL_URL is undefined, we can't schedule the task");
-    return;
-  }
-
-  const url = `https://${baseURL}/api/order/accept/expires`.replaceAll(
-    "https://https://",
-    "https://"
-  );
-
-  return await Tasks.create({
-    url: url + "?orderID=" + experation.orderID,
-    delayInSeconds: 60 * 60 * 3,
-    data: experation,
-  });
-}
