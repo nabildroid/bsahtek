@@ -20,7 +20,6 @@ class Order {
   final LatLng? sellerAddress;
   final String? sellerName;
   final String? sellerPhone;
-  final String? livePicture;
 
   final String bagID;
   final String bagName;
@@ -35,7 +34,6 @@ class Order {
   final String? deliveryManID;
   final String? deliveryPhone;
   final String? deliveryName;
-  final DateTime? acceptedAt;
   final bool isPickup;
 
   const Order({
@@ -60,11 +58,9 @@ class Order {
     this.sellerAddress,
     this.sellerName,
     this.sellerPhone,
-    this.livePicture,
     this.deliveryManID,
     this.deliveryPhone,
     this.deliveryName,
-    this.acceptedAt,
     required this.isPickup,
   });
 
@@ -102,11 +98,9 @@ class Order {
           : null,
       'sellerName': sellerName,
       'sellerPhone': sellerPhone,
-      'livePicture': livePicture,
       'deliveryManID': deliveryManID,
       'deliveryPhone': deliveryPhone,
       'deliveryName': deliveryName,
-      'acceptedAt': acceptedAt?.toUtc().toIso8601String(),
       'isPickup': isPickup,
     };
   }
@@ -150,43 +144,11 @@ class Order {
           : null,
       sellerName: json['sellerName'],
       sellerPhone: json['sellerPhone'],
-      livePicture: json['livePicture'],
       deliveryManID: json['deliveryManID'],
       deliveryPhone: json['deliveryPhone'],
       deliveryName: json['deliveryName'],
-      acceptedAt: json['acceptedAt'] != null
-          ? DateTime.parse(json['acceptedAt'])
-          : null,
       isPickup: json['isPickup'] ?? false,
     );
-  }
-
-  Order accept(Seller seller, Bag bag) {
-    if (bag.id.toString() != bagID) {
-      throw Exception("Bag id is not the same");
-    }
-
-    if (seller.id != sellerID) {
-      throw Exception("Seller id is not the same");
-    }
-
-    final data = toJson();
-    data["acceptedAt"] = DateTime.now().toUtc().toIso8601String();
-    data["sellerAddress"] = {
-      "latitude": bag.latitude,
-      "longitude": bag.longitude,
-    };
-    data["sellerName"] = seller.name;
-    data["sellerPhone"] = seller.phone;
-
-    return Order.fromJson(data);
-  }
-
-  Order captureLivePicture(String livePicture) {
-    final data = toJson();
-    data["livePicture"] = livePicture;
-
-    return Order.fromJson(data);
   }
 
 // todo later move this logic to the server
@@ -203,23 +165,20 @@ class Order {
       return true;
     }
 
-    if (acceptedAt == null &&
-        now.difference(lastUpdate) > Constants.needAcceptanceBeforeExpired) {
+    if (now.difference(lastUpdate) > Constants.needAcceptanceBeforeExpired) {
       print("Order#$id expired: needAcceptanceBeforeExpired");
       return true;
     }
 
     if (isPickup &&
-        acceptedAt != null &&
-        now.difference(acceptedAt!) > Constants.needSelfPickupBeforeExpired) {
+        now.difference(createdAt) > Constants.needSelfPickupBeforeExpired) {
       print("Order#$id expired: needSelfPickupBeforeExpired");
       return true;
     }
 
     if (isPickup == false &&
         deliveryManID == null &&
-        acceptedAt != null &&
-        now.difference(acceptedAt!) > Constants.needDeliverBeforeExpired) {
+        now.difference(createdAt) > Constants.needDeliverBeforeExpired) {
       print("Order#$id expired: needDeliverBeforeExpired");
       return true;
     }

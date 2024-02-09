@@ -68,8 +68,7 @@ class _RunningOrderState extends State<RunningOrder> {
 
   bool get isOld => widget.order.isDelivered == true || widget.order.expired;
 
-  bool get isWaiting =>
-      widget.order.isDelivered == null && widget.order.acceptedAt != null;
+  bool get isWaiting => widget.order.isDelivered == null;
 
   bool get isWaitingAndGoodToHandover =>
       isWaiting &&
@@ -77,22 +76,13 @@ class _RunningOrderState extends State<RunningOrder> {
 
   void handleAccept() async {
     if (!isWaiting) {
-      context.read<HomeCubit>().acceptOrder(widget.order);
+      // context.read<HomeCubit>().acceptOrder(widget.order);
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
         Navigator.of(context).pop();
       });
     } else {
-      final sellerUID = Server.auth.currentUser!.uid;
-
-      final livePicture = await Server().pickImage(
-          widget.order.id, "/seller/handover/livePicture/$sellerUID",
-          isCamera: true);
-
-      print(livePicture);
-      context.read<HomeCubit>().handOver(
-            widget.order.captureLivePicture(livePicture!),
-          );
+      context.read<HomeCubit>().handOver(widget.order);
 
       setState(() => goingToExit = true);
       Future.delayed(Duration(milliseconds: 500)).then((value) {
@@ -107,8 +97,7 @@ class _RunningOrderState extends State<RunningOrder> {
   Widget build(BuildContext context) {
     final quantityLeft = context.watch<HomeCubit>().state.quantity;
 
-    final stillQuantityLeft = quantityLeft >= widget.order.quantity ||
-        widget.order.acceptedAt != null;
+    final stillQuantityLeft = quantityLeft >= widget.order.quantity;
 
     final height = MediaQuery.of(context).size.height - 1 * 60;
     return SafeArea(
@@ -223,7 +212,7 @@ class _RunningOrderState extends State<RunningOrder> {
                       color: Colors.green,
                     ),
                     title: Text(
-                      widget.order.acceptedAt.toString(),
+                      widget.order.createdAt.toString(),
                     ),
                     subtitle: Text(
                       'Accepted At',
@@ -282,7 +271,7 @@ class _RunningOrderState extends State<RunningOrder> {
                             Icons.move_down_outlined,
                           ),
                           label: Text(
-                            isWaiting ? 'Hand Over' : 'Accept Order',
+                            'Ok',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 28,

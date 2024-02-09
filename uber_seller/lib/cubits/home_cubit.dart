@@ -232,38 +232,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void handOver(Order order) async {
-    if (order.livePicture == null)
-      throw Exception("you can't handover order without taking picture");
-
     await Server().handOver(order);
-  }
-
-  void acceptOrder(Order order) async {
-    if (order.expired) return;
-    final bagIndex = state.bags
-        .indexWhere((element) => element.id.toString() == order.bagID);
-    if (bagIndex == -1) return;
-
-    final bag = state.bags[bagIndex];
-
-    // todo i don't love this pattern
-    useContext((ctx) async {
-      final seller = ctx.read<AppCubit>().state.seller!;
-
-      final acceptedOrder = order.accept(seller, bag);
-      await Server().acceptOrder(acceptedOrder);
-
-      final newRunningOrders = state.runningOrders
-          .where((element) => element.id != order.id)
-          .toList();
-      emit(
-        state.copyWith(
-            quantity: state.quantity - order.quantity,
-            runningOrders: newRunningOrders),
-      );
-
-      await Cache.popRunningOrder(order.id);
-    });
   }
 
   void addQuantity() async {

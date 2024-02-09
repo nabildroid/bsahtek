@@ -22,7 +22,7 @@ class Server {
 
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "https://bsahtek.net/api/",
+    baseUrl: "http://192.168.0.105:3000/api/",
   ));
 
   static Future<void> init() async {
@@ -136,10 +136,6 @@ class Server {
     });
 
     return sub.cancel;
-  }
-
-  Future<void> acceptOrder(Model.Order order) async {
-    await http.post("order/accept", data: jsonEncode(order.toJson()));
   }
 
   Future<void> handOver(Model.Order order) async {

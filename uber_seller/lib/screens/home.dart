@@ -365,9 +365,9 @@ class OrderTile extends StatelessWidget {
     IconData icon = Icons.playlist_add_check_circle_outlined;
 
     if (order.isDelivered != true) {
-      final isRunning = order.acceptedAt == null && order.inProgress;
+      final isRunning = order.inProgress;
 
-      final isWaiting = order.acceptedAt != null && order.inProgress;
+      final isWaiting = order.inProgress;
 
       if (isWaiting) {
         trailing = Icon(
