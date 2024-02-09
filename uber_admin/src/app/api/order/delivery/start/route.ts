@@ -3,7 +3,7 @@ import firebase, {
   VerificationError,
 } from "@/app/api/repository/firebase";
 import { calculateSquareCenter } from "@/utils/coordination";
-import { AcceptOrder, ITrack, StartDeliveryOrder } from "@/utils/types";
+import { ITrack, StartDeliveryOrder } from "@/utils/types";
 import * as admin from "firebase-admin";
 
 export async function POST(request: Request) {
