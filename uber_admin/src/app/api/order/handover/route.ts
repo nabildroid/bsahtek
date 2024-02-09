@@ -26,14 +26,9 @@ export async function POST(request: Request) {
   if (await BlocForNot("seller#" + order.sellerID, request))
     return VerificationError();
 
-  if (order.isPickup == false) {
-    // set track to be toSeller = true
-
-    await firebase.firestore().collection("tracks").doc(order.id).update({
-      toSeller: true,
-      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
-    });
-  } else {
+  console.log(order);
+  if (order.isPickup) {
+    console.log("going to handover");
     await firebase
       .firestore()
       .collection("orders")
@@ -73,6 +68,13 @@ export async function POST(request: Request) {
     });
     // send notification to the client, so he can
     await notifyClient(order);
+  } else {
+    // set track to be toSeller = true
+
+    await firebase.firestore().collection("tracks").doc(order.id).update({
+      toSeller: true,
+      lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
+    });
   }
 
   console.log(order);
