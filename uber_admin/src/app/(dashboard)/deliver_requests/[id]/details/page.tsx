@@ -219,7 +219,7 @@ export default function Page(props: Props) {
                                     </td>
 
                                     <td className="px-3 py-4">
-                                        {!order.acceptedAt ? "-" : diffInMin(new Date(order.acceptedAt), new Date(order.lastUpdate))} min
+                                        {!order.createdAt ? "-" : diffInMin(new Date(order.createdAt), new Date(order.lastUpdate))} min
                                     </td>
 
                                     <td className="px-3 py-4 hidden sm:table-cell">
