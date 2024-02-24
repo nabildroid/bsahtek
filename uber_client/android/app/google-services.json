@@ -121,6 +121,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "1090457346712-1i4r00mohlq76m83hgdb65j1e3kg8e56.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "444c343e595513f6fda8ce054b522c9382dfe4df"
+          }
+        },
+        {
+          "client_id": "1090457346712-42cl7g01rdlvuk7nfc3a4tc1hov1rn2r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "55d45adb09b2d62507b9ac363ef308d8c2232557"
+          }
+        },
+        {
+          "client_id": "1090457346712-50hb6i4iuevfoevrpftbpbiog2q1v4os.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.laknabil.uber_seller",
+            "certificate_hash": "77355e583bad9ba67c2006e8aac7615ecf508539"
+          }
+        },
+        {
           "client_id": "1090457346712-qm61di60lttu6uoev16v5pve2015hl7k.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -1,3 +1,6 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 import 'package:bsahtak/cubits/static_provider.dart';
@@ -92,11 +95,38 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> loginOrRegister(String email, String password) async {
+    try {
+      // Attempt to sign in
+      await Server.auth
+          .signInWithEmailAndPassword(email: email, password: password);
+    } catch (e) {
+      // If sign-in fails, create a new account
+      if (e is FirebaseAuthException && e.code == 'user-not-found') {
+        await Server.auth
+            .createUserWithEmailAndPassword(email: email, password: password);
+      } else {
+        // Handle other errors
+        throw e;
+      }
+    }
+  }
+
   @override
   void dispose() {
     stopListening();
 
     super.dispose();
+  }
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> _submit() async {
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    loginOrRegister(email, password);
   }
 
   @override
@@ -106,158 +136,197 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Colors.green,
       );
 
-    return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).padding.top,
-          ),
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Center(
-              child: SizedBox(
-                width: 120,
-                child: Hero(
-                  tag: "Logo",
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.primary,
-                        BlendMode.srcATop),
-
-                    child: Image.network(
-                      'https://bsahtek.net/static/logo.png',
-                    ), // Replace 'colored_image.png' with your image file path
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            FractionallySizedBox(
+              heightFactor: .31,
+              alignment: Alignment.topCenter,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage("assets/splash.png"),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                  ),
+                ),
+                child: Align(
+                  alignment: Alignment(-.8, 0.3),
+                  child: Text(
+                    AppLocalizations.of(context)!.appName,
+                    style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5,
+                            color: Colors.white,
+                            offset: Offset(1, 1),
+                          )
+                        ]),
                   ),
                 ),
               ),
             ),
-          ),
-          Text(
-            AppLocalizations.of(context)!.appName,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.slogan,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade400),
-          ),
-          Expanded(
-              child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.login_title,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 42),
-                  ElevatedButton(
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          "assets/google.png",
-                          height: 32,
-                          width: 32,
-                        ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          AppLocalizations.of(context)!.login_google,
+            FractionallySizedBox(
+              heightFactor: .73,
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 8,
+                      offset: Offset(0, -2),
+                      color: Colors.black26,
+                      spreadRadius: 1,
+                    )
+                  ],
+                ),
+                padding:
+                    EdgeInsets.only(top: 20, bottom: 20, right: 18, left: 18),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, bottom: 15),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          "Login",
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
+                            fontSize: 24,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        SizedBox(
-                          height: 32,
-                          width: 32,
-                        ),
-                      ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    ),
-                    onPressed: () async {
-                      final info = await showModalBottomSheet<InfoCollection>(
-                        context: context,
-                        builder: (_) => OnboardingInfoCollection(),
-                      );
-                      if (info == null) return;
-
-                      context.read<StaticProvider>().setLocale(info.locale);
-                      signInWithGoogle();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      minimumSize: Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          "assets/social.png",
-                          height: 32,
-                          width: 32,
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade200,
+                        hintText: "Email",
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(500),
+                          borderSide: BorderSide.none,
                         ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          AppLocalizations.of(context)!.login_facebook,
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                        SizedBox(
-                          height: 32,
-                          width: 32,
-                        ),
-                      ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    ),
-                    onPressed: () async {
-                      // final info = await showModalBottomSheet<InfoCollection>(
-                      //   context: context,
-                      //   builder: (_) => OnboardingInfoCollection(),
-                      // );
-                      // if (info == null) return;
-
-                      // context.read<StaticProvider>().setLocale(info.locale);
-                      signInWithFacebook();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      minimumSize: Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  TermCondition()
-                ],
+                    SizedBox(height: 24),
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        // Perform additional password validation here
+                        return null;
+                      },
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        filled: true,
+                        fillColor: Colors.grey.shade200,
+                        hintText: "Password",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(500),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    ConstrainedBox(
+                      constraints:
+                          BoxConstraints.tightFor(width: double.infinity),
+                      child: FilledButton(
+                        onPressed: _submit,
+                        child: Text("Sign In"),
+                      ),
+                    ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ElevatedButton(
+                              child: Row(
+                                children: [
+                                  Image.asset(
+                                    "assets/google.png",
+                                    height: 28,
+                                    width: 28,
+                                  ),
+                                  SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.login_google,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                    height: 28,
+                                    width: 28,
+                                  ),
+                                ],
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                              ),
+                              onPressed: () async {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                elevation: 0,
+                                padding: EdgeInsets.symmetric(horizontal: 40),
+                                minimumSize: Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            TermCondition()
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
-          ))
-        ],
+            Align(
+              alignment: Alignment(.8, -.7),
+              child: SizedBox(
+                width: 125,
+                height: 125,
+                child: Hero(
+                  tag: "Logo",
+                  child: Image.asset("assets/logo.png"),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -375,7 +444,15 @@ class _OnboardingInfoCollectionState extends State<OnboardingInfoCollection> {
                 ),
               ),
               hint: Text(AppLocalizations.of(context)!.login_region_country),
-              items: ["Algerie", "Tunisie", "Maroc"]
+              items: [
+                "Algerie",
+                "France",
+                "Italy",
+                "Mouritania",
+                "Marocco",
+                "Tunisie",
+                "Spain"
+              ]
                   .map(
                     (e) => DropdownMenuItem(
                       child: Text(e),

@@ -96,9 +96,7 @@ class _LoadingToHomeScreenState extends State<LoadingToHomeScreen> {
                 child: ColorFiltered(
                   colorFilter: ColorFilter.mode(
                       Theme.of(context).colorScheme.primary, BlendMode.srcATop),
-                  child: Image.network(
-                    'https://bsahtek.net/static/logo.png',
-                  ), //
+                  child: Image.asset("assets/logo.png"),
                 ),
               ),
             ),
