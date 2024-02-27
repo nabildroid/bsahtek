@@ -19,7 +19,7 @@ class Server {
   static late FirebaseFirestore firestore;
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "https://wastnothin.vercel.app/api/",
+    baseUrl: "http://192.168.0.105:3000/api/",
   ));
 
   static Future<void> init() async {
@@ -232,6 +232,7 @@ class Server {
       firestore.collection('clients').doc(clientID).set({
         ...client.toJson(),
         'active': false,
+        // todo make sure that the active is false
         'suspended': false,
       }, SetOptions(merge: true)),
       http.post("submitting/client"),
