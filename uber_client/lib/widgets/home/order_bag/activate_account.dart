@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivateAccount extends StatefulWidget {
   final bool isOtpScreen;
+  final bool isLoading;
   final void Function(String otp) confirmOTP;
   final Function(String name, String phone, String address) sendOTP;
 
@@ -12,6 +13,7 @@ class ActivateAccount extends StatefulWidget {
     required this.isOtpScreen,
     required this.confirmOTP,
     required this.sendOTP,
+    required this.isLoading,
   });
 
   @override
@@ -90,9 +92,17 @@ class _ActivateAccountState extends State<ActivateAccount> {
 
           SizedBox(height: 16),
           ElevatedButton(
-            child:
-                Text(AppLocalizations.of(context)!.bag_order_activate_action),
-            onPressed: () => widget.confirmOTP(otp.text),
+            child: widget.isLoading
+                ? SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(AppLocalizations.of(context)!.bag_order_activate_action),
+            onPressed:
+                widget.isLoading ? null : () => widget.confirmOTP(otp.text),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
               backgroundColor: Theme.of(context).colorScheme.primary,
@@ -184,11 +194,20 @@ class _ActivateAccountState extends State<ActivateAccount> {
             },
           ),
           SizedBox(height: 16),
+
           ElevatedButton(
-            child:
-                Text(AppLocalizations.of(context)!.bag_order_activate_action),
-            onPressed: () =>
-                widget.sendOTP(name.text, phone.text, address.text),
+            child: widget.isLoading
+                ? SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(AppLocalizations.of(context)!.bag_order_activate_action),
+            onPressed: widget.isLoading
+                ? null
+                : () => widget.sendOTP(name.text, phone.text, address.text),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               elevation: 0,

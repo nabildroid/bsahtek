@@ -84,6 +84,10 @@ class _BagScreenState extends State<BagScreen> {
       return;
     }
 
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       await Server.auth.currentUser!.linkWithCredential(newAuthCredential);
     } catch (e) {}
@@ -111,6 +115,10 @@ class _BagScreenState extends State<BagScreen> {
   }
 
   void activateAccount(String name, String phone, String address) async {
+    setState(() {
+      isLoading = true;
+    });
+
     // send request to api
     final appCubit = context.read<AppCubit>();
     final location = await GpsRepository.getLocation(context);
@@ -128,6 +136,7 @@ class _BagScreenState extends State<BagScreen> {
     await PhoneAuth.auth("+213" + phone);
 
     setState(() {
+      isLoading = false;
       pendingSubmition = ClientSubmit(
         name: name,
         phone: phone,
@@ -152,7 +161,10 @@ class _BagScreenState extends State<BagScreen> {
 
     if (appCubit.state.client == null ||
         appCubit.state.client!.isActive == false) {
-      setState(() => goingToActivateAccount = true);
+      setState(() {
+        goingToActivateAccount = true;
+        isLoading = false;
+      });
 
       return;
     }
@@ -596,6 +608,7 @@ class _BagScreenState extends State<BagScreen> {
                           confirmOTP: confirmOTP,
                           isOtpScreen: pendingSubmition != null,
                           sendOTP: activateAccount,
+                          isLoading: isLoading,
                         )
                       : Reserve(
                           bag: widget.bag,
