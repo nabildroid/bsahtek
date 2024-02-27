@@ -49,7 +49,7 @@ class SuggestionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLiked = context.watch<HomeCubit>().isLiked(id);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
+      padding: const EdgeInsets.only(bottom: 4, left: 16, right: 16),
       child: GestureDetector(
         onTap: onTap,
         child: AspectRatio(
@@ -154,7 +154,7 @@ class SuggestionCard extends StatelessWidget {
                   Expanded(
                     flex: 8,
                     child: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(8).copyWith(top: 6),
                       width: double.infinity,
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,14 +166,6 @@ class SuggestionCard extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            if (Utils.splitTranslation(title, context).length <
-                                25)
-                              Text(
-                                Utils.splitTranslation(subtitle, context),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
                             Align(
                               alignment: Directionality.of(context) ==
                                       TextDirection.rtl

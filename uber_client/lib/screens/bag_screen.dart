@@ -1,3 +1,6 @@
+import 'package:bsahtak/models/order.dart';
+import 'package:bsahtak/repositories/phone_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'dart:math';
@@ -8,17 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:bsahtak/cubits/bags_cubit.dart';
 import 'package:bsahtak/cubits/home_cubit.dart';
 import 'package:bsahtak/models/bag.dart';
-import 'package:bsahtak/repositories/orders_remote.dart';
 
 import '../cubits/app_cubit.dart';
 import '../models/clientSubmit.dart';
 import '../repositories/gps.dart';
 import '../repositories/server.dart';
 import '../utils/utils.dart';
+import '../widgets/home/order_bag/activate_account.dart';
+import '../widgets/home/order_bag/reserve.dart';
 
 class BagScreen extends StatefulWidget {
   final Bag bag;
@@ -63,70 +66,74 @@ class _BagScreenState extends State<BagScreen> {
   bool isLoading = false;
   bool isReserved = false;
 
+  ConfirmationResult? ConfirmOTP;
+
   bool goingToActivateAccount = false;
-  final _formKey = GlobalKey<FormState>();
-  final name = TextEditingController();
-  final phone = TextEditingController();
-  final email = TextEditingController();
-  final address = TextEditingController();
-
-  void _formatPhoneNumber() {
-    final unformattedText = phone.text.replaceAll(RegExp(r'\s'), '');
-
-    var formated = "";
-
-    for (var i = 0; i < unformattedText.length; i++) {
-      if (i == 3 || i == 5 || i == 7) formated += " ";
-      formated += unformattedText[i];
-    }
-
-    phone.value = phone.value.copyWith(
-      text: formated,
-      selection: TextSelection.collapsed(offset: formated.length),
-    );
-  }
+  ClientSubmit? pendingSubmition;
 
   final _controller = ScrollController();
   double photoHeight = 0;
   double ratio = 0;
 
-  void activateAccount() async {
-    if (_formKey.currentState?.validate() != true) return;
+  void confirmOTP(String otp) async {
+    if (pendingSubmition == null) return;
 
-    setState(() {
-      goingToActivateAccount = false;
-    });
-    // send request to api
+    final newAuthCredential = await PhoneAuth.confirm(otp);
+
+    if (newAuthCredential == null) {
+      return;
+    }
+
+    try {
+      await Server.auth.currentUser!.linkWithCredential(newAuthCredential);
+    } catch (e) {}
+
     final appCubit = context.read<AppCubit>();
     final homeCubit = context.read<HomeCubit>();
+
+    await Server().submitClient(
+      appCubit.state.client!.id,
+      pendingSubmition!,
+    );
+
+    homeCubit.addNotActiveOrder(pendingSubmition!.requestedOrder);
+
+    setState(() {
+      isLoading = false;
+      isReserved = true;
+      goingToActivateAccount = false;
+    });
+
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() => goingToReserve = false);
+      context.go("/me");
+    });
+  }
+
+  void activateAccount(String name, String phone, String address) async {
+    // send request to api
+    final appCubit = context.read<AppCubit>();
     final location = await GpsRepository.getLocation(context);
     // validate inputs
 
     final newOrder = widget.bag.toOrder(
-      appCubit.state.client!.copyWith(name: name.text).copyWith(
-            phone: phone.text,
+      appCubit.state.client!.copyWith(name: name).copyWith(
+            phone: phone,
           ),
       quantity: quantity,
       isPickup: isPickup,
       location: location!, // todo this is unsafe
     );
 
-    await Server().submitClient(
-        appCubit.state.client!.id,
-        ClientSubmit(
-          name: name.text,
-          phone: phone.text,
-          email: email.text == "" ? null : email.text,
-          address: address.text,
-          requestedOrder: newOrder,
-        ));
+    await PhoneAuth.auth("+213" + phone);
 
-    homeCubit.addNotActiveOrder(newOrder);
-
-    setState(() => {isLoading = false, isReserved = true});
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() => goingToReserve = false);
-      context.go("/me");
+    setState(() {
+      pendingSubmition = ClientSubmit(
+        name: name,
+        phone: phone,
+        address: address,
+        requestedOrder: newOrder,
+      );
     });
   }
 
@@ -194,8 +201,6 @@ class _BagScreenState extends State<BagScreen> {
         ratio = Curves.easeInOutExpo.transform(ratio);
       });
     });
-
-    phone.addListener(_formatPhoneNumber);
 
     Future.delayed(Duration(seconds: 1)).then((_) {
       if (!mounted) return;
@@ -585,359 +590,71 @@ class _BagScreenState extends State<BagScreen> {
                   ),
                 ),
               if (goingToReserve || goingToActivateAccount)
-                Positioned.fill(
-                    child: Container(
-                  color: Colors.black38,
-                  alignment: Alignment.bottomCenter,
-                  child: AnimatedFractionallySizedBox(
-                    duration: Duration(milliseconds: 450),
-                    curve: Curves.easeInOutExpo,
-                    heightFactor: goingToActivateAccount ? 0.8 : .6,
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(16),
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(32),
-                          topRight: Radius.circular(32),
+                ReserveContainer(
+                  child: goingToActivateAccount
+                      ? ActivateAccount(
+                          confirmOTP: confirmOTP,
+                          isOtpScreen: pendingSubmition != null,
+                          sendOTP: activateAccount,
+                        )
+                      : Reserve(
+                          bag: widget.bag,
+                          loading: isLoading || throttled,
+                          distance: distance,
+                          quantity: quantity,
+                          done: isReserved,
+                          maxQuantity: maxQuantity,
+                          reserve: distance > 50 ||
+                                  throttled ||
+                                  isLoading ||
+                                  isReserved
+                              ? () {}
+                              : reserveNow,
+                          setQuantity: (q) => setState(() {
+                            quantity = q;
+                          }),
                         ),
-                      ),
-                      child: goingToActivateAccount
-                          ? SingleChildScrollView(
-                              child: Form(
-                                key: _formKey,
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .bag_order_activate_title,
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      // input field with dark background and rounded corners
-                                      SizedBox(height: 16),
-                                      TextFormField(
-                                        controller: name,
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: Colors.grey.shade200,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          hintText:
-                                              AppLocalizations.of(context)!
-                                                  .bag_order_activate_name,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null ||
-                                              value.isEmpty ||
-                                              value.length < 3) {
-                                            return 'Please correct Name';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-
-                                      SizedBox(height: 16),
-                                      TextFormField(
-                                        controller: phone,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          prefix: Text("+213 "),
-                                          fillColor: Colors.grey.shade200,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          hintText:
-                                              AppLocalizations.of(context)!
-                                                  .bag_order_activate_phone,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null ||
-                                              value.isEmpty ||
-                                              value.length != 9 + 3) {
-                                            return 'Please correct Phone number';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-
-                                      SizedBox(height: 16),
-                                      TextFormField(
-                                        controller: email,
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: Colors.grey.shade200,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          hintText:
-                                              AppLocalizations.of(context)!
-                                                  .bag_order_activate_email,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null) return null;
-                                          if (value.isNotEmpty &&
-                                              !value.contains("@")) {
-                                            return 'Please correct Email';
-                                          }
-
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(height: 16),
-                                      TextFormField(
-                                        controller: address,
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: Colors.grey.shade200,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          hintText:
-                                              AppLocalizations.of(context)!
-                                                  .bag_order_activate_address,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null ||
-                                              value.isEmpty ||
-                                              value.length < 5) {
-                                            return 'Please correct Address, otherwise you may not receive your order';
-                                          }
-
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(height: 16),
-                                      ElevatedButton(
-                                        child: Text(
-                                            AppLocalizations.of(context)!
-                                                .bag_order_activate_action),
-                                        onPressed: activateAccount,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          elevation: 0,
-                                          minimumSize:
-                                              Size(double.infinity, 50),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      ),
-                                    ]),
-                              ),
-                            )
-                          : Column(
-                              children: [
-                                FittedBox(
-                                  child: Text(
-                                    widget.bag.sellerName +
-                                        "\n" +
-                                        (widget.bag.name ==
-                                                widget.bag.sellerName
-                                            ? ""
-                                            : Utils.splitTranslation(
-                                                widget.bag.name, context)),
-                                    style: TextStyle(
-                                      fontSize: 21,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black87,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Divider(height: 32),
-                                Text(
-                                  AppLocalizations.of(context)!
-                                      .bag_order_quantity,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                                Row(
-                                  // create 2 icon button in cirlceAvarat and in center number of quantity
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: quantity < 2
-                                          ? Colors.black12
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            if (quantity > 1) {
-                                              quantity--;
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(
-                                          Icons.remove,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 16,
-                                    ),
-                                    Text(
-                                      quantity.toString(),
-                                      style: TextStyle(
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "monospace",
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 16,
-                                    ),
-                                    CircleAvatar(
-                                      backgroundColor: quantity >= maxQuantity
-                                          ? Colors.black12
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            if (quantity < maxQuantity)
-                                              quantity++;
-                                          });
-                                        },
-                                        icon: Icon(
-                                          Icons.add,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Spacer(),
-                                // ListTile(
-                                //   title: Text("Pickup"),
-                                //   trailing: Switch(
-                                //     value: isPickup,
-                                //     onChanged: (value) {
-                                //       // todo for now we don't need this
-                                //       // setState(() {
-                                //       //   isPickup = value;
-                                //       // });
-                                //     },
-                                //   ),
-                                // ),
-                                ListTile(
-                                  title: Text(AppLocalizations.of(context)!
-                                      .bag_order_total),
-                                  trailing: Text(
-                                    (widget.bag.price * quantity)
-                                            .toStringAsFixed(2) +
-                                        AppLocalizations.of(context)!
-                                            .bag_price_unit,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: "monospace",
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextButton(
-                                        style: ButtonStyle(
-                                          backgroundColor: distance > 50
-                                              ? MaterialStateProperty.all(
-                                                  Colors.grey.shade600)
-                                              : MaterialStateProperty.all(
-                                                  Theme.of(context)
-                                                      .colorScheme
-                                                      .primary),
-                                          shape: MaterialStateProperty.all(
-                                            RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                            ),
-                                          ),
-                                          foregroundColor:
-                                              MaterialStateProperty.all(
-                                                  Colors.white),
-                                        ),
-                                        onPressed: distance > 50 ||
-                                                throttled ||
-                                                isLoading ||
-                                                isReserved
-                                            ? () {}
-                                            : reserveNow,
-                                        child: AnimatedSwitcher(
-                                          duration: Duration(milliseconds: 300),
-                                          child: isLoading ||
-                                                  (throttled && !isReserved)
-                                              ? SizedBox(
-                                                  height: 24,
-                                                  width: 24,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  ),
-                                                )
-                                              : isReserved
-                                                  ? Icon(
-                                                      Icons.check,
-                                                      color: Colors.white,
-                                                    )
-                                                  : distance > 50
-                                                      ? Text("Too Far")
-                                                      : Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .bag_order_reserve,
-                                                          key: ValueKey(
-                                                              "Reserve Now"),
-                                                        ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ))
+                  secondStage: goingToActivateAccount,
+                )
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+class ReserveContainer extends StatelessWidget {
+  final Widget child;
+  final bool secondStage;
+  const ReserveContainer({
+    super.key,
+    required this.child,
+    required this.secondStage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+        child: Container(
+            color: Colors.black38,
+            alignment: Alignment.bottomCenter,
+            child: AnimatedFractionallySizedBox(
+                duration: Duration(milliseconds: 450),
+                curve: Curves.easeInOutExpo,
+                heightFactor: secondStage ? 0.8 : .6,
+                child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(16),
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
+                      ),
+                    ),
+                    child: child))));
   }
 }
 
