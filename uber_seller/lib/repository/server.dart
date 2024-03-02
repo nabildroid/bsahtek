@@ -22,7 +22,7 @@ class Server {
 
   static late FirebaseAuth auth;
   static Dio http = Dio(BaseOptions(
-    baseUrl: "http://bsahtek.net/api/",
+    baseUrl: "https://bsahtek.net/api/",
   ));
 
   static Future<void> init() async {
