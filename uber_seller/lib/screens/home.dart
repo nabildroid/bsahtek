@@ -133,6 +133,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     icon: Icons.remove_shopping_cart_outlined,
                     onTap: () => context.read<HomeCubit>().removeQuantity(true),
                   ),
+                  ActionButton(
+                    label: "Pricing",
+                    icon: Icons.monetization_on,
+                    onTap: () => context.read<HomeCubit>().updatePrice(context),
+                  ),
                 ],
               )
             ],

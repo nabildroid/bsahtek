@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
@@ -64,6 +65,7 @@ class HomeState extends Equatable {
         ...prevOrders.map((e) => e.id + e.lastUpdate.toString()),
         quantity,
         orderToBePickedUp?.id ?? "orderToBePickedUp",
+        ...bags.map((e) => e.id.toString() + e.price.toString())
       ];
 }
 
@@ -253,5 +255,52 @@ class HomeCubit extends Cubit<HomeState> {
 
     await Server().addQuantity(zones, id, all ? 0 : state.quantity - 1);
     emit(state.copyWith(quantity: state.quantity + (all ? -quantity : -1)));
+  }
+
+  void updatePrice(BuildContext context) {
+    final price = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Update Bag Pricing'),
+          content: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Use min to make the dialog compact
+            children: <Widget>[
+              TextField(
+                controller: price,
+                onChanged: (value) {
+                  //  price = value;
+                },
+                keyboardType:
+                    TextInputType.number, // Ensure it's a number input
+                decoration: InputDecoration(
+                    hintText: 'Enter new price',
+                    prefixIcon: Icon(Icons.attach_money)),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Save'),
+              onPressed: () async {
+                await Server().setBagPrice(double.parse(price.text));
+                Cache.bag = null;
+
+                await init();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

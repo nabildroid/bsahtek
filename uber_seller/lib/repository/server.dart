@@ -255,4 +255,10 @@ class Server {
 
     return await ref.getDownloadURL();
   }
+
+  Future<void> setBagPrice(double price) async {
+    final sellerID = auth.currentUser!.uid;
+    await http.post("seller/$sellerID/bags/updatePrice",
+        data: jsonEncode({"price": price}));
+  }
 }
