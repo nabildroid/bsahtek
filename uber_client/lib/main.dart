@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
         ],
         debugShowCheckedModeBanner: false,
         locale: context.watch<StaticProvider>().locale,
-        title: 'Bsahtak',
+        title: 'Bsahtek',
         theme: ThemeData(
           textTheme: GoogleFonts.rubikTextTheme(),
           colorScheme: ColorScheme.fromSeed(
