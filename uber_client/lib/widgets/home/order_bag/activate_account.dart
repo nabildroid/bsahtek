@@ -5,7 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class ActivateAccount extends StatefulWidget {
   final bool isOtpScreen;
   final bool isLoading;
-  final void Function(String otp) confirmOTP;
+  final Future<void> Function(String otp) confirmOTP;
   final Function(String name, String phone, String address) sendOTP;
 
   const ActivateAccount({
@@ -21,7 +21,7 @@ class ActivateAccount extends StatefulWidget {
 }
 
 class _ActivateAccountState extends State<ActivateAccount> {
-  final phone = TextEditingController();
+  final phone = TextEditingController(text: "798390046");
 
   void _formatPhoneNumber() {
     final unformattedText = phone.text.replaceAll(RegExp(r'\s'), '');
@@ -39,10 +39,13 @@ class _ActivateAccountState extends State<ActivateAccount> {
     );
   }
 
-  final _formKey = GlobalKey<FormState>();
+  final _infoFormKey = GlobalKey<FormState>();
+  final _otpFormKey = GlobalKey<FormState>();
   final otp = TextEditingController();
   final name = TextEditingController();
   final address = TextEditingController();
+
+  bool otpInvalide = false;
 
   @override
   void initState() {
@@ -51,10 +54,30 @@ class _ActivateAccountState extends State<ActivateAccount> {
     phone.addListener(_formatPhoneNumber);
   }
 
+  void submitInfo() {
+    if (_infoFormKey.currentState!.validate()) {
+      widget.sendOTP(name.text, phone.text, address.text);
+    }
+  }
+
+  void submitOTP() async {
+    if (_otpFormKey.currentState!.validate()) {
+      try {
+        await widget.confirmOTP(otp.text);
+      } catch (e) {
+        otp.text = "";
+        setState(() {
+          otpInvalide = true;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.isOtpScreen) {
       return Form(
+        key: _otpFormKey,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
             "Confirm OTP",
@@ -74,6 +97,8 @@ class _ActivateAccountState extends State<ActivateAccount> {
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             decoration: InputDecoration(
+              errorText:
+                  otpInvalide && otp.text.isEmpty ? "Code invalide" : null,
               filled: true,
               fillColor: Colors.grey.shade200,
               border: OutlineInputBorder(
@@ -83,7 +108,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
               hintText: "000000",
             ),
             validator: (value) {
-              if (value == null || value.isEmpty || value.length < 4) {
+              if (value == null || value.isEmpty || value.length != 6) {
                 return 'Please correct OTP';
               }
               return null;
@@ -101,8 +126,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
                     ),
                   )
                 : Text(AppLocalizations.of(context)!.bag_order_activate_action),
-            onPressed:
-                widget.isLoading ? null : () => widget.confirmOTP(otp.text),
+            onPressed: widget.isLoading ? null : submitOTP,
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
               backgroundColor: Theme.of(context).colorScheme.primary,
@@ -119,7 +143,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
 
     return SingleChildScrollView(
       child: Form(
-        key: _formKey,
+        key: _infoFormKey,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
             AppLocalizations.of(context)!.bag_order_activate_title,
@@ -136,6 +160,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.shade200,
+              prefixIcon: Icon(Icons.person),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -156,8 +181,8 @@ class _ActivateAccountState extends State<ActivateAccount> {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               filled: true,
-              prefix: Text("+213 "),
               fillColor: Colors.grey.shade200,
+              prefixIcon: Icon(Icons.phone),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -178,6 +203,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.shade200,
+              prefixIcon: Icon(Icons.location_on_outlined),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -205,9 +231,7 @@ class _ActivateAccountState extends State<ActivateAccount> {
                     ),
                   )
                 : Text(AppLocalizations.of(context)!.bag_order_activate_action),
-            onPressed: widget.isLoading
-                ? null
-                : () => widget.sendOTP(name.text, phone.text, address.text),
+            onPressed: widget.isLoading ? null : submitInfo,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               elevation: 0,

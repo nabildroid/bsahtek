@@ -75,13 +75,13 @@ class _BagScreenState extends State<BagScreen> {
   double photoHeight = 0;
   double ratio = 0;
 
-  void confirmOTP(String otp) async {
+  Future<void> confirmOTP(String otp) async {
     if (pendingSubmition == null) return;
 
     final newAuthCredential = await PhoneAuth.confirm(otp);
 
-    if (newAuthCredential == null) {
-      return;
+    if (newAuthCredential == null || newAuthCredential.token == null) {
+      throw Error();
     }
 
     setState(() {
@@ -263,6 +263,7 @@ class _BagScreenState extends State<BagScreen> {
       onWillPop: () async {
         if (goingToActivateAccount) {
           setState(() {
+            pendingSubmition = null;
             goingToActivateAccount = false;
             isLoading = false;
           });
