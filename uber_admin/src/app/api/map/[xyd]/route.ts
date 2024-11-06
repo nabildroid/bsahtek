@@ -21,7 +21,6 @@ export async function GET(
     params: { xyd: string };
   }
 ) {
-  if (await BlocForNot("", req)) return VerificationError();
 
   const [x, y, distance] = context.params.xyd.split(",").map(parseFloat);
   const { x: originalX, y: originalY } = reverseCalculateSquareCenter(
